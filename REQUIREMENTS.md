@@ -62,3 +62,8 @@ CSSフレームワークはMaterialUIとする
 LIFFにてIDトークンを取得し、Firebase Functionsに送信する。FunctionsはIDトークンを検証し、そのユーザーIDを使ってFirebase Authenticationにカスタム認証する。
 
 データはFirestoreに保存する。
+
+### フォルダ構造
+
+root ... Reactプロジェクト
+functions ... Firebase Functionsのプロジェクト
