@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { collection, getDocs, limit, orderBy, query } from 'firebase/firestore'
-import { db } from '../firebase'
-import type { Session } from '../types'
+import { db } from '../firebase.ts'
+import type { Session } from '../types.ts'
 import { Button, Container, Typography } from '@mui/material'
 import { Link } from 'react-router'
 
