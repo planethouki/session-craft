@@ -45,7 +45,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null)
   const [liffReady, setLiffReady] = useState(false)
 
-  const { data: firestoreUser } = useSWR(getUserKey, getUserFetcher);
+  const { data: firestoreUser } = useSWR(
+    firebaseUser ? [getUserKey, firebaseUser.uid] : null,
+    getUserFetcher
+  );
 
   useEffect(() => {
     // アプリ起動時にLIFFを初期化しておく（ボタン押下時に初期化ロジックが散らばらない）
