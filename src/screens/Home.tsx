@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { collection, getDocs, limit, orderBy, query } from 'firebase/firestore'
 import { db } from '../firebase'
 import type { Session } from '../types'
-import { Button, Container, List, ListItem, ListItemText, Typography } from '@mui/material'
+import { Button, Container, Typography } from '@mui/material'
 import { Link } from 'react-router'
 
 export default function Home() {
