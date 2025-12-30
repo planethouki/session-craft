@@ -31,3 +31,5 @@ export const callDeleteSelf = httpsCallable<unknown, {
 }>(functions, 'deleteSelf')
 
 export const getUser = httpsCallable<unknown, UserRequest>(functions, 'getUser');
+
+export const adminCreateSession = httpsCallable<{ title: string, date: string }, unknown>(functions, 'adminCreateSession');

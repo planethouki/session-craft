@@ -144,3 +144,5 @@ export const deleteSelf = onCall<unknown, Promise<{ ok: boolean }>>(
     return { ok: true }
   }
 )
+
+export * from './admin';

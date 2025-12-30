@@ -8,7 +8,7 @@ import Home from './pages/Home.tsx'
 // import Settings from './screens/Settings'
 import ApprovalPending from './components/ApprovalPending.tsx'
 // import DeleteAccount from './screens/DeleteAccount'
-// import AdminDashboard from './screens/admin/AdminDashboard'
+import AdminDashboard from './pages/admin/AdminDashboard'
 // import MemberList from './screens/admin/MemberList'
 // import MemberDetail from './screens/admin/MemberDetail'
 
@@ -111,18 +111,18 @@ function AppRoutes() {
     //   ),
     // },
     // // Admin
-    // {
-    //   path: '/admin',
-    //   element: (
-    //     <Guard>
-    //       <ApprovalGuard>
-    //         <AppLayout>
-    //           <AdminDashboard />
-    //         </AppLayout>
-    //       </ApprovalGuard>
-    //     </Guard>
-    //   ),
-    // },
+    {
+      path: '/admin',
+      element: (
+        <Guard>
+          <ApprovalGuard>
+            <AppLayout>
+              <AdminDashboard />
+            </AppLayout>
+          </ApprovalGuard>
+        </Guard>
+      ),
+    },
     // {
     //   path: '/admin/members',
     //   element: (
