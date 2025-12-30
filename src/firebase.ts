@@ -2,6 +2,7 @@ import {initializeApp} from 'firebase/app'
 import {getAuth} from 'firebase/auth'
 import {getFirestore} from 'firebase/firestore'
 import {getFunctions, httpsCallable} from 'firebase/functions'
+import { type UserRequest } from "./models/user.ts";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_API_KEY as string,
@@ -28,3 +29,5 @@ export const callApproveWithCode = httpsCallable<{ code: string }, {
 export const callDeleteSelf = httpsCallable<unknown, {
   ok: boolean
 }>(functions, 'deleteSelf')
+
+export const getUser = httpsCallable<unknown, UserRequest>(functions, 'getUser');
