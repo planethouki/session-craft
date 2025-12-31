@@ -70,3 +70,45 @@ export const createProposal = onCall<{
     return { id: docRef.id }
   }
 )
+
+export const deleteProposal = onCall<{
+  sessionId: string
+  proposalId: string
+}, Promise<{ ok: boolean }>>(
+  { cors: true },
+  async (request) => {
+    const uid = request.auth?.uid
+    if (!uid) {
+      throw new HttpsError('unauthenticated', 'User is not authenticated')
+    }
+
+    const { sessionId, proposalId } = request.data
+
+    if (!sessionId || !proposalId) {
+      throw new HttpsError('invalid-argument', 'Missing required fields')
+    }
+
+    const proposalRef = db.collection('sessions').doc(sessionId).collection('proposals').doc(proposalId)
+    const proposalSnap = await proposalRef.get()
+
+    if (!proposalSnap.exists) {
+      throw new HttpsError('not-found', 'Proposal not found')
+    }
+
+    const proposal = proposalSnap.data()
+    if (proposal?.proposerUid !== uid) {
+      throw new HttpsError('permission-denied', 'You can only delete your own proposal')
+    }
+
+    // Check if session status is 'collectingSongs'
+    const sessionSnap = await db.collection('sessions').doc(sessionId).get()
+    const session = sessionSnap.data()
+    if (session?.status !== 'collectingSongs') {
+      throw new HttpsError('failed-precondition', 'Session is not in collecting songs status')
+    }
+
+    await proposalRef.delete()
+
+    return { ok: true }
+  }
+)

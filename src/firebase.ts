@@ -44,3 +44,8 @@ export const callCreateProposal = httpsCallable<{
   scoreUrl: string
   notes: string
 }, { id: string }>(functions, 'createProposal');
+
+export const callDeleteProposal = httpsCallable<{
+  sessionId: string
+  proposalId: string
+}, { ok: boolean }>(functions, 'deleteProposal');

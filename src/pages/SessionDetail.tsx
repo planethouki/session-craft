@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router'
 import { collection, doc, getDoc, getDocs, orderBy, query } from 'firebase/firestore'
-import { db, callCreateProposal } from '../firebase.ts'
+import { db, callCreateProposal, callDeleteProposal } from '../firebase.ts'
 import type { Entry, Session, SongProposal } from '../types.ts'
 import { Box, Button, Container, List, ListItem, ListItemText, TextField, Typography } from '@mui/material'
 import { useAuth } from '../auth.tsx'
@@ -68,6 +68,19 @@ export default function SessionDetail() {
     }
   }
 
+  const deleteProposal = async (proposalId: string) => {
+    if (!id || !window.confirm('この提案を削除してもよろしいですか？')) return
+    try {
+      await callDeleteProposal({ sessionId: id, proposalId })
+      // refresh
+      const pSnap = await getDocs(query(collection(db, 'sessions', id, 'proposals'), orderBy('createdAt', 'asc')))
+      setProposals(pSnap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })))
+    } catch (e: any) {
+      console.error(e)
+      alert('エラーが発生しました: ' + e.message)
+    }
+  }
+
   return (
     <Container sx={{ p: 2 }}>
       {session ? (
@@ -102,7 +115,17 @@ export default function SessionDetail() {
             <Typography variant="h6">提出された曲</Typography>
             <List>
               {proposals.map((p) => (
-                <ListItem key={p.id} disableGutters>
+                <ListItem
+                  key={p.id}
+                  disableGutters
+                  secondaryAction={
+                    p.proposerUid === user?.uid && session.status === 'collectingSongs' && (
+                      <Button color="error" onClick={() => p.id && deleteProposal(p.id)}>
+                        削除
+                      </Button>
+                    )
+                  }
+                >
                   <ListItemText primary={`${p.title} / ${p.artist}`} secondary={`by ${p.proposerUid}`} />
                 </ListItem>
               ))}
