@@ -33,3 +33,14 @@ export const callDeleteSelf = httpsCallable<unknown, {
 export const getUser = httpsCallable<unknown, UserRequest>(functions, 'getUser');
 
 export const adminCreateSession = httpsCallable<{ title: string, date: string }, unknown>(functions, 'adminCreateSession');
+
+export const callCreateProposal = httpsCallable<{
+  sessionId: string
+  title: string
+  artist: string
+  instrumentation: string
+  myInstrument: string
+  sourceUrl: string
+  scoreUrl: string
+  notes: string
+}, { id: string }>(functions, 'createProposal');
