@@ -42,10 +42,15 @@ async function initLiffOnce() {
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [firebaseUser, setFirebaseUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [liffError, setLiffError] = useState<string | null>(null)
+  const [loginError, setLoginError] = useState<string | null>(null)
   const [liffReady, setLiffReady] = useState(false)
 
-  const { data: firestoreUser } = useSWR(getUserKey, getUserFetcher);
+  const { data: firestoreUser, error: getUserError } = useSWR(getUserKey, getUserFetcher);
+
+  const error = useMemo(() => {
+    return liffError || loginError || String(getUserError)
+  }, [liffError, loginError, getUserError])
 
   useEffect(() => {
     // アプリ起動時にLIFFを初期化しておく（ボタン押下時に初期化ロジックが散らばらない）
@@ -61,7 +66,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           await signInWithCustomToken(auth, customToken)
         }
       } catch (e: any) {
-        setError(e?.message || String(e))
+        setLiffError(e?.message || String(e))
         setLiffReady(false)
       }
     })()
@@ -81,7 +86,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const loginWithLiff = async () => {
-    setError(null)
+    setLoginError(null)
     try {
       if (!liffReady) throw new Error('LIFF is not ready yet. Please wait a moment.')
 
@@ -95,7 +100,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const customToken = (resp.data as any).customToken as string
       await signInWithCustomToken(auth, customToken)
     } catch (e: any) {
-      setError(e?.message || String(e))
+      setLoginError(e?.message || String(e))
     }
   }
 
@@ -120,7 +125,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         liffReady
       }
     },
-    [firebaseUser, firestoreUser, loading, error, liffReady],
+    [firebaseUser, firestoreUser, loading, loginError, liffReady],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
