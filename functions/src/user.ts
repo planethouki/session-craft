@@ -12,6 +12,9 @@ export const getUser = onCall<unknown, Promise<any>>({ cors: true }, async (requ
   return {
     docId: userSnap.id,
     ...user,
+    createdAt: userSnap.createTime!.toMillis(),
+    updatedAt: userSnap.updateTime!.toMillis(),
+    approvedAt: user.approvedAt?.toMillis(),
   }
 });
 

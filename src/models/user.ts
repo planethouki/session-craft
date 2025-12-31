@@ -14,10 +14,10 @@ export type FirestoreUser = {
 export type UserRequest = {
   docId: string;
   approved: boolean;
-  approvedAt?: Date;
+  approvedAt?: number;
   displayName: string;
   photoURL: string;
   roles: Role[];
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: number;
+  updatedAt: number;
 };
