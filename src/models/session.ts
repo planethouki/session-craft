@@ -1,4 +1,4 @@
-export type sessionStatus = 'collectingSongs' | 'collectingEntries' | 'selecting' | 'published' | 'finalized'
+export type sessionStatus = 'draft' | 'collectingSongs' | 'collectingEntries' | 'selecting' | 'published' | 'finalized'
 
 export type Session = {
   id?: string
