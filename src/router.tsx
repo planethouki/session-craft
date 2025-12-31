@@ -4,7 +4,7 @@ import { useAuth, AuthProvider } from './auth'
 import { CssBaseline, ThemeProvider, createTheme } from '@mui/material'
 import Home from './pages/Home.tsx'
 // import SessionList from './screens/SessionList'
-// import SessionDetail from './screens/SessionDetail'
+import SessionDetail from './pages/SessionDetail'
 // import Settings from './screens/Settings'
 import ApprovalPending from './components/ApprovalPending.tsx'
 // import DeleteAccount from './screens/DeleteAccount'
@@ -78,18 +78,18 @@ function AppRoutes() {
     //     </Guard>
     //   ),
     // },
-    // {
-    //   path: '/sessions/:id',
-    //   element: (
-    //     <Guard>
-    //       <ApprovalGuard>
-    //         <AppLayout>
-    //           <SessionDetail />
-    //         </AppLayout>
-    //       </ApprovalGuard>
-    //     </Guard>
-    //   ),
-    // },
+    {
+      path: '/sessions/:id',
+      element: (
+        <Guard>
+          <ApprovalGuard>
+            <AppLayout>
+              <SessionDetail />
+            </AppLayout>
+          </ApprovalGuard>
+        </Guard>
+      ),
+    },
     // {
     //   path: '/settings',
     //   element: (
