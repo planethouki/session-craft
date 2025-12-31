@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router'
-import { addDoc, collection, doc, getDoc, getDocs, orderBy, query, serverTimestamp, setDoc, where } from 'firebase/firestore'
+import { collection, doc, getDoc, getDocs, orderBy, query } from 'firebase/firestore'
 import { db, callCreateProposal } from '../firebase.ts'
 import type { Entry, Session, SongProposal } from '../types.ts'
 import { Box, Button, Container, List, ListItem, ListItemText, TextField, Typography } from '@mui/material'
