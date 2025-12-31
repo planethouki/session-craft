@@ -3,7 +3,7 @@ import { useParams } from 'react-router'
 import { collection, doc, getDoc, getDocs, orderBy, query } from 'firebase/firestore'
 import { db, callCreateProposal, callDeleteProposal } from '../firebase.ts'
 import type { Entry, Session, SongProposal } from '../types.ts'
-import { Box, Button, Container, List, ListItem, ListItemText, TextField, Typography } from '@mui/material'
+import { Box, Backdrop, Button, CircularProgress, Container, List, ListItem, ListItemText, TextField, Typography } from '@mui/material'
 import { useAuth } from '../auth.tsx'
 
 export default function SessionDetail() {
@@ -19,6 +19,7 @@ export default function SessionDetail() {
   const [scoreUrl, setScoreUrl] = useState('')
   const [notes, setNotes] = useState('')
   const [editingProposalId, setEditingProposalId] = useState<string | null>(null)
+  const [submitting, setSubmitting] = useState(false)
   const { firebaseUser: user } = useAuth()
 
   useEffect(() => {
@@ -42,6 +43,7 @@ export default function SessionDetail() {
 
   const submitProposal = async () => {
     if (!id || !user) return
+    setSubmitting(true)
     try {
       if (editingProposalId) {
         // Edit mode: delete existing then create new
@@ -76,6 +78,8 @@ export default function SessionDetail() {
     } catch (e: any) {
       console.error(e)
       alert('エラーが発生しました: ' + e.message)
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -118,6 +122,12 @@ export default function SessionDetail() {
 
   return (
     <Container sx={{ p: 2 }}>
+      <Backdrop
+        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={submitting}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
       {session ? (
         <>
           <Typography variant="h5" gutterBottom>
@@ -139,9 +149,9 @@ export default function SessionDetail() {
                 <Button
                   variant="contained"
                   onClick={submitProposal}
-                  disabled={!title.trim() || !artist.trim() || !instrumentation.trim() || !myInstrument.trim() || !sourceUrl.trim() || !scoreUrl.trim()}
+                  disabled={submitting || !title.trim() || !artist.trim() || !instrumentation.trim() || !myInstrument.trim() || !sourceUrl.trim() || !scoreUrl.trim()}
                 >
-                  {editingProposalId ? '再提出' : '提出'}
+                  {submitting ? '送信中...' : (editingProposalId ? '再提出' : '提出')}
                 </Button>
                 {editingProposalId && (
                   <Button variant="outlined" onClick={cancelEdit}>
