@@ -30,3 +30,6 @@ openssl req -x509 -newkey rsa:2048 -nodes \
   -days 365 \
   -config certs/localhost-openssl.cnf
 ```
+
+## IAM
+`<number>-compute@developer.gserviceaccount.com` に `サービス アカウント トークン作成者` を付与
