@@ -112,3 +112,4 @@ export const deleteProposal = onCall<{
     return { ok: true }
   }
 )
+

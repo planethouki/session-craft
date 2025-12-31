@@ -18,6 +18,7 @@ export default function SessionDetail() {
   const [sourceUrl, setSourceUrl] = useState('')
   const [scoreUrl, setScoreUrl] = useState('')
   const [notes, setNotes] = useState('')
+  const [editingProposalId, setEditingProposalId] = useState<string | null>(null)
   const { firebaseUser: user } = useAuth()
 
   useEffect(() => {
@@ -37,11 +38,19 @@ export default function SessionDetail() {
 
   const myProposal = useMemo(() => proposals.find((p) => p.proposerUid === user?.uid), [proposals, user])
 
-  const canPropose = session?.status === 'collectingSongs' && !myProposal
+  const canPropose = session?.status === 'collectingSongs' && (!myProposal || !!editingProposalId)
 
   const submitProposal = async () => {
     if (!id || !user) return
     try {
+      if (editingProposalId) {
+        // Edit mode: delete existing then create new
+        await callDeleteProposal({
+          sessionId: id,
+          proposalId: editingProposalId,
+        })
+      }
+
       await callCreateProposal({
         sessionId: id,
         title: title.trim(),
@@ -52,6 +61,7 @@ export default function SessionDetail() {
         scoreUrl: scoreUrl.trim(),
         notes: notes.trim(),
       })
+
       setTitle('')
       setArtist('')
       setInstrumentation('')
@@ -59,6 +69,7 @@ export default function SessionDetail() {
       setSourceUrl('')
       setScoreUrl('')
       setNotes('')
+      setEditingProposalId(null)
       // refresh
       const pSnap = await getDocs(query(collection(db, 'sessions', id, 'proposals'), orderBy('createdAt', 'asc')))
       setProposals(pSnap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })))
@@ -66,6 +77,30 @@ export default function SessionDetail() {
       console.error(e)
       alert('エラーが発生しました: ' + e.message)
     }
+  }
+
+  const startEdit = (p: SongProposal) => {
+    if (!p.id) return
+    setEditingProposalId(p.id)
+    setTitle(p.title)
+    setArtist(p.artist)
+    setInstrumentation(p.instrumentation)
+    setMyInstrument(p.myInstrument)
+    setSourceUrl(p.sourceUrl)
+    setScoreUrl(p.scoreUrl)
+    setNotes(p.notes || '')
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const cancelEdit = () => {
+    setEditingProposalId(null)
+    setTitle('')
+    setArtist('')
+    setInstrumentation('')
+    setMyInstrument('')
+    setSourceUrl('')
+    setScoreUrl('')
+    setNotes('')
   }
 
   const deleteProposal = async (proposalId: string) => {
@@ -92,7 +127,7 @@ export default function SessionDetail() {
 
           {canPropose && (
             <Box sx={{ mt: 2 }}>
-              <Typography variant="h6">やりたい曲を提出</Typography>
+              <Typography variant="h6">{editingProposalId ? '変更して再提出' : 'やりたい曲を提出'}</Typography>
               <TextField label="曲名" fullWidth sx={{ mt: 1 }} value={title} onChange={(e) => setTitle(e.target.value)} />
               <TextField label="アーティスト" fullWidth sx={{ mt: 1 }} value={artist} onChange={(e) => setArtist(e.target.value)} />
               <TextField label="楽器編成" fullWidth sx={{ mt: 1 }} value={instrumentation} onChange={(e) => setInstrumentation(e.target.value)} />
@@ -100,14 +135,20 @@ export default function SessionDetail() {
               <TextField label="音源URL" fullWidth sx={{ mt: 1 }} value={sourceUrl} onChange={(e) => setSourceUrl(e.target.value)} />
               <TextField label="スコアURL" fullWidth sx={{ mt: 1 }} value={scoreUrl} onChange={(e) => setScoreUrl(e.target.value)} />
               <TextField label="その他備考" fullWidth sx={{ mt: 1 }} value={notes} onChange={(e) => setNotes(e.target.value)} multiline rows={3} />
-              <Button
-                variant="contained"
-                sx={{ mt: 2 }}
-                onClick={submitProposal}
-                disabled={!title.trim() || !artist.trim() || !instrumentation.trim() || !myInstrument.trim() || !sourceUrl.trim() || !scoreUrl.trim()}
-              >
-                提出
-              </Button>
+              <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
+                <Button
+                  variant="contained"
+                  onClick={submitProposal}
+                  disabled={!title.trim() || !artist.trim() || !instrumentation.trim() || !myInstrument.trim() || !sourceUrl.trim() || !scoreUrl.trim()}
+                >
+                  {editingProposalId ? '再提出' : '提出'}
+                </Button>
+                {editingProposalId && (
+                  <Button variant="outlined" onClick={cancelEdit}>
+                    キャンセル
+                  </Button>
+                )}
+              </Box>
             </Box>
           )}
 
@@ -120,9 +161,14 @@ export default function SessionDetail() {
                   disableGutters
                   secondaryAction={
                     p.proposerUid === user?.uid && session.status === 'collectingSongs' && (
-                      <Button color="error" onClick={() => p.id && deleteProposal(p.id)}>
-                        削除
-                      </Button>
+                      <Box>
+                        <Button onClick={() => startEdit(p)}>
+                          変更して再提出
+                        </Button>
+                        <Button color="error" onClick={() => p.id && deleteProposal(p.id)}>
+                          削除
+                        </Button>
+                      </Box>
                     )
                   }
                 >
