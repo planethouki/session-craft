@@ -1,16 +1,17 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router'
-import { collection, doc, getDoc, getDocs, orderBy, query } from 'firebase/firestore'
+import { collection, getDocs, orderBy, query } from 'firebase/firestore'
 import { db, callCreateProposal, callDeleteProposal } from '../firebase.ts'
 import type { Entry } from '../models/entry'
-import type { Session } from '../models/session'
 import type { SongProposal } from '../models/songProposal'
 import { Box, Backdrop, Button, CircularProgress, Container, List, ListItem, ListItemText, TextField, Typography } from '@mui/material'
 import { useAuth } from '../auth.tsx'
+import useSWR from 'swr'
+import { getSessionFetcher, getSessionKey } from '../swr/sessionApi'
 
 export default function SessionDetail() {
   const { id } = useParams()
-  const [session, setSession] = useState<Session | null>(null)
+  const { data: session } = useSWR(getSessionKey(id), getSessionFetcher)
   const [proposals, setProposals] = useState<SongProposal[]>([])
   const [entries, setEntries] = useState<Entry[]>([])
   const [title, setTitle] = useState('')
@@ -27,9 +28,6 @@ export default function SessionDetail() {
   useEffect(() => {
     if (!id) return
     const run = async () => {
-      const sDoc = await getDoc(doc(db, 'sessions', id))
-      if (sDoc.exists()) setSession({ id: sDoc.id, ...(sDoc.data() as any) })
-
       const pSnap = await getDocs(query(collection(db, 'sessions', id, 'proposals'), orderBy('createdAt', 'asc')))
       setProposals(pSnap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })))
 

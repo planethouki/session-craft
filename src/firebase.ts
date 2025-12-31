@@ -2,7 +2,8 @@ import {initializeApp} from 'firebase/app'
 import {getAuth} from 'firebase/auth'
 import {getFirestore} from 'firebase/firestore'
 import {getFunctions, httpsCallable} from 'firebase/functions'
-import { type UserRequest } from "./models/user.ts";
+import { type UserRequest } from "./models/user";
+import { type SessionRequest } from "./models/session";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_API_KEY as string,
@@ -31,6 +32,8 @@ export const callDeleteSelf = httpsCallable<unknown, {
 }>(functions, 'deleteSelf')
 
 export const getUser = httpsCallable<unknown, UserRequest>(functions, 'getUser');
+
+export const getSession = httpsCallable<{ sessionId: string }, SessionRequest>(functions, 'getSession');
 
 export const adminCreateSession = httpsCallable<{ title: string, date: string }, unknown>(functions, 'adminCreateSession');
 
