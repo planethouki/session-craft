@@ -21,22 +21,27 @@ export const approveWithCode = onCall<{ code: string }, Promise<{ ok: boolean }>
   async (request) => {
     const uid = request.auth?.uid
     if (!uid) {
-      throw new Error('unauthenticated')
+      throw new HttpsError('unauthenticated', 'User is not authenticated')
     }
     const code = (request.data?.code || '').trim()
     if (!code) {
-      throw new Error('code is required')
+      throw new HttpsError('invalid-argument', 'code is required')
     }
     // TODO パスコードをfirestoreから取得する
     const required = "123456"
     if (!required) {
-      throw new Error('APPROVAL_CODE is not configured')
+      throw new HttpsError('internal', 'APPROVAL_CODE is not configured')
     }
     if (code !== required) {
       return { ok: false }
     }
-    await db.collection('users').doc(uid).set({ approved: true, approvedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true })
-    return { ok: true }
+    try {
+      await db.collection('users').doc(uid).set({ approved: true, approvedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true })
+      return { ok: true }
+    } catch (e: any) {
+      console.error(e)
+      throw new HttpsError('internal', e.message || String(e))
+    }
   }
 )
 
@@ -45,7 +50,7 @@ export const deleteSelf = onCall<unknown, Promise<{ ok: boolean }>>(
   { cors: true },
   async (request) => {
     const uid = request.auth?.uid
-    if (!uid) throw new Error('unauthenticated')
+    if (!uid) throw new HttpsError('unauthenticated', 'User is not authenticated')
 
     // delete user doc
     await db.collection('users').doc(uid).delete().catch(() => {})
