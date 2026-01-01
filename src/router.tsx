@@ -10,7 +10,7 @@ import ApprovalPending from './components/ApprovalPending.tsx'
 import AdminDashboard from './pages/admin/AdminDashboard'
 import AdminSessionList from './pages/admin/SessionList'
 import MemberList from './pages/admin/MemberList'
-// import MemberDetail from './screens/admin/MemberDetail'
+import MemberDetail from './pages/admin/MemberDetail'
 
 function Guard({ children }: { children: React.ReactNode }) {
   const { firebaseUser, loading } = useAuth()
@@ -135,18 +135,18 @@ function AppRoutes() {
         </Guard>
       ),
     },
-    // {
-    //   path: '/admin/members/:uid',
-    //   element: (
-    //     <Guard>
-    //       <ApprovalGuard>
-    //         <AppLayout>
-    //           <MemberDetail />
-    //         </AppLayout>
-    //       </ApprovalGuard>
-    //     </Guard>
-    //   ),
-    // },
+    {
+      path: '/admin/members/:uid',
+      element: (
+        <Guard>
+          <ApprovalGuard>
+            <AppLayout>
+              <MemberDetail />
+            </AppLayout>
+          </ApprovalGuard>
+        </Guard>
+      ),
+    },
   ])
 
   return <RouterProvider router={router} />
