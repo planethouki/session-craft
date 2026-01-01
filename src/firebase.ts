@@ -4,6 +4,7 @@ import {getFirestore} from 'firebase/firestore'
 import {getFunctions, httpsCallable} from 'firebase/functions'
 import { type UserRequest } from "./models/user";
 import { type SessionRequest } from "./models/session";
+import type { CreateProposalRequest, UpdateProposalRequest } from "./models/songProposal";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_API_KEY as string,
@@ -37,33 +38,14 @@ export const getSession = httpsCallable<{ sessionId: string }, SessionRequest>(f
 
 export const adminCreateSession = httpsCallable<{ title: string, date: string }, unknown>(functions, 'adminCreateSession');
 
-export const callCreateProposal = httpsCallable<{
-  sessionId: string
-  title: string
-  artist: string
-  instrumentation: string
-  myInstrument: string
-  sourceUrl: string
-  scoreUrl: string
-  notes: string
-}, { id: string }>(functions, 'createProposal');
+export const callCreateProposal = httpsCallable<CreateProposalRequest, { id: string }>(functions, 'createProposal');
 
 export const callDeleteProposal = httpsCallable<{
   sessionId: string
   proposalId: string
 }, { ok: boolean }>(functions, 'deleteProposal');
 
-export const callUpdateProposal = httpsCallable<{
-  sessionId: string
-  proposalId: string
-  title: string
-  artist: string
-  instrumentation: string
-  myInstrument: string
-  sourceUrl: string
-  scoreUrl: string
-  notes: string
-}, { ok: boolean }>(functions, 'updateProposal');
+export const callUpdateProposal = httpsCallable<UpdateProposalRequest, { ok: boolean }>(functions, 'updateProposal');
 
 export const callCreateEntries = httpsCallable<{
   sessionId: string
