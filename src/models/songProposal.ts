@@ -1,3 +1,5 @@
+import type { InstrumentalPart } from "./instrumentalPart";
+
 export type SongProposal = {
   id?: string
   sessionId: string
@@ -5,7 +7,7 @@ export type SongProposal = {
   title: string
   artist: string
   instrumentation: string
-  myInstrument: string
+  myInstrument: InstrumentalPart
   sourceUrl: string
   scoreUrl: string
   notes?: string

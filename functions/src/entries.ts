@@ -1,6 +1,8 @@
 import { onCall, HttpsError } from 'firebase-functions/v2/https'
 import * as admin from 'firebase-admin'
 import { InstrumentalPart } from "./types";
+import { checkUserApproved } from "./validations/user";
+import { validateInstrument } from "./validations/instrument";
 
 const db = admin.firestore()
 
@@ -21,6 +23,13 @@ export const createEntries = onCall<{
     const { sessionId, entries } = request.data
     if (!sessionId || !entries) {
       throw new HttpsError('invalid-argument', 'Missing required fields')
+    }
+
+    await checkUserApproved(uid)
+
+    // Validate entries
+    for (const entry of entries) {
+      validateInstrument(entry.part)
     }
 
     const sessionRef = db.collection('sessions').doc(sessionId)

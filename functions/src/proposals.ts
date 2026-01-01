@@ -1,6 +1,7 @@
 import { onCall, HttpsError } from 'firebase-functions/v2/https'
 import * as admin from 'firebase-admin'
-import { InstrumentalPart } from "./types";
+import { checkUserApproved } from "./validations/user";
+import { validateInstrument } from "./validations/instrument";
 
 const db = admin.firestore()
 
@@ -35,6 +36,9 @@ export const createProposal = onCall<{
     if (!sessionId || !title || !artist || !instrumentation || !myInstrument || !sourceUrl || !scoreUrl) {
       throw new HttpsError('invalid-argument', 'Missing required fields')
     }
+
+    validateInstrument(myInstrument)
+    await checkUserApproved(uid)
 
     // Check if session exists and is in 'collectingSongs' status
     const sessionSnap = await db.collection('sessions').doc(sessionId).get()
