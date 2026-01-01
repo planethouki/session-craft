@@ -1,7 +1,6 @@
 import React from 'react'
 import { createBrowserRouter, RouterProvider } from 'react-router'
 import { useAuth, AuthProvider } from './auth'
-import { CssBaseline, ThemeProvider, createTheme } from '@mui/material'
 import Home from './pages/Home.tsx'
 import SessionDetail from './pages/SessionDetail'
 // import Settings from './screens/Settings'
@@ -43,17 +42,6 @@ function LoginScreen({ debug }: { debug?: string}) {
   )
 }
 
-const theme = createTheme()
-
-function AppLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      {children}
-    </ThemeProvider>
-  )
-}
-
 function AppRoutes() {
   const router = createBrowserRouter([
     {
@@ -65,9 +53,7 @@ function AppRoutes() {
           element: (
             <Guard>
               <ApprovalGuard>
-                <AppLayout>
-                  <Home />
-                </AppLayout>
+                <Home />
               </ApprovalGuard>
             </Guard>
           ),
@@ -77,9 +63,7 @@ function AppRoutes() {
           element: (
             <Guard>
               <ApprovalGuard>
-                <AppLayout>
-                  <SessionDetail />
-                </AppLayout>
+                <SessionDetail />
               </ApprovalGuard>
             </Guard>
           ),
@@ -116,9 +100,7 @@ function AppRoutes() {
           element: (
             <Guard>
               <ApprovalGuard>
-                <AppLayout>
-                  <AdminDashboard />
-                </AppLayout>
+                <AdminDashboard />
               </ApprovalGuard>
             </Guard>
           ),
@@ -128,9 +110,7 @@ function AppRoutes() {
           element: (
             <Guard>
               <ApprovalGuard>
-                <AppLayout>
-                  <AdminSessionList />
-                </AppLayout>
+                <AdminSessionList />
               </ApprovalGuard>
             </Guard>
           ),
@@ -140,9 +120,7 @@ function AppRoutes() {
           element: (
             <Guard>
               <ApprovalGuard>
-                <AppLayout>
-                  <MemberList />
-                </AppLayout>
+                <MemberList />
               </ApprovalGuard>
             </Guard>
           ),
@@ -152,9 +130,7 @@ function AppRoutes() {
           element: (
             <Guard>
               <ApprovalGuard>
-                <AppLayout>
-                  <MemberDetail />
-                </AppLayout>
+                <MemberDetail />
               </ApprovalGuard>
             </Guard>
           ),
