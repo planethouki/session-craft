@@ -246,68 +246,82 @@ export default function SessionDetail() {
 
           <Box sx={{ mt: 3 }}>
             <Typography variant="h6">提出された曲</Typography>
-            <List>
+            <Box>
               {proposals.map((p) => {
                 const selectedEntry = selectedEntries.find((e) => e.songId === p.docId)
                 const savedEntry = entries.find((e) => e.songId === p.docId)
                 return (
-                  <ListItem
+                  <Box
                     key={p.docId}
-                    disableGutters
-                    secondaryAction={
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        {session.status === 'collectingEntries' && p.docId && (
-                          <>
-                            {(isEditingEntries && p.proposerUid !== user?.uid) ? (
-                              <>
-                                <FormControl size="small" sx={{ minWidth: 80, mr: 1 }}>
-                                  <InputLabel>パート</InputLabel>
-                                  <Select
-                                    value={selectedEntry?.part || p.myPart || 'oth'}
-                                    label="パート"
-                                    onChange={(e) => updateEntryPart(p.docId, e.target.value as Entry['part'])}
-                                  >
-                                    <MenuItem value="vo">Vo</MenuItem>
-                                    <MenuItem value="gt">Gt</MenuItem>
-                                    <MenuItem value="ba">Ba</MenuItem>
-                                    <MenuItem value="dr">Dr</MenuItem>
-                                    <MenuItem value="kb">Kb</MenuItem>
-                                    <MenuItem value="oth">他</MenuItem>
-                                  </Select>
-                                </FormControl>
-                                <Checkbox
-                                  checked={selectedEntry?.selected}
-                                  onChange={() => p.docId && toggleEntry(p.docId)}
-                                  disabled={p.proposerUid === user?.uid}
-                                />
-                              </>
-                            ) : (
-                              (savedEntry || p.proposerUid === user?.uid) && (
-                                <Typography variant="body2" sx={{ mr: 1, fontWeight: 'bold' }}>
-                                  {(savedEntry?.part || p.myPart).toUpperCase()} でエントリー中{p.proposerUid === user?.uid ? '（提出曲）' : ''}
-                                </Typography>
-                              )
-                            )}
-                          </>
-                        )}
-                        {p.proposerUid === user?.uid && session.status === 'collectingSongs' && (
-                          <Box>
-                            <Button onClick={() => startEdit(p)}>
-                              修正
-                            </Button>
-                            <Button color="error" onClick={() => p.docId && deleteProposal(p.docId)}>
-                              削除
-                            </Button>
-                          </Box>
-                        )}
-                      </Box>
-                    }
                   >
-                    <ListItemText primary={`${p.title} / ${p.artist}`} secondary={`by ${p.proposerUid}`} />
-                  </ListItem>
+                    <Box>
+                      {`${p.title} / ${p.artist}`}
+                    </Box>
+                    <Box>
+                      {`パート / ${p.instrumentation}`}
+                    </Box>
+                    <Box>
+                      {`YouTubeなど / ${p.sourceUrl}`}
+                    </Box>
+                    <Box>
+                      {`スコア / ${p.scoreUrl}`}
+                    </Box>
+                    <Box>
+                      {`その他 / ${p.notes}`}
+                    </Box>
+                    <Box>
+                      {`by ${p.proposerUid}`}
+                    </Box>
+                    <Box>
+                      {session.status === 'collectingEntries' && p.docId && (
+                        <>
+                          {(isEditingEntries && p.proposerUid !== user?.uid) ? (
+                            <>
+                              <FormControl size="small" sx={{ minWidth: 80, mr: 1 }}>
+                                <InputLabel>パート</InputLabel>
+                                <Select
+                                  value={selectedEntry?.part || p.myPart || 'oth'}
+                                  label="パート"
+                                  onChange={(e) => updateEntryPart(p.docId, e.target.value as Entry['part'])}
+                                >
+                                  <MenuItem value="vo">Vo</MenuItem>
+                                  <MenuItem value="gt">Gt</MenuItem>
+                                  <MenuItem value="ba">Ba</MenuItem>
+                                  <MenuItem value="dr">Dr</MenuItem>
+                                  <MenuItem value="kb">Kb</MenuItem>
+                                  <MenuItem value="oth">他</MenuItem>
+                                </Select>
+                              </FormControl>
+                              <Checkbox
+                                checked={selectedEntry?.selected}
+                                onChange={() => p.docId && toggleEntry(p.docId)}
+                                disabled={p.proposerUid === user?.uid}
+                              />
+                            </>
+                          ) : (
+                            (savedEntry || p.proposerUid === user?.uid) && (
+                              <Typography variant="body2" sx={{ mr: 1, fontWeight: 'bold' }}>
+                                {(savedEntry?.part || p.myPart).toUpperCase()} でエントリー中{p.proposerUid === user?.uid ? '（提出曲）' : ''}
+                              </Typography>
+                            )
+                          )}
+                        </>
+                      )}
+                      {p.proposerUid === user?.uid && session.status === 'collectingSongs' && (
+                        <Box>
+                          <Button onClick={() => startEdit(p)}>
+                            修正
+                          </Button>
+                          <Button color="error" onClick={() => p.docId && deleteProposal(p.docId)}>
+                            削除
+                          </Button>
+                        </Box>
+                      )}
+                    </Box>
+                  </Box>
                 )
               })}
-            </List>
+            </Box>
           </Box>
 
           {session.status === 'collectingEntries' && (
