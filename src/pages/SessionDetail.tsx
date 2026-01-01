@@ -64,10 +64,7 @@ export default function SessionDetail() {
         if (myEntries.length === 0 && session?.status === 'collectingEntries') {
           const myProp = fetchedProposals.find(p => p.proposerUid === user.uid)
           if (myProp && myProp.id) {
-            // Need to map myPart to part?
-            // Proposal.myPart is a string, Entry.part is 'vo' | 'gt' | 'ba' | 'dr' | 'kb' | 'oth'
-            // For now, default to 'oth' or try to guess.
-            myEntries.push({ songId: myProp.id, part: 'oth' })
+            myEntries.push({ songId: myProp.id, part: myProp.myPart as Entry['part'] })
           }
         }
         setSelectedEntries(myEntries)
@@ -167,6 +164,10 @@ export default function SessionDetail() {
   }
 
   const toggleEntry = (songId: string) => {
+    // 自分の提出した曲はエントリー解除できない
+    const proposal = proposals.find(p => p.id === songId)
+    if (proposal?.proposerUid === user?.uid) return
+
     setSelectedEntries((prev) => {
       const exists = prev.find((e) => e.songId === songId)
       if (exists) {
@@ -178,6 +179,10 @@ export default function SessionDetail() {
   }
 
   const updateEntryPart = (songId: string, part: Entry['part']) => {
+    // 自分の提出した曲はパート変更できない
+    const proposal = proposals.find(p => p.id === songId)
+    if (proposal?.proposerUid === user?.uid) return
+
     setSelectedEntries((prev) =>
       prev.map((e) => (e.songId === songId ? { ...e, part } : e))
     )
@@ -286,7 +291,7 @@ export default function SessionDetail() {
                                     value={entry?.part || 'oth'}
                                     label="パート"
                                     onChange={(e) => updateEntryPart(p.id!, e.target.value as Entry['part'])}
-                                    disabled={!entry}
+                                    disabled={!entry || p.proposerUid === user?.uid}
                                   >
                                     <MenuItem value="vo">Vo</MenuItem>
                                     <MenuItem value="gt">Gt</MenuItem>
@@ -299,6 +304,7 @@ export default function SessionDetail() {
                                 <Checkbox
                                   checked={!!entry}
                                   onChange={() => p.id && toggleEntry(p.id)}
+                                  disabled={p.proposerUid === user?.uid}
                                 />
                               </>
                             ) : (
