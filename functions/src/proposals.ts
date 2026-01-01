@@ -214,7 +214,7 @@ export const getProposals = onCall<{
     const proposals = snapshot.docs.map(doc => {
       const data = doc.data()
       return {
-        id: doc.id,
+        docId: doc.id,
         ...data,
         createdAt: data.createdAt.toMillis(),
         updatedAt: data.updatedAt.toMillis(),

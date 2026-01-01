@@ -72,10 +72,7 @@ export const createEntries = onCall<{
 export const getMyEntries = onCall<{
   sessionId: string
 }, Promise<{
-  entries: {
-    songId: string
-    part: InstrumentalPart
-  }[]
+  entries: any[]
 }>>(
   { cors: true },
   async (request) => {
@@ -95,8 +92,10 @@ export const getMyEntries = onCall<{
     const entries = snapshot.docs.map(doc => {
       const data = doc.data()
       return {
-        songId: data.songId,
-        part: data.part
+        docId: doc.id,
+        ...data,
+        createdAt: data.createdAt.toMillis(),
+        updatedAt: data.updatedAt.toMillis(),
       }
     })
 

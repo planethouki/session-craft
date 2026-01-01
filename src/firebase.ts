@@ -4,9 +4,8 @@ import {getFirestore} from 'firebase/firestore'
 import {getFunctions, httpsCallable} from 'firebase/functions'
 import { type UserRequest } from "./models/user";
 import { type SessionRequest } from "./models/session";
-import type { CreateProposalRequest, UpdateProposalRequest } from "./models/proposal.ts";
-import type { CreateEntryRequest } from "./models/entry";
-import type { InstrumentalPart } from "./models/instrumentalPart.ts";
+import type {CreateProposalRequest, GetProposalsResponse, UpdateProposalRequest} from "./models/proposal.ts";
+import type {CreateEntryRequest, GetMyEntriesResponse} from "./models/entry";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_API_KEY as string,
@@ -49,11 +48,8 @@ export const callDeleteProposal = httpsCallable<{
 
 export const callUpdateProposal = httpsCallable<UpdateProposalRequest, { ok: boolean }>(functions, 'updateProposal');
 
+export const callGetProposals = httpsCallable<{ sessionId: string }, GetProposalsResponse>(functions, 'getProposals');
+
 export const callCreateEntries = httpsCallable<CreateEntryRequest, { ok: boolean }>(functions, 'createEntries');
 
-export const callGetEntries = httpsCallable<{ sessionId: string }, {
-  entries: {
-    songId: string
-    part: InstrumentalPart
-  }[]
-}>(functions, 'getEntries');
+export const callGetMyEntries = httpsCallable<{ sessionId: string }, GetMyEntriesResponse>(functions, 'getMyEntries');

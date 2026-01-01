@@ -1,12 +1,13 @@
 import type { InstrumentalPart } from "./instrumentalPart";
 
 export type Entry = {
-  id?: string
+  docId: string
   sessionId: string
   songId: string
   memberUid: string
   part: InstrumentalPart
-  createdAt: any
+  createdAt: Date
+  updatedAt: Date
 }
 
 export type CreateEntryRequest = {
@@ -15,4 +16,16 @@ export type CreateEntryRequest = {
     songId: string
     part: InstrumentalPart
   }[]
+}
+
+export type GetMyEntriesResponse = {
+  entries: Array<{
+    docId: string
+    sessionId: string
+    songId: string
+    memberUid: string
+    part: InstrumentalPart
+    createdAt: number
+    updatedAt: number
+  }>
 }

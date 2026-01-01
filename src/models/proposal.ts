@@ -1,7 +1,7 @@
 import type { InstrumentalPart } from "./instrumentalPart";
 
 export type Proposal = {
-  id?: string
+  docId: string
   sessionId: string
   proposerUid: string
   title: string
@@ -10,8 +10,9 @@ export type Proposal = {
   myPart: InstrumentalPart
   sourceUrl: string
   scoreUrl: string
-  notes?: string
-  createdAt: any
+  notes: string
+  createdAt: Date
+  updatedAt: Date
 }
 
 export type CreateProposalRequest = {
@@ -35,4 +36,21 @@ export type UpdateProposalRequest = {
   sourceUrl: string
   scoreUrl: string
   notes: string
+}
+
+export type GetProposalsResponse = {
+  proposals: Array<{
+    docId: string
+    sessionId: string
+    proposerUid: string
+    title: string
+    artist: string
+    instrumentation: string
+    myPart: InstrumentalPart
+    sourceUrl: string
+    scoreUrl: string
+    notes: string
+    createdAt: number
+    updatedAt: number
+  }>
 }
