@@ -1,20 +1,22 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router'
-import { collection, getDocs, orderBy, query } from 'firebase/firestore'
-import { db, callCreateProposal, callDeleteProposal, callUpdateProposal, callCreateEntries, callGetEntries } from '../firebase.ts'
+import { callCreateProposal, callDeleteProposal, callUpdateProposal, callCreateEntries } from '../firebase.ts'
 import type { Entry } from '../models/entry'
 import type { Proposal } from '../models/proposal.ts'
 import type { InstrumentalPart } from '../models/instrumentalPart'
 import { Box, Backdrop, Button, Checkbox, CircularProgress, Container, FormControl, InputLabel, List, ListItem, ListItemText, MenuItem, Select, TextField, Typography } from '@mui/material'
 import { useAuth } from '../auth.tsx'
-import useSWR from 'swr'
+import useSWR, { useSWRConfig } from 'swr'
 import { getSessionFetcher, getSessionKey } from '../swr/sessionApi'
+import { getProposalsFetcher, getProposalsKey } from '../swr/proposalApi'
+import { getMyEntriesFetcher, getMyEntriesKey } from '../swr/entryApi'
 
 export default function SessionDetail() {
   const { id } = useParams()
+  const { mutate } = useSWRConfig()
   const { data: session } = useSWR(getSessionKey(id), getSessionFetcher)
-  const [proposals, setProposals] = useState<Proposal[]>([])
-  const [entries, setEntries] = useState<Entry[]>([])
+  const { data: proposals = [] } = useSWR(getProposalsKey(id), getProposalsFetcher)
+  const { data: entries = [] } = useSWR(getMyEntriesKey(id), getMyEntriesFetcher)
   const [title, setTitle] = useState('')
   const [artist, setArtist] = useState('')
   const [instrumentation, setInstrumentation] = useState('')
@@ -30,48 +32,30 @@ export default function SessionDetail() {
 
   useEffect(() => {
     if (!id || !user) return
-    const fetchMyEntries = async () => {
-      try {
-        const res = await callGetEntries({ sessionId: id })
-        setSelectedEntries(res.data.entries)
-      } catch (e) {
-        console.error('Failed to fetch entries', e)
-      }
-    }
     if (session?.status === 'collectingEntries') {
-      fetchMyEntries()
+      setSelectedEntries(entries.map(e => ({ songId: e.songId, part: e.part })))
     }
-  }, [id, user, session?.status])
+  }, [id, user, session?.status, entries])
 
   useEffect(() => {
-    if (!id) return
-    const run = async () => {
-      const pSnap = await getDocs(query(collection(db, 'sessions', id, 'proposals'), orderBy('createdAt', 'asc')))
-      const fetchedProposals = pSnap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })) as Proposal[]
-      setProposals(fetchedProposals)
+    if (!id || !user || !session) return
 
-      const eSnap = await getDocs(query(collection(db, 'sessions', id, 'entries'), orderBy('createdAt', 'asc')))
-      const fetchedEntries = eSnap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })) as Entry[]
-      setEntries(fetchedEntries)
+    // Initialize selectedEntries with existing entries for this user
+    if (session.status !== 'collectingEntries') {
+      const myEntries = entries
+        .filter(e => e.memberUid === user.uid)
+        .map(e => ({ songId: e.songId, part: e.part }))
 
-      // Initialize selectedEntries with existing entries for this user
-      if (user && session?.status !== 'collectingEntries') {
-        const myEntries = fetchedEntries
-          .filter(e => e.memberUid === user.uid)
-          .map(e => ({ songId: e.songId, part: e.part }))
-
-        // If it's empty and we have proposals, check if user has a proposal and add it automatically if session status is collectingEntries
-        if (myEntries.length === 0 && session?.status === 'collectingEntries') {
-          const myProp = fetchedProposals.find(p => p.proposerUid === user.uid)
-          if (myProp && myProp.id) {
-            myEntries.push({ songId: myProp.id, part: myProp.myPart as Entry['part'] })
-          }
+      // If it's empty and we have proposals, check if user has a proposal and add it automatically if session status is collectingEntries
+      if (myEntries.length === 0 && session.status === 'collectingEntries') {
+        const myProposal = proposals.find(p => p.proposerUid === user.uid)
+        if (myProposal) {
+          myEntries.push({ songId: myProposal.docId, part: myProposal.myPart })
         }
-        setSelectedEntries(myEntries)
       }
+      setSelectedEntries(myEntries)
     }
-    run().catch(console.error)
-  }, [id, user, session?.status])
+  }, [id, user, session?.status, proposals, entries])
 
   const myProposal = useMemo(() => proposals.find((p) => p.proposerUid === user?.uid), [proposals, user])
 
@@ -116,8 +100,7 @@ export default function SessionDetail() {
       setNotes('')
       setEditingProposalId(null)
       // refresh
-      const pSnap = await getDocs(query(collection(db, 'sessions', id, 'proposals'), orderBy('createdAt', 'asc')))
-      setProposals(pSnap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })))
+      mutate(getProposalsKey(id))
     } catch (e: any) {
       console.error(e)
       alert('エラーが発生しました: ' + e.message)
@@ -127,8 +110,8 @@ export default function SessionDetail() {
   }
 
   const startEdit = (p: Proposal) => {
-    if (!p.id) return
-    setEditingProposalId(p.id)
+    if (!p.docId) return
+    setEditingProposalId(p.docId)
     setTitle(p.title)
     setArtist(p.artist)
     setInstrumentation(p.instrumentation)
@@ -155,8 +138,7 @@ export default function SessionDetail() {
     try {
       await callDeleteProposal({ sessionId: id, proposalId })
       // refresh
-      const pSnap = await getDocs(query(collection(db, 'sessions', id, 'proposals'), orderBy('createdAt', 'asc')))
-      setProposals(pSnap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })))
+      mutate(getProposalsKey(id))
     } catch (e: any) {
       console.error(e)
       alert('エラーが発生しました: ' + e.message)
@@ -165,7 +147,7 @@ export default function SessionDetail() {
 
   const toggleEntry = (songId: string) => {
     // 自分の提出した曲はエントリー解除できない
-    const proposal = proposals.find(p => p.id === songId)
+    const proposal = proposals.find(p => p.docId === songId)
     if (proposal?.proposerUid === user?.uid) return
 
     setSelectedEntries((prev) => {
@@ -180,7 +162,7 @@ export default function SessionDetail() {
 
   const updateEntryPart = (songId: string, part: Entry['part']) => {
     // 自分の提出した曲はパート変更できない
-    const proposal = proposals.find(p => p.id === songId)
+    const proposal = proposals.find(p => p.docId === songId)
     if (proposal?.proposerUid === user?.uid) return
 
     setSelectedEntries((prev) =>
@@ -199,8 +181,7 @@ export default function SessionDetail() {
       alert('エントリーを保存しました')
       setIsEditingEntries(false)
       // refresh entries
-      const eSnap = await getDocs(query(collection(db, 'sessions', id, 'entries'), orderBy('createdAt', 'asc')))
-      setEntries(eSnap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })))
+      mutate(getMyEntriesKey(id))
     } catch (e: any) {
       console.error(e)
       alert('エラーが発生しました: ' + e.message)
@@ -274,14 +255,14 @@ export default function SessionDetail() {
             <Typography variant="h6">提出された曲</Typography>
             <List>
               {proposals.map((p) => {
-                const entry = selectedEntries.find((e) => e.songId === p.id)
+                const entry = selectedEntries.find((e) => e.songId === p.docId)
                 return (
                   <ListItem
-                    key={p.id}
+                    key={p.docId}
                     disableGutters
                     secondaryAction={
                       <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        {session.status === 'collectingEntries' && p.id && (
+                        {session.status === 'collectingEntries' && p.docId && (
                           <>
                             {isEditingEntries ? (
                               <>
@@ -290,7 +271,7 @@ export default function SessionDetail() {
                                   <Select
                                     value={entry?.part || 'oth'}
                                     label="パート"
-                                    onChange={(e) => updateEntryPart(p.id!, e.target.value as Entry['part'])}
+                                    onChange={(e) => updateEntryPart(p.docId, e.target.value as Entry['part'])}
                                     disabled={!entry || p.proposerUid === user?.uid}
                                   >
                                     <MenuItem value="vo">Vo</MenuItem>
@@ -303,7 +284,7 @@ export default function SessionDetail() {
                                 </FormControl>
                                 <Checkbox
                                   checked={!!entry}
-                                  onChange={() => p.id && toggleEntry(p.id)}
+                                  onChange={() => p.docId && toggleEntry(p.docId)}
                                   disabled={p.proposerUid === user?.uid}
                                 />
                               </>
@@ -321,7 +302,7 @@ export default function SessionDetail() {
                             <Button onClick={() => startEdit(p)}>
                               修正
                             </Button>
-                            <Button color="error" onClick={() => p.id && deleteProposal(p.id)}>
+                            <Button color="error" onClick={() => p.docId && deleteProposal(p.docId)}>
                               削除
                             </Button>
                           </Box>
