@@ -5,7 +5,7 @@ import Home from './pages/Home.tsx'
 import SessionDetail from './pages/SessionDetail'
 import Settings from './pages/Settings'
 import ApprovalPending from './components/ApprovalPending.tsx'
-// import DeleteAccount from './screens/DeleteAccount'
+import DeleteAccount from './pages/DeleteAccount'
 import AdminDashboard from './pages/admin/AdminDashboard'
 import AdminSessionList from './pages/admin/SessionList'
 import MemberList from './pages/admin/MemberList'
@@ -76,18 +76,16 @@ function AppRoutes() {
             </Guard>
           ),
         },
+        {
+          path: '/delete',
+          element: (
+            <Guard>
+              <DeleteAccount />
+            </Guard>
+          ),
+        },
       ],
     },
-    // {
-    //   path: '/delete',
-    //   element: (
-    //     <Guard>
-    //       <AppLayout>
-    //         <DeleteAccount />
-    //       </AppLayout>
-    //     </Guard>
-    //   ),
-    // },
     // // Admin
     {
       path: '/admin',
