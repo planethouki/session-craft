@@ -33,7 +33,12 @@ export default function MemberDetail() {
     try {
       await setDoc(
         doc(db, 'users', uid),
-        { roles: roles, approved, updatedAt: serverTimestamp() },
+        {
+          roles: roles,
+          approved,
+          ...(approved ? {approvedAt: serverTimestamp()} : {}),
+          updatedAt: serverTimestamp()
+        },
         { merge: true }
       )
     } finally {
