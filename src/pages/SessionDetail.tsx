@@ -264,7 +264,7 @@ export default function SessionDetail() {
                       <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         {session.status === 'collectingEntries' && p.docId && (
                           <>
-                            {isEditingEntries ? (
+                            {(isEditingEntries && p.proposerUid !== user?.uid) ? (
                               <>
                                 <FormControl size="small" sx={{ minWidth: 80, mr: 1 }}>
                                   <InputLabel>パート</InputLabel>
