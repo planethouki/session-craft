@@ -1,5 +1,6 @@
 import { onCall, HttpsError } from 'firebase-functions/v2/https'
 import * as admin from 'firebase-admin'
+import { InstrumentalPart } from "./types";
 
 const db = admin.firestore()
 
@@ -152,7 +153,7 @@ export const createEntries = onCall<{
   sessionId: string
   entries: {
     songId: string
-    part: 'vo' | 'gt' | 'ba' | 'dr' | 'kb' | 'oth'
+    part: InstrumentalPart
   }[]
 }, Promise<{ ok: boolean }>>(
   { cors: true },
