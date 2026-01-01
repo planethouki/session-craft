@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useParams } from 'react-router'
+import { Link, useParams } from 'react-router'
 import { collection, getDocs, orderBy, query } from 'firebase/firestore'
 import { db, callCreateProposal, callDeleteProposal, callUpdateProposal, callCreateEntries } from '../firebase.ts'
 import type { Entry } from '../models/entry'
@@ -189,6 +189,11 @@ export default function SessionDetail() {
 
   return (
     <Container sx={{ p: 2 }}>
+      <Box sx={{ mb: 2 }}>
+        <Button component={Link} to="/" variant="outlined" size="small">
+          ホームに戻る
+        </Button>
+      </Box>
       <Backdrop
         sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
         open={submitting}
