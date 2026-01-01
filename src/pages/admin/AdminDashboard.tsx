@@ -33,7 +33,7 @@ export default function AdminDashboard() {
         <ListItemButton component={Link} to="/admin/members">
           <ListItemText primary="会員一覧" />
         </ListItemButton>
-        <ListItemButton component={Link} to="/sessions">
+        <ListItemButton component={Link} to="/admin/sessions">
           <ListItemText primary="セッション一覧" />
         </ListItemButton>
       </List>

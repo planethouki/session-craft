@@ -3,12 +3,12 @@ import { createBrowserRouter, RouterProvider } from 'react-router'
 import { useAuth, AuthProvider } from './auth'
 import { CssBaseline, ThemeProvider, createTheme } from '@mui/material'
 import Home from './pages/Home.tsx'
-// import SessionList from './screens/SessionList'
 import SessionDetail from './pages/SessionDetail'
 // import Settings from './screens/Settings'
 import ApprovalPending from './components/ApprovalPending.tsx'
 // import DeleteAccount from './screens/DeleteAccount'
 import AdminDashboard from './pages/admin/AdminDashboard'
+import AdminSessionList from './pages/admin/SessionList'
 // import MemberList from './screens/admin/MemberList'
 // import MemberDetail from './screens/admin/MemberDetail'
 
@@ -66,18 +66,6 @@ function AppRoutes() {
         </Guard>
       ),
     },
-    // {
-    //   path: '/sessions',
-    //   element: (
-    //     <Guard>
-    //       <ApprovalGuard>
-    //         <AppLayout>
-    //           <SessionList />
-    //         </AppLayout>
-    //       </ApprovalGuard>
-    //     </Guard>
-    //   ),
-    // },
     {
       path: '/sessions/:id',
       element: (
@@ -118,6 +106,18 @@ function AppRoutes() {
           <ApprovalGuard>
             <AppLayout>
               <AdminDashboard />
+            </AppLayout>
+          </ApprovalGuard>
+        </Guard>
+      ),
+    },
+    {
+      path: '/admin/sessions',
+      element: (
+        <Guard>
+          <ApprovalGuard>
+            <AppLayout>
+              <AdminSessionList />
             </AppLayout>
           </ApprovalGuard>
         </Guard>
