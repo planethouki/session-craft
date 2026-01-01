@@ -4,7 +4,7 @@ import {getFirestore} from 'firebase/firestore'
 import {getFunctions, httpsCallable} from 'firebase/functions'
 import { type UserRequest } from "./models/user";
 import { type SessionRequest } from "./models/session";
-import type { CreateProposalRequest, UpdateProposalRequest } from "./models/songProposal";
+import type { CreateProposalRequest, UpdateProposalRequest } from "./models/proposal.ts";
 import type { CreateEntryRequest } from "./models/entry";
 
 const firebaseConfig = {

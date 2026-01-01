@@ -3,7 +3,7 @@ import { useParams } from 'react-router'
 import { collection, getDocs, orderBy, query } from 'firebase/firestore'
 import { db, callCreateProposal, callDeleteProposal, callUpdateProposal, callCreateEntries } from '../firebase.ts'
 import type { Entry } from '../models/entry'
-import type { SongProposal } from '../models/songProposal'
+import type { Proposal } from '../models/proposal.ts'
 import type { InstrumentalPart } from '../models/instrumentalPart'
 import { Box, Backdrop, Button, Checkbox, CircularProgress, Container, FormControl, InputLabel, List, ListItem, ListItemText, MenuItem, Select, TextField, Typography } from '@mui/material'
 import { useAuth } from '../auth.tsx'
@@ -13,7 +13,7 @@ import { getSessionFetcher, getSessionKey } from '../swr/sessionApi'
 export default function SessionDetail() {
   const { id } = useParams()
   const { data: session } = useSWR(getSessionKey(id), getSessionFetcher)
-  const [proposals, setProposals] = useState<SongProposal[]>([])
+  const [proposals, setProposals] = useState<Proposal[]>([])
   const [entries, setEntries] = useState<Entry[]>([])
   const [title, setTitle] = useState('')
   const [artist, setArtist] = useState('')
@@ -31,7 +31,7 @@ export default function SessionDetail() {
     if (!id) return
     const run = async () => {
       const pSnap = await getDocs(query(collection(db, 'sessions', id, 'proposals'), orderBy('createdAt', 'asc')))
-      const fetchedProposals = pSnap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })) as SongProposal[]
+      const fetchedProposals = pSnap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })) as Proposal[]
       setProposals(fetchedProposals)
 
       const eSnap = await getDocs(query(collection(db, 'sessions', id, 'entries'), orderBy('createdAt', 'asc')))
@@ -49,7 +49,7 @@ export default function SessionDetail() {
           const myProp = fetchedProposals.find(p => p.proposerUid === user.uid)
           if (myProp && myProp.id) {
             // Need to map myInstrument to part?
-            // SongProposal.myInstrument is a string, Entry.part is 'vo' | 'gt' | 'ba' | 'dr' | 'kb' | 'oth'
+            // Proposal.myInstrument is a string, Entry.part is 'vo' | 'gt' | 'ba' | 'dr' | 'kb' | 'oth'
             // For now, default to 'oth' or try to guess.
             myEntries.push({ songId: myProp.id, part: 'oth' })
           }
@@ -113,7 +113,7 @@ export default function SessionDetail() {
     }
   }
 
-  const startEdit = (p: SongProposal) => {
+  const startEdit = (p: Proposal) => {
     if (!p.id) return
     setEditingProposalId(p.id)
     setTitle(p.title)

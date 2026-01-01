@@ -1,6 +1,6 @@
 import type { InstrumentalPart } from "./instrumentalPart";
 
-export type SongProposal = {
+export type Proposal = {
   id?: string
   sessionId: string
   proposerUid: string
