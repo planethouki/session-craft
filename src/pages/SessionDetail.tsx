@@ -169,7 +169,7 @@ export default function SessionDetail() {
     try {
       await callCreateEntries({
         sessionId: id,
-        entries: selectedEntries,
+        entries: selectedEntries.filter(e => e.selected),
       })
       alert('エントリーを保存しました')
       setIsEditingEntries(false)
