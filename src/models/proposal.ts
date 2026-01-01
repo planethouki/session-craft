@@ -7,7 +7,7 @@ export type Proposal = {
   title: string
   artist: string
   instrumentation: string
-  myInstrument: InstrumentalPart
+  myPart: InstrumentalPart
   sourceUrl: string
   scoreUrl: string
   notes?: string
@@ -19,7 +19,7 @@ export type CreateProposalRequest = {
   title: string
   artist: string
   instrumentation: string
-  myInstrument: InstrumentalPart
+  myPart: InstrumentalPart
   sourceUrl: string
   scoreUrl: string
   notes: string
@@ -31,7 +31,7 @@ export type UpdateProposalRequest = {
   title: string
   artist: string
   instrumentation: string
-  myInstrument: InstrumentalPart
+  myPart: InstrumentalPart
   sourceUrl: string
   scoreUrl: string
   notes: string

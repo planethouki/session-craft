@@ -18,7 +18,7 @@ export default function SessionDetail() {
   const [title, setTitle] = useState('')
   const [artist, setArtist] = useState('')
   const [instrumentation, setInstrumentation] = useState('')
-  const [myInstrument, setMyInstrument] = useState<InstrumentalPart>('vo')
+  const [myPart, setMyPart] = useState<InstrumentalPart>('vo')
   const [sourceUrl, setSourceUrl] = useState('')
   const [scoreUrl, setScoreUrl] = useState('')
   const [notes, setNotes] = useState('')
@@ -64,8 +64,8 @@ export default function SessionDetail() {
         if (myEntries.length === 0 && session?.status === 'collectingEntries') {
           const myProp = fetchedProposals.find(p => p.proposerUid === user.uid)
           if (myProp && myProp.id) {
-            // Need to map myInstrument to part?
-            // Proposal.myInstrument is a string, Entry.part is 'vo' | 'gt' | 'ba' | 'dr' | 'kb' | 'oth'
+            // Need to map myPart to part?
+            // Proposal.myPart is a string, Entry.part is 'vo' | 'gt' | 'ba' | 'dr' | 'kb' | 'oth'
             // For now, default to 'oth' or try to guess.
             myEntries.push({ songId: myProp.id, part: 'oth' })
           }
@@ -92,7 +92,7 @@ export default function SessionDetail() {
           title: title.trim(),
           artist: artist.trim(),
           instrumentation: instrumentation.trim(),
-          myInstrument: myInstrument.trim(),
+          myPart: myPart,
           sourceUrl: sourceUrl.trim(),
           scoreUrl: scoreUrl.trim(),
           notes: notes.trim(),
@@ -103,7 +103,7 @@ export default function SessionDetail() {
           title: title.trim(),
           artist: artist.trim(),
           instrumentation: instrumentation.trim(),
-          myInstrument: myInstrument.trim(),
+          myPart: myPart,
           sourceUrl: sourceUrl.trim(),
           scoreUrl: scoreUrl.trim(),
           notes: notes.trim(),
@@ -113,7 +113,7 @@ export default function SessionDetail() {
       setTitle('')
       setArtist('')
       setInstrumentation('')
-      setMyInstrument('vo')
+      setMyPart('vo')
       setSourceUrl('')
       setScoreUrl('')
       setNotes('')
@@ -135,7 +135,7 @@ export default function SessionDetail() {
     setTitle(p.title)
     setArtist(p.artist)
     setInstrumentation(p.instrumentation)
-    setMyInstrument(p.myInstrument)
+    setMyPart(p.myPart)
     setSourceUrl(p.sourceUrl)
     setScoreUrl(p.scoreUrl)
     setNotes(p.notes || '')
@@ -147,7 +147,7 @@ export default function SessionDetail() {
     setTitle('')
     setArtist('')
     setInstrumentation('')
-    setMyInstrument('vo')
+    setMyPart('vo')
     setSourceUrl('')
     setScoreUrl('')
     setNotes('')
@@ -233,9 +233,9 @@ export default function SessionDetail() {
               <FormControl fullWidth sx={{ mt: 1 }}>
                 <InputLabel>自分の担当パート</InputLabel>
                 <Select
-                  value={myInstrument}
+                  value={myPart}
                   label="自分の担当パート"
-                  onChange={(e) => setMyInstrument(e.target.value as InstrumentalPart)}
+                  onChange={(e) => setMyPart(e.target.value as InstrumentalPart)}
                 >
                   <MenuItem value="vo">Vo</MenuItem>
                   <MenuItem value="gt">Gt</MenuItem>

@@ -10,7 +10,7 @@ export const createProposal = onCall<{
   title: string
   artist: string
   instrumentation: string
-  myInstrument: string
+  myPart: string
   sourceUrl: string
   scoreUrl: string
   notes?: string
@@ -27,17 +27,17 @@ export const createProposal = onCall<{
       title,
       artist,
       instrumentation,
-      myInstrument,
+      myPart,
       sourceUrl,
       scoreUrl,
       notes,
     } = request.data
 
-    if (!sessionId || !title || !artist || !instrumentation || !myInstrument || !sourceUrl || !scoreUrl) {
+    if (!sessionId || !title || !artist || !instrumentation || !myPart || !sourceUrl || !scoreUrl) {
       throw new HttpsError('invalid-argument', 'Missing required fields')
     }
 
-    validateInstrument(myInstrument)
+    validateInstrument(myPart)
     await checkUserApproved(uid)
 
     // Check if session exists and is in 'collectingSongs' status
@@ -63,7 +63,7 @@ export const createProposal = onCall<{
       title,
       artist,
       instrumentation,
-      myInstrument,
+      myPart,
       sourceUrl,
       scoreUrl,
       notes: notes || '',
@@ -124,7 +124,7 @@ export const updateProposal = onCall<{
   title: string
   artist: string
   instrumentation: string
-  myInstrument: string
+  myPart: string
   sourceUrl: string
   scoreUrl: string
   notes?: string
@@ -142,17 +142,17 @@ export const updateProposal = onCall<{
       title,
       artist,
       instrumentation,
-      myInstrument,
+      myPart,
       sourceUrl,
       scoreUrl,
       notes,
     } = request.data
 
-    if (!sessionId || !proposalId || !title || !artist || !instrumentation || !myInstrument || !sourceUrl || !scoreUrl) {
+    if (!sessionId || !proposalId || !title || !artist || !instrumentation || !myPart || !sourceUrl || !scoreUrl) {
       throw new HttpsError('invalid-argument', 'Missing required fields')
     }
 
-    validateInstrument(myInstrument)
+    validateInstrument(myPart)
     await checkUserApproved(uid)
 
     const sessionSnap = await db.collection('sessions').doc(sessionId).get()
@@ -180,7 +180,7 @@ export const updateProposal = onCall<{
       title,
       artist,
       instrumentation,
-      myInstrument,
+      myPart,
       sourceUrl,
       scoreUrl,
       notes: notes || '',
