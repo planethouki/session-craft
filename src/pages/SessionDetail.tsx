@@ -198,7 +198,7 @@ export default function SessionDetail() {
       </Backdrop>
       {session ? (
         <>
-          <Typography variant="h5" gutterBottom>
+          <Typography variant="h4" gutterBottom>
             {session.title}
           </Typography>
           <Typography color="text.secondary">{session.date} / 状態: {session.status}</Typography>
@@ -245,7 +245,7 @@ export default function SessionDetail() {
           )}
 
           <Box sx={{ mt: 3 }}>
-            <Typography variant="h6">提出された曲</Typography>
+            <Typography variant="h5">提出された曲</Typography>
             <Box>
               {proposals.map((p) => {
                 const selectedEntry = selectedEntries.find((e) => e.songId === p.docId)
@@ -253,10 +253,11 @@ export default function SessionDetail() {
                 return (
                   <Box
                     key={p.docId}
+                    sx={{ mb: 3 }}
                   >
-                    <Box>
+                    <Typography variant="h6">
                       {`${p.title} / ${p.artist}`}
-                    </Box>
+                    </Typography>
                     <Box>
                       {`パート / ${p.instrumentation}`}
                     </Box>
