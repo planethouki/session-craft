@@ -69,7 +69,7 @@ export const createEntries = onCall<{
   }
 )
 
-export const getEntries = onCall<{
+export const getMyEntries = onCall<{
   sessionId: string
 }, Promise<{
   entries: {
@@ -103,4 +103,3 @@ export const getEntries = onCall<{
     return { entries }
   }
 )
-

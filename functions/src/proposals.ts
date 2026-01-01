@@ -190,3 +190,37 @@ export const updateProposal = onCall<{
     return { ok: true }
   }
 )
+
+export const getProposals = onCall<{
+  sessionId: string
+}, Promise<{
+  proposals: (any)[]
+}>>(
+  { cors: true },
+  async (request) => {
+    const uid = request.auth?.uid
+    if (!uid) {
+      throw new HttpsError('unauthenticated', 'User is not authenticated')
+    }
+
+    const { sessionId } = request.data
+    if (!sessionId) {
+      throw new HttpsError('invalid-argument', 'Missing sessionId')
+    }
+
+    const proposalsRef = db.collection('sessions').doc(sessionId).collection('proposals')
+    const snapshot = await proposalsRef.orderBy('createdAt', 'asc').get()
+
+    const proposals = snapshot.docs.map(doc => {
+      const data = doc.data()
+      return {
+        id: doc.id,
+        ...data,
+        createdAt: data.createdAt.toMillis(),
+        updatedAt: data.updatedAt.toMillis(),
+      }
+    })
+
+    return { proposals }
+  }
+)
