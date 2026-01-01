@@ -31,13 +31,6 @@ export default function SessionDetail() {
   const { firebaseUser: user } = useAuth()
 
   useEffect(() => {
-    if (!id || !user) return
-    if (session?.status === 'collectingEntries') {
-      setSelectedEntries(entries.map(e => ({ songId: e.songId, part: e.part })))
-    }
-  }, [id, user, session?.status, entries])
-
-  useEffect(() => {
     if (!id || !user || !session) return
 
     // Initialize selectedEntries with existing entries for this user
