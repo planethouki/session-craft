@@ -12,6 +12,7 @@ import AdminSessionList from './pages/admin/SessionList'
 import MemberList from './pages/admin/MemberList'
 import MemberDetail from './pages/admin/MemberDetail'
 import AdminLayout from "./components/AdminLayout";
+import Layout from "./components/Layout.tsx";
 
 function Guard({ children }: { children: React.ReactNode }) {
   const { firebaseUser, loading } = useAuth()
@@ -57,27 +58,33 @@ function AppRoutes() {
   const router = createBrowserRouter([
     {
       path: '/',
-      element: (
-        <Guard>
-          <ApprovalGuard>
-            <AppLayout>
-              <Home />
-            </AppLayout>
-          </ApprovalGuard>
-        </Guard>
-      ),
-    },
-    {
-      path: '/sessions/:id',
-      element: (
-        <Guard>
-          <ApprovalGuard>
-            <AppLayout>
-              <SessionDetail />
-            </AppLayout>
-          </ApprovalGuard>
-        </Guard>
-      ),
+      Component: Layout,
+      children: [
+        {
+          path: '',
+          element: (
+            <Guard>
+              <ApprovalGuard>
+                <AppLayout>
+                  <Home />
+                </AppLayout>
+              </ApprovalGuard>
+            </Guard>
+          ),
+        },
+        {
+          path: 'sessions/:id',
+          element: (
+            <Guard>
+              <ApprovalGuard>
+                <AppLayout>
+                  <SessionDetail />
+                </AppLayout>
+              </ApprovalGuard>
+            </Guard>
+          ),
+        },
+      ],
     },
     // {
     //   path: '/settings',
