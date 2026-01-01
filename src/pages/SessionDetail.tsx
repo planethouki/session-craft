@@ -26,29 +26,21 @@ export default function SessionDetail() {
   const [notes, setNotes] = useState('')
   const [editingProposalId, setEditingProposalId] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
-  const [selectedEntries, setSelectedEntries] = useState<{ songId: string, part: Entry['part'] }[]>([])
+  const [selectedEntries, setSelectedEntries] = useState<{ songId: string, part: InstrumentalPart, selected: boolean }[]>([])
   const [isEditingEntries, setIsEditingEntries] = useState(false)
   const { firebaseUser: user } = useAuth()
 
   useEffect(() => {
-    if (!id || !user || !session) return
+    if (!id || !session) return
 
     // Initialize selectedEntries with existing entries for this user
-    if (session.status !== 'collectingEntries') {
+    if (session.status === 'collectingEntries') {
       const myEntries = entries
-        .filter(e => e.memberUid === user.uid)
-        .map(e => ({ songId: e.songId, part: e.part }))
+        .map(e => ({ songId: e.songId, part: e.part, selected: true }))
 
-      // If it's empty and we have proposals, check if user has a proposal and add it automatically if session status is collectingEntries
-      if (myEntries.length === 0 && session.status === 'collectingEntries') {
-        const myProposal = proposals.find(p => p.proposerUid === user.uid)
-        if (myProposal) {
-          myEntries.push({ songId: myProposal.docId, part: myProposal.myPart })
-        }
-      }
       setSelectedEntries(myEntries)
     }
-  }, [id, user, session?.status, proposals, entries])
+  }, [id, session, entries])
 
   const myProposal = useMemo(() => proposals.find((p) => p.proposerUid === user?.uid), [proposals, user])
 
@@ -140,27 +132,35 @@ export default function SessionDetail() {
 
   const toggleEntry = (songId: string) => {
     // 自分の提出した曲はエントリー解除できない
-    const proposal = proposals.find(p => p.docId === songId)
-    if (proposal?.proposerUid === user?.uid) return
+    const myProposal = proposals.find(p => p.docId === songId)
+    if (myProposal?.proposerUid === user?.uid) return
 
     setSelectedEntries((prev) => {
       const exists = prev.find((e) => e.songId === songId)
       if (exists) {
-        return prev.filter((e) => e.songId !== songId)
+        return prev.map((e) => (e.songId === songId ? {...e, selected: !e.selected} : e))
       } else {
-        return [...prev, { songId, part: 'oth' }]
+        return [...prev, { songId, part: 'oth', selected: false }]
       }
     })
   }
 
-  const updateEntryPart = (songId: string, part: Entry['part']) => {
+  const updateEntryPart = (songId: string, part: InstrumentalPart) => {
     // 自分の提出した曲はパート変更できない
     const proposal = proposals.find(p => p.docId === songId)
-    if (proposal?.proposerUid === user?.uid) return
+    if (proposal?.proposerUid === user?.uid) {
+      console.warn('自分の提出した曲はパート変更できない')
+      return
+    }
 
-    setSelectedEntries((prev) =>
-      prev.map((e) => (e.songId === songId ? { ...e, part } : e))
-    )
+    setSelectedEntries((prev) => {
+      const exists = prev.find((e) => e.songId === songId)
+      if (exists) {
+        return prev.map((e) => (e.songId === songId ? {...e, part} : e))
+      } else {
+        return [...prev, {songId, part, selected: false}]
+      }
+    })
   }
 
   const submitEntries = async () => {
@@ -248,7 +248,8 @@ export default function SessionDetail() {
             <Typography variant="h6">提出された曲</Typography>
             <List>
               {proposals.map((p) => {
-                const entry = selectedEntries.find((e) => e.songId === p.docId)
+                const selectedEntry = selectedEntries.find((e) => e.songId === p.docId)
+                const savedEntry = entries.find((e) => e.songId === p.docId)
                 return (
                   <ListItem
                     key={p.docId}
@@ -262,10 +263,9 @@ export default function SessionDetail() {
                                 <FormControl size="small" sx={{ minWidth: 80, mr: 1 }}>
                                   <InputLabel>パート</InputLabel>
                                   <Select
-                                    value={entry?.part || 'oth'}
+                                    value={selectedEntry?.part || p.myPart || 'oth'}
                                     label="パート"
                                     onChange={(e) => updateEntryPart(p.docId, e.target.value as Entry['part'])}
-                                    disabled={!entry || p.proposerUid === user?.uid}
                                   >
                                     <MenuItem value="vo">Vo</MenuItem>
                                     <MenuItem value="gt">Gt</MenuItem>
@@ -276,15 +276,15 @@ export default function SessionDetail() {
                                   </Select>
                                 </FormControl>
                                 <Checkbox
-                                  checked={!!entry}
+                                  checked={selectedEntry?.selected}
                                   onChange={() => p.docId && toggleEntry(p.docId)}
                                   disabled={p.proposerUid === user?.uid}
                                 />
                               </>
                             ) : (
-                              (entry || p.proposerUid === user?.uid) && (
+                              (savedEntry || p.proposerUid === user?.uid) && (
                                 <Typography variant="body2" sx={{ mr: 1, fontWeight: 'bold' }}>
-                                  {(entry?.part || p.myPart).toUpperCase()} でエントリー中{p.proposerUid === user?.uid ? '（提出曲）' : ''}
+                                  {(savedEntry?.part || p.myPart).toUpperCase()} でエントリー中{p.proposerUid === user?.uid ? '（提出曲）' : ''}
                                 </Typography>
                               )
                             )}
