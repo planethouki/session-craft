@@ -52,3 +52,11 @@ export const callDeleteProposal = httpsCallable<{
   sessionId: string
   proposalId: string
 }, { ok: boolean }>(functions, 'deleteProposal');
+
+export const callCreateEntries = httpsCallable<{
+  sessionId: string
+  entries: {
+    songId: string
+    part: 'vo' | 'gt' | 'ba' | 'dr' | 'kb' | 'oth'
+  }[]
+}, { ok: boolean }>(functions, 'createEntries');

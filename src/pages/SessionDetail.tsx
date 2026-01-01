@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router'
 import { collection, getDocs, orderBy, query } from 'firebase/firestore'
-import { db, callCreateProposal, callDeleteProposal } from '../firebase.ts'
+import { db, callCreateProposal, callDeleteProposal, callCreateEntries } from '../firebase.ts'
 import type { Entry } from '../models/entry'
 import type { SongProposal } from '../models/songProposal'
-import { Box, Backdrop, Button, CircularProgress, Container, List, ListItem, ListItemText, TextField, Typography } from '@mui/material'
+import { Box, Backdrop, Button, Checkbox, CircularProgress, Container, FormControl, InputLabel, List, ListItem, ListItemText, MenuItem, Select, TextField, Typography } from '@mui/material'
 import { useAuth } from '../auth.tsx'
 import useSWR from 'swr'
 import { getSessionFetcher, getSessionKey } from '../swr/sessionApi'
@@ -23,19 +23,41 @@ export default function SessionDetail() {
   const [notes, setNotes] = useState('')
   const [editingProposalId, setEditingProposalId] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [selectedEntries, setSelectedEntries] = useState<{ songId: string, part: Entry['part'] }[]>([])
   const { firebaseUser: user } = useAuth()
 
   useEffect(() => {
     if (!id) return
     const run = async () => {
       const pSnap = await getDocs(query(collection(db, 'sessions', id, 'proposals'), orderBy('createdAt', 'asc')))
-      setProposals(pSnap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })))
+      const fetchedProposals = pSnap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })) as SongProposal[]
+      setProposals(fetchedProposals)
 
       const eSnap = await getDocs(query(collection(db, 'sessions', id, 'entries'), orderBy('createdAt', 'asc')))
-      setEntries(eSnap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })))
+      const fetchedEntries = eSnap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })) as Entry[]
+      setEntries(fetchedEntries)
+
+      // Initialize selectedEntries with existing entries for this user
+      if (user) {
+        const myEntries = fetchedEntries
+          .filter(e => e.memberUid === user.uid)
+          .map(e => ({ songId: e.songId, part: e.part }))
+
+        // If it's empty and we have proposals, check if user has a proposal and add it automatically if session status is collectingEntries
+        if (myEntries.length === 0 && session?.status === 'collectingEntries') {
+          const myProp = fetchedProposals.find(p => p.proposerUid === user.uid)
+          if (myProp && myProp.id) {
+            // Need to map myInstrument to part?
+            // SongProposal.myInstrument is a string, Entry.part is 'vo' | 'gt' | 'ba' | 'dr' | 'kb' | 'oth'
+            // For now, default to 'oth' or try to guess.
+            myEntries.push({ songId: myProp.id, part: 'oth' })
+          }
+        }
+        setSelectedEntries(myEntries)
+      }
     }
     run().catch(console.error)
-  }, [id])
+  }, [id, user, session?.status])
 
   const myProposal = useMemo(() => proposals.find((p) => p.proposerUid === user?.uid), [proposals, user])
 
@@ -120,6 +142,43 @@ export default function SessionDetail() {
     }
   }
 
+  const toggleEntry = (songId: string) => {
+    setSelectedEntries((prev) => {
+      const exists = prev.find((e) => e.songId === songId)
+      if (exists) {
+        return prev.filter((e) => e.songId !== songId)
+      } else {
+        return [...prev, { songId, part: 'oth' }]
+      }
+    })
+  }
+
+  const updateEntryPart = (songId: string, part: Entry['part']) => {
+    setSelectedEntries((prev) =>
+      prev.map((e) => (e.songId === songId ? { ...e, part } : e))
+    )
+  }
+
+  const submitEntries = async () => {
+    if (!id || !user) return
+    setSubmitting(true)
+    try {
+      await callCreateEntries({
+        sessionId: id,
+        entries: selectedEntries,
+      })
+      alert('エントリーを保存しました')
+      // refresh entries
+      const eSnap = await getDocs(query(collection(db, 'sessions', id, 'entries'), orderBy('createdAt', 'asc')))
+      setEntries(eSnap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })))
+    } catch (e: any) {
+      console.error(e)
+      alert('エラーが発生しました: ' + e.message)
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
   return (
     <Container sx={{ p: 2 }}>
       <Backdrop
@@ -165,28 +224,65 @@ export default function SessionDetail() {
           <Box sx={{ mt: 3 }}>
             <Typography variant="h6">提出された曲</Typography>
             <List>
-              {proposals.map((p) => (
-                <ListItem
-                  key={p.id}
-                  disableGutters
-                  secondaryAction={
-                    p.proposerUid === user?.uid && session.status === 'collectingSongs' && (
-                      <Box>
-                        <Button onClick={() => startEdit(p)}>
-                          変更して再提出
-                        </Button>
-                        <Button color="error" onClick={() => p.id && deleteProposal(p.id)}>
-                          削除
-                        </Button>
+              {proposals.map((p) => {
+                const entry = selectedEntries.find((e) => e.songId === p.id)
+                return (
+                  <ListItem
+                    key={p.id}
+                    disableGutters
+                    secondaryAction={
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        {session.status === 'collectingEntries' && p.id && (
+                          <>
+                            <FormControl size="small" sx={{ minWidth: 80, mr: 1 }}>
+                              <InputLabel>パート</InputLabel>
+                              <Select
+                                value={entry?.part || 'oth'}
+                                label="パート"
+                                onChange={(e) => updateEntryPart(p.id!, e.target.value as Entry['part'])}
+                                disabled={!entry}
+                              >
+                                <MenuItem value="vo">Vo</MenuItem>
+                                <MenuItem value="gt">Gt</MenuItem>
+                                <MenuItem value="ba">Ba</MenuItem>
+                                <MenuItem value="dr">Dr</MenuItem>
+                                <MenuItem value="kb">Kb</MenuItem>
+                                <MenuItem value="oth">他</MenuItem>
+                              </Select>
+                            </FormControl>
+                            <Checkbox
+                              checked={!!entry}
+                              onChange={() => p.id && toggleEntry(p.id)}
+                            />
+                          </>
+                        )}
+                        {p.proposerUid === user?.uid && session.status === 'collectingSongs' && (
+                          <Box>
+                            <Button onClick={() => startEdit(p)}>
+                              変更して再提出
+                            </Button>
+                            <Button color="error" onClick={() => p.id && deleteProposal(p.id)}>
+                              削除
+                            </Button>
+                          </Box>
+                        )}
                       </Box>
-                    )
-                  }
-                >
-                  <ListItemText primary={`${p.title} / ${p.artist}`} secondary={`by ${p.proposerUid}`} />
-                </ListItem>
-              ))}
+                    }
+                  >
+                    <ListItemText primary={`${p.title} / ${p.artist}`} secondary={`by ${p.proposerUid}`} />
+                  </ListItem>
+                )
+              })}
             </List>
           </Box>
+
+          {session.status === 'collectingEntries' && (
+            <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
+              <Button variant="contained" size="large" onClick={submitEntries} disabled={submitting}>
+                エントリーを保存する
+              </Button>
+            </Box>
+          )}
         </>
       ) : (
         <Typography>読み込み中...</Typography>
