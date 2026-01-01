@@ -3,7 +3,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router'
 import { useAuth, AuthProvider } from './auth'
 import Home from './pages/Home.tsx'
 import SessionDetail from './pages/SessionDetail'
-// import Settings from './screens/Settings'
+import Settings from './pages/Settings'
 import ApprovalPending from './components/ApprovalPending.tsx'
 // import DeleteAccount from './screens/DeleteAccount'
 import AdminDashboard from './pages/admin/AdminDashboard'
@@ -70,16 +70,14 @@ function AppRoutes() {
         },
       ],
     },
-    // {
-    //   path: '/settings',
-    //   element: (
-    //     <Guard>
-    //       <AppLayout>
-    //         <Settings />
-    //       </AppLayout>
-    //     </Guard>
-    //   ),
-    // },
+    {
+      path: '/settings',
+      element: (
+        <Guard>
+          <Settings />
+        </Guard>
+      ),
+    },
     // {
     //   path: '/delete',
     //   element: (
