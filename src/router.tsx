@@ -11,6 +11,7 @@ import AdminDashboard from './pages/admin/AdminDashboard'
 import AdminSessionList from './pages/admin/SessionList'
 import MemberList from './pages/admin/MemberList'
 import MemberDetail from './pages/admin/MemberDetail'
+import AdminLayout from "./components/AdminLayout";
 
 function Guard({ children }: { children: React.ReactNode }) {
   const { firebaseUser, loading } = useAuth()
@@ -101,51 +102,57 @@ function AppRoutes() {
     // // Admin
     {
       path: '/admin',
-      element: (
-        <Guard>
-          <ApprovalGuard>
-            <AppLayout>
-              <AdminDashboard />
-            </AppLayout>
-          </ApprovalGuard>
-        </Guard>
-      ),
-    },
-    {
-      path: '/admin/sessions',
-      element: (
-        <Guard>
-          <ApprovalGuard>
-            <AppLayout>
-              <AdminSessionList />
-            </AppLayout>
-          </ApprovalGuard>
-        </Guard>
-      ),
-    },
-    {
-      path: '/admin/members',
-      element: (
-        <Guard>
-          <ApprovalGuard>
-            <AppLayout>
-              <MemberList />
-            </AppLayout>
-          </ApprovalGuard>
-        </Guard>
-      ),
-    },
-    {
-      path: '/admin/members/:uid',
-      element: (
-        <Guard>
-          <ApprovalGuard>
-            <AppLayout>
-              <MemberDetail />
-            </AppLayout>
-          </ApprovalGuard>
-        </Guard>
-      ),
+      Component: AdminLayout,
+      children: [
+        {
+          path: '',
+          element: (
+            <Guard>
+              <ApprovalGuard>
+                <AppLayout>
+                  <AdminDashboard />
+                </AppLayout>
+              </ApprovalGuard>
+            </Guard>
+          ),
+        },
+        {
+          path: 'sessions',
+          element: (
+            <Guard>
+              <ApprovalGuard>
+                <AppLayout>
+                  <AdminSessionList />
+                </AppLayout>
+              </ApprovalGuard>
+            </Guard>
+          ),
+        },
+        {
+          path: 'members',
+          element: (
+            <Guard>
+              <ApprovalGuard>
+                <AppLayout>
+                  <MemberList />
+                </AppLayout>
+              </ApprovalGuard>
+            </Guard>
+          ),
+        },
+        {
+          path: 'members/:uid',
+          element: (
+            <Guard>
+              <ApprovalGuard>
+                <AppLayout>
+                  <MemberDetail />
+                </AppLayout>
+              </ApprovalGuard>
+            </Guard>
+          ),
+        },
+      ],
     },
   ])
 
