@@ -5,6 +5,7 @@ import {getFunctions, httpsCallable} from 'firebase/functions'
 import { type UserRequest } from "./models/user";
 import { type SessionRequest } from "./models/session";
 import type { CreateProposalRequest, UpdateProposalRequest } from "./models/songProposal";
+import type { CreateEntryRequest } from "./models/entry";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_API_KEY as string,
@@ -47,10 +48,4 @@ export const callDeleteProposal = httpsCallable<{
 
 export const callUpdateProposal = httpsCallable<UpdateProposalRequest, { ok: boolean }>(functions, 'updateProposal');
 
-export const callCreateEntries = httpsCallable<{
-  sessionId: string
-  entries: {
-    songId: string
-    part: 'vo' | 'gt' | 'ba' | 'dr' | 'kb' | 'oth'
-  }[]
-}, { ok: boolean }>(functions, 'createEntries');
+export const callCreateEntries = httpsCallable<CreateEntryRequest, { ok: boolean }>(functions, 'createEntries');

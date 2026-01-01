@@ -8,3 +8,11 @@ export type Entry = {
   part: InstrumentalPart
   createdAt: any
 }
+
+export type CreateEntryRequest = {
+  sessionId: string
+  entries: {
+    songId: string
+    part: InstrumentalPart
+  }[]
+}
