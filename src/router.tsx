@@ -9,7 +9,7 @@ import ApprovalPending from './components/ApprovalPending.tsx'
 // import DeleteAccount from './screens/DeleteAccount'
 import AdminDashboard from './pages/admin/AdminDashboard'
 import AdminSessionList from './pages/admin/SessionList'
-// import MemberList from './screens/admin/MemberList'
+import MemberList from './pages/admin/MemberList'
 // import MemberDetail from './screens/admin/MemberDetail'
 
 function Guard({ children }: { children: React.ReactNode }) {
@@ -123,18 +123,18 @@ function AppRoutes() {
         </Guard>
       ),
     },
-    // {
-    //   path: '/admin/members',
-    //   element: (
-    //     <Guard>
-    //       <ApprovalGuard>
-    //         <AppLayout>
-    //           <MemberList />
-    //         </AppLayout>
-    //       </ApprovalGuard>
-    //     </Guard>
-    //   ),
-    // },
+    {
+      path: '/admin/members',
+      element: (
+        <Guard>
+          <ApprovalGuard>
+            <AppLayout>
+              <MemberList />
+            </AppLayout>
+          </ApprovalGuard>
+        </Guard>
+      ),
+    },
     // {
     //   path: '/admin/members/:uid',
     //   element: (
