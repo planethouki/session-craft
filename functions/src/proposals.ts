@@ -68,6 +68,7 @@ export const createProposal = onCall<{
       scoreUrl,
       notes: notes || '',
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     }
 
     const docRef = await db.collection('sessions').doc(sessionId).collection('proposals').add(proposal)

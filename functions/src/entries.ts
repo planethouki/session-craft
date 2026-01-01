@@ -59,6 +59,7 @@ export const createEntries = onCall<{
         memberUid: uid,
         part: entry.part,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       }
       batch.set(entriesRef.doc(), entryDoc)
     }
