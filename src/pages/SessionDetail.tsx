@@ -289,9 +289,9 @@ export default function SessionDetail() {
                                 />
                               </>
                             ) : (
-                              entry && (
+                              (entry || p.proposerUid === user?.uid) && (
                                 <Typography variant="body2" sx={{ mr: 1, fontWeight: 'bold' }}>
-                                  {entry.part.toUpperCase()} でエントリー中
+                                  {(entry?.part || p.myPart).toUpperCase()} でエントリー中{p.proposerUid === user?.uid ? '（提出曲）' : ''}
                                 </Typography>
                               )
                             )}
