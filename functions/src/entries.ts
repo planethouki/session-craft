@@ -69,3 +69,38 @@ export const createEntries = onCall<{
   }
 )
 
+export const getEntries = onCall<{
+  sessionId: string
+}, Promise<{
+  entries: {
+    songId: string
+    part: InstrumentalPart
+  }[]
+}>>(
+  { cors: true },
+  async (request) => {
+    const uid = request.auth?.uid
+    if (!uid) {
+      throw new HttpsError('unauthenticated', 'User is not authenticated')
+    }
+
+    const { sessionId } = request.data
+    if (!sessionId) {
+      throw new HttpsError('invalid-argument', 'Missing sessionId')
+    }
+
+    const entriesRef = db.collection('sessions').doc(sessionId).collection('entries')
+    const snapshot = await entriesRef.where('memberUid', '==', uid).get()
+
+    const entries = snapshot.docs.map(doc => {
+      const data = doc.data()
+      return {
+        songId: data.songId,
+        part: data.part
+      }
+    })
+
+    return { entries }
+  }
+)
+

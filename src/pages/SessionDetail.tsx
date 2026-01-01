@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { collection, getDocs, orderBy, query } from 'firebase/firestore'
-import { db, callCreateProposal, callDeleteProposal, callUpdateProposal, callCreateEntries } from '../firebase.ts'
+import { db, callCreateProposal, callDeleteProposal, callUpdateProposal, callCreateEntries, callGetEntries } from '../firebase.ts'
 import type { Entry } from '../models/entry'
 import type { Proposal } from '../models/proposal.ts'
 import type { InstrumentalPart } from '../models/instrumentalPart'
@@ -25,7 +25,23 @@ export default function SessionDetail() {
   const [editingProposalId, setEditingProposalId] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [selectedEntries, setSelectedEntries] = useState<{ songId: string, part: Entry['part'] }[]>([])
+  const [isEditingEntries, setIsEditingEntries] = useState(false)
   const { firebaseUser: user } = useAuth()
+
+  useEffect(() => {
+    if (!id || !user) return
+    const fetchMyEntries = async () => {
+      try {
+        const res = await callGetEntries({ sessionId: id })
+        setSelectedEntries(res.data.entries)
+      } catch (e) {
+        console.error('Failed to fetch entries', e)
+      }
+    }
+    if (session?.status === 'collectingEntries') {
+      fetchMyEntries()
+    }
+  }, [id, user, session?.status])
 
   useEffect(() => {
     if (!id) return
@@ -39,7 +55,7 @@ export default function SessionDetail() {
       setEntries(fetchedEntries)
 
       // Initialize selectedEntries with existing entries for this user
-      if (user) {
+      if (user && session?.status !== 'collectingEntries') {
         const myEntries = fetchedEntries
           .filter(e => e.memberUid === user.uid)
           .map(e => ({ songId: e.songId, part: e.part }))
@@ -176,6 +192,7 @@ export default function SessionDetail() {
         entries: selectedEntries,
       })
       alert('エントリーを保存しました')
+      setIsEditingEntries(false)
       // refresh entries
       const eSnap = await getDocs(query(collection(db, 'sessions', id, 'entries'), orderBy('createdAt', 'asc')))
       setEntries(eSnap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })))
@@ -261,26 +278,36 @@ export default function SessionDetail() {
                       <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         {session.status === 'collectingEntries' && p.id && (
                           <>
-                            <FormControl size="small" sx={{ minWidth: 80, mr: 1 }}>
-                              <InputLabel>パート</InputLabel>
-                              <Select
-                                value={entry?.part || 'oth'}
-                                label="パート"
-                                onChange={(e) => updateEntryPart(p.id!, e.target.value as Entry['part'])}
-                                disabled={!entry}
-                              >
-                                <MenuItem value="vo">Vo</MenuItem>
-                                <MenuItem value="gt">Gt</MenuItem>
-                                <MenuItem value="ba">Ba</MenuItem>
-                                <MenuItem value="dr">Dr</MenuItem>
-                                <MenuItem value="kb">Kb</MenuItem>
-                                <MenuItem value="oth">他</MenuItem>
-                              </Select>
-                            </FormControl>
-                            <Checkbox
-                              checked={!!entry}
-                              onChange={() => p.id && toggleEntry(p.id)}
-                            />
+                            {isEditingEntries ? (
+                              <>
+                                <FormControl size="small" sx={{ minWidth: 80, mr: 1 }}>
+                                  <InputLabel>パート</InputLabel>
+                                  <Select
+                                    value={entry?.part || 'oth'}
+                                    label="パート"
+                                    onChange={(e) => updateEntryPart(p.id!, e.target.value as Entry['part'])}
+                                    disabled={!entry}
+                                  >
+                                    <MenuItem value="vo">Vo</MenuItem>
+                                    <MenuItem value="gt">Gt</MenuItem>
+                                    <MenuItem value="ba">Ba</MenuItem>
+                                    <MenuItem value="dr">Dr</MenuItem>
+                                    <MenuItem value="kb">Kb</MenuItem>
+                                    <MenuItem value="oth">他</MenuItem>
+                                  </Select>
+                                </FormControl>
+                                <Checkbox
+                                  checked={!!entry}
+                                  onChange={() => p.id && toggleEntry(p.id)}
+                                />
+                              </>
+                            ) : (
+                              entry && (
+                                <Typography variant="body2" sx={{ mr: 1, fontWeight: 'bold' }}>
+                                  {entry.part.toUpperCase()} でエントリー中
+                                </Typography>
+                              )
+                            )}
                           </>
                         )}
                         {p.proposerUid === user?.uid && session.status === 'collectingSongs' && (
@@ -304,10 +331,35 @@ export default function SessionDetail() {
           </Box>
 
           {session.status === 'collectingEntries' && (
-            <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
-              <Button variant="contained" size="large" onClick={submitEntries} disabled={submitting}>
-                エントリーを保存する
-              </Button>
+            <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center', gap: 2 }}>
+              {!isEditingEntries ? (
+                <Button
+                  variant="contained"
+                  size="large"
+                  onClick={() => setIsEditingEntries(true)}
+                >
+                  {selectedEntries.length > 0 ? 'エントリーを編集する' : 'エントリーを開始する'}
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    variant="contained"
+                    size="large"
+                    onClick={submitEntries}
+                    disabled={submitting}
+                  >
+                    {entries.some(e => e.memberUid === user?.uid) ? '修正して提出' : '提出'}
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    size="large"
+                    onClick={() => setIsEditingEntries(false)}
+                    disabled={submitting}
+                  >
+                    キャンセル
+                  </Button>
+                </>
+              )}
             </Box>
           )}
         </>
