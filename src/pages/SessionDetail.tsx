@@ -4,7 +4,7 @@ import { callCreateProposal, callDeleteProposal, callUpdateProposal, callCreateE
 import type { Entry } from '../models/entry'
 import type { Proposal } from '../models/proposal.ts'
 import type { InstrumentalPart } from '../models/instrumentalPart'
-import { Box, Backdrop, Button, Checkbox, CircularProgress, Container, FormControl, InputLabel, List, ListItem, ListItemText, MenuItem, Select, TextField, Typography } from '@mui/material'
+import { Box, Backdrop, Button, Checkbox, CircularProgress, Container, FormControl, InputLabel, MenuItem, Select, TextField, Typography } from '@mui/material'
 import { useAuth } from '../auth.tsx'
 import useSWR, { useSWRConfig } from 'swr'
 import { getSessionFetcher, getSessionKey } from '../swr/sessionApi'
