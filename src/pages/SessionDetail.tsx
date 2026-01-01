@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router'
 import { collection, getDocs, orderBy, query } from 'firebase/firestore'
-import { db, callCreateProposal, callDeleteProposal, callCreateEntries } from '../firebase.ts'
+import { db, callCreateProposal, callDeleteProposal, callUpdateProposal, callCreateEntries } from '../firebase.ts'
 import type { Entry } from '../models/entry'
 import type { SongProposal } from '../models/songProposal'
 import type { InstrumentalPart } from '../models/instrumentalPart'
@@ -69,23 +69,30 @@ export default function SessionDetail() {
     setSubmitting(true)
     try {
       if (editingProposalId) {
-        // Edit mode: delete existing then create new
-        await callDeleteProposal({
+        // Edit mode: update existing
+        await callUpdateProposal({
           sessionId: id,
           proposalId: editingProposalId,
+          title: title.trim(),
+          artist: artist.trim(),
+          instrumentation: instrumentation.trim(),
+          myInstrument: myInstrument.trim(),
+          sourceUrl: sourceUrl.trim(),
+          scoreUrl: scoreUrl.trim(),
+          notes: notes.trim(),
+        })
+      } else {
+        await callCreateProposal({
+          sessionId: id,
+          title: title.trim(),
+          artist: artist.trim(),
+          instrumentation: instrumentation.trim(),
+          myInstrument: myInstrument.trim(),
+          sourceUrl: sourceUrl.trim(),
+          scoreUrl: scoreUrl.trim(),
+          notes: notes.trim(),
         })
       }
-
-      await callCreateProposal({
-        sessionId: id,
-        title: title.trim(),
-        artist: artist.trim(),
-        instrumentation: instrumentation.trim(),
-        myInstrument: myInstrument.trim(),
-        sourceUrl: sourceUrl.trim(),
-        scoreUrl: scoreUrl.trim(),
-        notes: notes.trim(),
-      })
 
       setTitle('')
       setArtist('')
@@ -197,7 +204,7 @@ export default function SessionDetail() {
 
           {canPropose && (
             <Box sx={{ mt: 2 }}>
-              <Typography variant="h6">{editingProposalId ? '変更して再提出' : 'やりたい曲を提出'}</Typography>
+              <Typography variant="h6">{editingProposalId ? '提出した曲を修正' : 'やりたい曲を提出'}</Typography>
               <TextField label="曲名" fullWidth sx={{ mt: 1 }} value={title} onChange={(e) => setTitle(e.target.value)} />
               <TextField label="アーティスト" fullWidth sx={{ mt: 1 }} value={artist} onChange={(e) => setArtist(e.target.value)} />
               <TextField label="楽器編成" fullWidth sx={{ mt: 1 }} value={instrumentation} onChange={(e) => setInstrumentation(e.target.value)} />
@@ -225,7 +232,7 @@ export default function SessionDetail() {
                   onClick={submitProposal}
                   disabled={submitting || !title.trim() || !artist.trim() || !instrumentation.trim() || !sourceUrl.trim() || !scoreUrl.trim()}
                 >
-                  {submitting ? '送信中...' : (editingProposalId ? '再提出' : '提出')}
+                  {submitting ? '送信中...' : (editingProposalId ? '修正を提出' : '提出')}
                 </Button>
                 {editingProposalId && (
                   <Button variant="outlined" onClick={cancelEdit}>
@@ -274,7 +281,7 @@ export default function SessionDetail() {
                         {p.proposerUid === user?.uid && session.status === 'collectingSongs' && (
                           <Box>
                             <Button onClick={() => startEdit(p)}>
-                              変更して再提出
+                              修正
                             </Button>
                             <Button color="error" onClick={() => p.id && deleteProposal(p.id)}>
                               削除

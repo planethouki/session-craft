@@ -117,3 +117,76 @@ export const deleteProposal = onCall<{
     return { ok: true }
   }
 )
+
+export const updateProposal = onCall<{
+  sessionId: string
+  proposalId: string
+  title: string
+  artist: string
+  instrumentation: string
+  myInstrument: string
+  sourceUrl: string
+  scoreUrl: string
+  notes?: string
+}, Promise<{ ok: boolean }>>(
+  { cors: true },
+  async (request) => {
+    const uid = request.auth?.uid
+    if (!uid) {
+      throw new HttpsError('unauthenticated', 'User is not authenticated')
+    }
+
+    const {
+      sessionId,
+      proposalId,
+      title,
+      artist,
+      instrumentation,
+      myInstrument,
+      sourceUrl,
+      scoreUrl,
+      notes,
+    } = request.data
+
+    if (!sessionId || !proposalId || !title || !artist || !instrumentation || !myInstrument || !sourceUrl || !scoreUrl) {
+      throw new HttpsError('invalid-argument', 'Missing required fields')
+    }
+
+    validateInstrument(myInstrument)
+    await checkUserApproved(uid)
+
+    const sessionSnap = await db.collection('sessions').doc(sessionId).get()
+    if (!sessionSnap.exists) {
+      throw new HttpsError('not-found', 'Session not found')
+    }
+    const session = sessionSnap.data()
+    if (session?.status !== 'collectingSongs') {
+      throw new HttpsError('failed-precondition', 'Session is not collecting songs')
+    }
+
+    const proposalRef = db.collection('sessions').doc(sessionId).collection('proposals').doc(proposalId)
+    const proposalSnap = await proposalRef.get()
+
+    if (!proposalSnap.exists) {
+      throw new HttpsError('not-found', 'Proposal not found')
+    }
+
+    const proposal = proposalSnap.data()
+    if (proposal?.proposerUid !== uid) {
+      throw new HttpsError('permission-denied', 'You can only update your own proposal')
+    }
+
+    await proposalRef.update({
+      title,
+      artist,
+      instrumentation,
+      myInstrument,
+      sourceUrl,
+      scoreUrl,
+      notes: notes || '',
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    })
+
+    return { ok: true }
+  }
+)

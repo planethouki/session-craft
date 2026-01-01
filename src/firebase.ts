@@ -53,6 +53,18 @@ export const callDeleteProposal = httpsCallable<{
   proposalId: string
 }, { ok: boolean }>(functions, 'deleteProposal');
 
+export const callUpdateProposal = httpsCallable<{
+  sessionId: string
+  proposalId: string
+  title: string
+  artist: string
+  instrumentation: string
+  myInstrument: string
+  sourceUrl: string
+  scoreUrl: string
+  notes: string
+}, { ok: boolean }>(functions, 'updateProposal');
+
 export const callCreateEntries = httpsCallable<{
   sessionId: string
   entries: {
