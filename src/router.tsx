@@ -68,15 +68,15 @@ function AppRoutes() {
             </Guard>
           ),
         },
+        {
+          path: '/settings',
+          element: (
+            <Guard>
+              <Settings />
+            </Guard>
+          ),
+        },
       ],
-    },
-    {
-      path: '/settings',
-      element: (
-        <Guard>
-          <Settings />
-        </Guard>
-      ),
     },
     // {
     //   path: '/delete',
