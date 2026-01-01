@@ -4,6 +4,7 @@ import { collection, getDocs, orderBy, query } from 'firebase/firestore'
 import { db, callCreateProposal, callDeleteProposal, callCreateEntries } from '../firebase.ts'
 import type { Entry } from '../models/entry'
 import type { SongProposal } from '../models/songProposal'
+import type { InstrumentalPart } from '../models/instrumentalPart'
 import { Box, Backdrop, Button, Checkbox, CircularProgress, Container, FormControl, InputLabel, List, ListItem, ListItemText, MenuItem, Select, TextField, Typography } from '@mui/material'
 import { useAuth } from '../auth.tsx'
 import useSWR from 'swr'
@@ -17,7 +18,7 @@ export default function SessionDetail() {
   const [title, setTitle] = useState('')
   const [artist, setArtist] = useState('')
   const [instrumentation, setInstrumentation] = useState('')
-  const [myInstrument, setMyInstrument] = useState('')
+  const [myInstrument, setMyInstrument] = useState<InstrumentalPart>('vo')
   const [sourceUrl, setSourceUrl] = useState('')
   const [scoreUrl, setScoreUrl] = useState('')
   const [notes, setNotes] = useState('')
@@ -89,7 +90,7 @@ export default function SessionDetail() {
       setTitle('')
       setArtist('')
       setInstrumentation('')
-      setMyInstrument('')
+      setMyInstrument('vo')
       setSourceUrl('')
       setScoreUrl('')
       setNotes('')
@@ -123,7 +124,7 @@ export default function SessionDetail() {
     setTitle('')
     setArtist('')
     setInstrumentation('')
-    setMyInstrument('')
+    setMyInstrument('vo')
     setSourceUrl('')
     setScoreUrl('')
     setNotes('')
@@ -200,7 +201,21 @@ export default function SessionDetail() {
               <TextField label="曲名" fullWidth sx={{ mt: 1 }} value={title} onChange={(e) => setTitle(e.target.value)} />
               <TextField label="アーティスト" fullWidth sx={{ mt: 1 }} value={artist} onChange={(e) => setArtist(e.target.value)} />
               <TextField label="楽器編成" fullWidth sx={{ mt: 1 }} value={instrumentation} onChange={(e) => setInstrumentation(e.target.value)} />
-              <TextField label="自分の楽器" fullWidth sx={{ mt: 1 }} value={myInstrument} onChange={(e) => setMyInstrument(e.target.value)} />
+              <FormControl fullWidth sx={{ mt: 1 }}>
+                <InputLabel>自分の担当パート</InputLabel>
+                <Select
+                  value={myInstrument}
+                  label="自分の担当パート"
+                  onChange={(e) => setMyInstrument(e.target.value as InstrumentalPart)}
+                >
+                  <MenuItem value="vo">Vo</MenuItem>
+                  <MenuItem value="gt">Gt</MenuItem>
+                  <MenuItem value="ba">Ba</MenuItem>
+                  <MenuItem value="dr">Dr</MenuItem>
+                  <MenuItem value="kb">Kb</MenuItem>
+                  <MenuItem value="oth">他</MenuItem>
+                </Select>
+              </FormControl>
               <TextField label="音源URL" fullWidth sx={{ mt: 1 }} value={sourceUrl} onChange={(e) => setSourceUrl(e.target.value)} />
               <TextField label="スコアURL" fullWidth sx={{ mt: 1 }} value={scoreUrl} onChange={(e) => setScoreUrl(e.target.value)} />
               <TextField label="その他備考" fullWidth sx={{ mt: 1 }} value={notes} onChange={(e) => setNotes(e.target.value)} multiline rows={3} />
@@ -208,7 +223,7 @@ export default function SessionDetail() {
                 <Button
                   variant="contained"
                   onClick={submitProposal}
-                  disabled={submitting || !title.trim() || !artist.trim() || !instrumentation.trim() || !myInstrument.trim() || !sourceUrl.trim() || !scoreUrl.trim()}
+                  disabled={submitting || !title.trim() || !artist.trim() || !instrumentation.trim() || !sourceUrl.trim() || !scoreUrl.trim()}
                 >
                   {submitting ? '送信中...' : (editingProposalId ? '再提出' : '提出')}
                 </Button>
