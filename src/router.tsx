@@ -12,34 +12,20 @@ import MemberList from './pages/admin/MemberList'
 import MemberDetail from './pages/admin/MemberDetail'
 import AdminLayout from "./components/AdminLayout";
 import Layout from "./components/Layout.tsx";
+import Login from "./pages/Login"
 
 function Guard({ children }: { children: React.ReactNode }) {
   const { firebaseUser, loading } = useAuth()
   if (loading) return <div style={{ padding: 24 }}>Loading...</div>
-  if (!firebaseUser) return <LoginScreen debug="Guard" />
+  if (!firebaseUser) return <Login debug="Guard" />
   return <>{children}</>
 }
 
 function ApprovalGuard({ children }: { children: React.ReactNode }) {
   const { firestoreUser } = useAuth()
-  if (!firestoreUser) return <LoginScreen debug="ApprovalGuard" />
+  if (!firestoreUser) return <Login debug="ApprovalGuard" />
   if (!firestoreUser.approved) return <ApprovalPending />
   return <>{children}</>
-}
-
-function LoginScreen({ debug }: { debug?: string}) {
-  const { loginWithLiff, error, liffReady } = useAuth()
-  return (
-    <div style={{ padding: 24 }}>
-      <h2>Session Craft</h2>
-      {debug && <p>debug: {debug}</p>}
-      <p>LINEでログインしてください。</p>
-      <button onClick={loginWithLiff} disabled={!liffReady}>
-        {liffReady ? 'LINEでログイン' : '初期化中...'}
-      </button>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-    </div>
-  )
 }
 
 function AppRoutes() {
