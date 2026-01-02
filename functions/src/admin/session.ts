@@ -27,3 +27,57 @@ export const adminCreateSession = onCall<CreateSessionData, Promise<void>>({ cor
   })
 });
 
+export const adminGetSession = onCall<{ sessionId: string }, Promise<any>>({ cors: true }, async (request) => {
+  const uid = request.auth?.uid
+
+  if (!uid) throw new HttpsError('unauthenticated', 'User is not authenticated')
+
+  const sessionSnap = await db.collection('sessions').doc(request.data.sessionId).get()
+
+  if (!sessionSnap.exists) throw new HttpsError('not-found', 'Session not found')
+
+  const data = sessionSnap.data()
+
+  if (!data) throw new HttpsError('internal', 'Session data is undefined')
+
+  const [entriesSnap, proposalsSnap] = await Promise.all([
+    sessionSnap.ref.collection('entries').get(),
+    sessionSnap.ref.collection('proposals').get(),
+  ])
+
+  const entries: any[] = []
+  const proposals: any[] = []
+
+  if (!entriesSnap.empty) {
+    entriesSnap.docs.forEach(doc => {
+      const data = doc.data()
+      entries.push({
+        docId: doc.id,
+        ...data,
+        createdAt: data.createdAt.toMillis(),
+        updatedAt: data.updatedAt.toMillis(),
+      })
+    })
+  }
+
+  if (!proposalsSnap.empty) {
+    proposalsSnap.docs.forEach(doc => {
+      const data = doc.data()
+      proposals.push({
+        docId: doc.id,
+        ...data,
+        createdAt: data.createdAt.toMillis(),
+        updatedAt: data.updatedAt.toMillis(),
+      })
+    })
+  }
+
+  return {
+    docId: sessionSnap.id,
+    ...data,
+    createdAt: data.createdAt.toMillis(),
+    updatedAt: data.updatedAt.toMillis(),
+    entries,
+    proposals,
+  }
+})
