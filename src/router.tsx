@@ -50,7 +50,7 @@ function AppRoutes() {
               Component: ApprovalLayout,
               children: [
                 {
-                  path: '',
+                  index: true,
                   Component: Home
                 },
                 {
@@ -85,7 +85,7 @@ function AppRoutes() {
           Component: AdminLayout,
           children: [
             {
-              path: '',
+              index: true,
               Component: AdminDashboard
             },
             {
