@@ -274,6 +274,20 @@ export default function SessionDetail() {
                       {`by ${p.proposerUid}`}
                     </Box>
                     <Box>
+                      {session.status === 'selecting' &&
+                        <>
+                          {savedEntry && (
+                            <Typography variant="body2" sx={{ mr: 1, fontWeight: 'bold' }}>
+                              {savedEntry?.part.toUpperCase()} でエントリー中
+                            </Typography>
+                          )}
+                          {p.proposerUid === user?.uid && (
+                            <Typography variant="body2" sx={{ mr: 1, fontWeight: 'bold' }}>
+                              {p.myPart.toUpperCase()} でエントリー中（提出曲）
+                            </Typography>
+                          )}
+                        </>
+                      }
                       {session.status === 'collectingEntries' && p.docId && (
                         <>
                           {(isEditingEntries && p.proposerUid !== user?.uid) ? (
