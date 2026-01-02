@@ -38,19 +38,21 @@ export type UpdateProposalRequest = {
   notes: string
 }
 
+export type ProposalResponse = {
+  docId: string
+  sessionId: string
+  proposerUid: string
+  title: string
+  artist: string
+  instrumentation: string
+  myPart: InstrumentalPart
+  sourceUrl: string
+  scoreUrl: string
+  notes: string
+  createdAt: number
+  updatedAt: number
+}
+
 export type GetProposalsResponse = {
-  proposals: Array<{
-    docId: string
-    sessionId: string
-    proposerUid: string
-    title: string
-    artist: string
-    instrumentation: string
-    myPart: InstrumentalPart
-    sourceUrl: string
-    scoreUrl: string
-    notes: string
-    createdAt: number
-    updatedAt: number
-  }>
+  proposals: Array<ProposalResponse>
 }

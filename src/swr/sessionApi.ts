@@ -1,5 +1,5 @@
 import { getSession } from "../firebase.ts";
-import type { Session, SessionRequest } from "../models/session";
+import type { Session, SessionResponse } from "../models/session";
 import { timestampToDate } from "../utils/dateUtils.ts";
 
 export const getSessionKey = (sessionId: string | undefined) => sessionId ? ["getSession", sessionId] : null;
@@ -7,7 +7,7 @@ export const getSessionKey = (sessionId: string | undefined) => sessionId ? ["ge
 export const getSessionFetcher = async ([, sessionId]: [string, string]): Promise<Session> => {
   const res = await getSession({sessionId});
 
-  const sessionRequest: SessionRequest = res.data;
+  const sessionRequest: SessionResponse = res.data;
   const session: Session = {
     id: sessionId,
     title: sessionRequest.title,

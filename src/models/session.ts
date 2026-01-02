@@ -1,3 +1,6 @@
+import type { EntryResponse } from "./entry";
+import type { ProposalResponse } from "./proposal";
+
 export type SessionStatus = 'draft' | 'collectingSongs' | 'collectingEntries' | 'selecting' | 'published' | 'finalized'
 
 export type Session = {
@@ -9,7 +12,7 @@ export type Session = {
   updatedAt: Date
 }
 
-export type SessionRequest = {
+export type SessionResponse = {
   docId: string
   title: string
   date: string
@@ -17,3 +20,9 @@ export type SessionRequest = {
   createdAt: number
   updatedAt: number
 }
+
+export type AdminSessionResponse = SessionResponse & {
+  entries: EntryResponse[]
+  proposals: ProposalResponse[]
+}
+

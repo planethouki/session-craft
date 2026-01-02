@@ -18,14 +18,16 @@ export type CreateEntryRequest = {
   }[]
 }
 
+export type EntryResponse = {
+  docId: string
+  sessionId: string
+  songId: string
+  memberUid: string
+  part: InstrumentalPart
+  createdAt: number
+  updatedAt: number
+}
+
 export type GetMyEntriesResponse = {
-  entries: Array<{
-    docId: string
-    sessionId: string
-    songId: string
-    memberUid: string
-    part: InstrumentalPart
-    createdAt: number
-    updatedAt: number
-  }>
+  entries: Array<EntryResponse>
 }
