@@ -34,6 +34,7 @@ function AdminGuard() {
   if (!firebaseUser) return <Login debug="Guard" />
   if (!firestoreUser) return <Login debug="AdminGuard" />
   if (!firestoreUser.roles?.includes('admin')) return <Login debug="AdminGuard" />
+  return <Outlet />
 }
 
 function AppRoutes() {
