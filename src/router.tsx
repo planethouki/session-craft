@@ -13,6 +13,7 @@ import AdminLayout from "./components/AdminLayout";
 import Layout from "./components/Layout.tsx";
 import Login from "./pages/Login"
 import ApprovalLayout from "./components/ApprovalLayout";
+import AdminSessionDetail from "./pages/admin/SessionDetail";
 
 function Guard() {
   const { firebaseUser, loading } = useAuth()
@@ -91,6 +92,10 @@ function AppRoutes() {
             {
               path: 'sessions',
               Component: AdminSessionList
+            },
+            {
+              path: 'sessions/:id',
+              Component: AdminSessionDetail
             },
             {
               path: 'members',
