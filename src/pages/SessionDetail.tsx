@@ -275,18 +275,10 @@ export default function SessionDetail() {
                     </Box>
                     <Box>
                       {session.status === 'selecting' &&
-                        <>
-                          {savedEntry && (
-                            <Typography variant="body2" sx={{ mr: 1, fontWeight: 'bold' }}>
-                              {savedEntry?.part.toUpperCase()} でエントリー中
-                            </Typography>
-                          )}
-                          {p.proposerUid === user?.uid && (
-                            <Typography variant="body2" sx={{ mr: 1, fontWeight: 'bold' }}>
-                              {p.myPart.toUpperCase()} でエントリー中（提出曲）
-                            </Typography>
-                          )}
-                        </>
+                        <Typography variant="body2" sx={{ mr: 1, fontWeight: 'bold' }}>
+                          {savedEntry && `${savedEntry?.part.toUpperCase()} でエントリー中`}
+                          {p.proposerUid === user?.uid && `${p.myPart.toUpperCase()} でエントリー中（提出曲）`}
+                        </Typography>
                       }
                       {session.status === 'collectingEntries' && (
                         <>
@@ -314,11 +306,10 @@ export default function SessionDetail() {
                               />
                             </>
                           ) : (
-                            (savedEntry || p.proposerUid === user?.uid) && (
-                              <Typography variant="body2" sx={{ mr: 1, fontWeight: 'bold' }}>
-                                {(savedEntry?.part || p.myPart).toUpperCase()} でエントリー中{p.proposerUid === user?.uid ? '（提出曲）' : ''}
-                              </Typography>
-                            )
+                            <Typography variant="body2" sx={{ mr: 1, fontWeight: 'bold' }}>
+                              {savedEntry && `${savedEntry?.part.toUpperCase()} でエントリー中`}
+                              {p.proposerUid === user?.uid && `${p.myPart.toUpperCase()} でエントリー中（提出曲）`}
+                            </Typography>
                           )}
                         </>
                       )}
