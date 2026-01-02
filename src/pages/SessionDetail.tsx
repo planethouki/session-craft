@@ -288,7 +288,7 @@ export default function SessionDetail() {
                           )}
                         </>
                       }
-                      {session.status === 'collectingEntries' && p.docId && (
+                      {session.status === 'collectingEntries' && (
                         <>
                           {(isEditingEntries && p.proposerUid !== user?.uid) ? (
                             <>
