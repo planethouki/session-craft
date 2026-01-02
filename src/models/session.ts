@@ -1,5 +1,5 @@
-import type { EntryResponse } from "./entry";
-import type { ProposalResponse } from "./proposal";
+import type { Entry, EntryResponse } from "./entry";
+import type { Proposal, ProposalResponse } from "./proposal";
 
 export type SessionStatus = 'draft' | 'collectingSongs' | 'collectingEntries' | 'selecting' | 'published' | 'finalized'
 
@@ -10,6 +10,11 @@ export type Session = {
   status: SessionStatus
   createdAt: Date
   updatedAt: Date
+}
+
+export type AdminSession = Session & {
+  entries: Entry[]
+  proposals: Proposal[]
 }
 
 export type SessionResponse = {

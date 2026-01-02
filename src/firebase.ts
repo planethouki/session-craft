@@ -3,7 +3,7 @@ import {getAuth} from 'firebase/auth'
 import {getFirestore} from 'firebase/firestore'
 import {getFunctions, httpsCallable} from 'firebase/functions'
 import { type UserRequest } from "./models/user";
-import { type SessionResponse } from "./models/session";
+import type { SessionResponse, AdminSessionResponse } from "./models/session";
 import type {CreateProposalRequest, GetProposalsResponse, UpdateProposalRequest} from "./models/proposal.ts";
 import type {CreateEntryRequest, GetMyEntriesResponse} from "./models/entry";
 
@@ -38,6 +38,8 @@ export const getUser = httpsCallable<unknown, UserRequest>(functions, 'getUser')
 export const getSession = httpsCallable<{ sessionId: string }, SessionResponse>(functions, 'getSession');
 
 export const adminCreateSession = httpsCallable<{ title: string, date: string }, unknown>(functions, 'adminCreateSession');
+
+export const adminGetSession = httpsCallable<{ sessionId: string }, AdminSessionResponse>(functions, 'adminGetSession');
 
 export const callCreateProposal = httpsCallable<CreateProposalRequest, { id: string }>(functions, 'createProposal');
 

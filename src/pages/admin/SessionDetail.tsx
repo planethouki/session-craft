@@ -1,24 +1,22 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import { Link, useParams } from 'react-router'
 import { callCreateProposal, callDeleteProposal, callUpdateProposal, callCreateEntries } from '../../firebase.ts'
 import type { Entry } from '../../models/entry'
 import type { Proposal } from '../../models/proposal.ts'
 import { Box, Backdrop, Button, Checkbox, CircularProgress, Container, FormControl, InputLabel, MenuItem, Select, TextField, Typography } from '@mui/material'
 import useSWR, { useSWRConfig } from 'swr'
-import { getSessionFetcher, getSessionKey } from '../../swr/sessionApi'
-import { getProposalsFetcher, getProposalsKey } from '../../swr/proposalApi'
-import { getMyEntriesFetcher, getMyEntriesKey } from '../../swr/entryApi'
+import { getSessionFetcher, getSessionKey } from '../../swr/adminSessionApi'
 
 export default function AdminSessionDetail() {
   const { id } = useParams()
   const { mutate } = useSWRConfig()
   const { data: session } = useSWR(getSessionKey(id), getSessionFetcher)
-  const { data: proposals = [] } = useSWR(getProposalsKey(id), getProposalsFetcher)
-  const { data: entries = [] } = useSWR(getMyEntriesKey(id), getMyEntriesFetcher)
   const [submitting, setSubmitting] = useState(false)
 
-  const getEntries = (proposal: Proposal) => {
-    const songEntries = entries
+  const getEntries = useCallback((proposal: Proposal) => {
+    if (!session) return []
+
+    const songEntries = session.entries
       .filter(e => e.songId === proposal.docId)
       .map(e => ({ songId: e.songId, part: e.part, userId: e.memberUid }))
     const proposerEntry = {
@@ -30,7 +28,9 @@ export default function AdminSessionDetail() {
       proposerEntry,
       ...songEntries,
     ]
-  }
+  }, [session])
+
+  if (!session) return null
 
   return (
     <Container sx={{ p: 2 }}>
@@ -55,7 +55,7 @@ export default function AdminSessionDetail() {
           <Box sx={{ mt: 3 }}>
             <Typography variant="h5">提出された曲</Typography>
             <Box>
-              {proposals.map((p) => {
+              {session.proposals.map((p) => {
                 return (
                   <Box
                     key={p.docId}
