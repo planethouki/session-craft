@@ -4,6 +4,8 @@ import { adminUpdateSessionProposals } from '../../firebase.ts'
 import type { Proposal } from '../../models/proposal.ts'
 import { Box, Backdrop, Button, Checkbox, CircularProgress, Container, IconButton, Typography } from '@mui/material'
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator'
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
 import useSWR, { useSWRConfig } from 'swr'
 import { getSessionFetcher, getSessionKey } from '../../swr/adminSessionApi'
 import {
@@ -30,14 +32,22 @@ function SortableProposalItem({
   isEditingSetlist,
   isSelected,
   alreadyInSetlist,
+  isFirst,
+  isLast,
   handleToggleProposal,
+  handleMoveUp,
+  handleMoveDown,
   getEntries,
 }: {
   p: Proposal
   isEditingSetlist: boolean
   isSelected: boolean
   alreadyInSetlist?: boolean
+  isFirst: boolean
+  isLast: boolean
   handleToggleProposal: (id: string) => void
+  handleMoveUp: (id: string) => void
+  handleMoveDown: (id: string) => void
   getEntries: (p: Proposal) => { songId: string, part: string, userId: string }[]
 }) {
   const {
@@ -65,6 +75,24 @@ function SortableProposalItem({
             <IconButton size="small" {...attributes} {...listeners} sx={{ cursor: 'grab', mr: 1, touchAction: 'none' }}>
               <DragIndicatorIcon />
             </IconButton>
+            <Box sx={{ display: 'flex', flexDirection: 'column', mr: 1 }}>
+              <IconButton
+                size="small"
+                onClick={() => handleMoveUp(p.docId)}
+                disabled={isFirst}
+                sx={{ p: 0 }}
+              >
+                <ArrowUpwardIcon fontSize="small" />
+              </IconButton>
+              <IconButton
+                size="small"
+                onClick={() => handleMoveDown(p.docId)}
+                disabled={isLast}
+                sx={{ p: 0 }}
+              >
+                <ArrowDownwardIcon fontSize="small" />
+              </IconButton>
+            </Box>
             <Checkbox
               checked={isSelected}
               onChange={() => handleToggleProposal(p.docId)}
@@ -168,6 +196,26 @@ export default function AdminSessionDetail() {
     )
   }
 
+  const handleMoveUp = (proposalId: string) => {
+    setOrderedProposals((items) => {
+      const index = items.findIndex((i) => i.docId === proposalId)
+      if (index > 0) {
+        return arrayMove(items, index, index - 1)
+      }
+      return items
+    })
+  }
+
+  const handleMoveDown = (proposalId: string) => {
+    setOrderedProposals((items) => {
+      const index = items.findIndex((i) => i.docId === proposalId)
+      if (index < items.length - 1) {
+        return arrayMove(items, index, index + 1)
+      }
+      return items
+    })
+  }
+
   const handleSaveSetlist = async () => {
     if (!id) return
     setSubmitting(true)
@@ -264,7 +312,7 @@ export default function AdminSessionDetail() {
                   items={orderedProposals.map(p => p.docId)}
                   strategy={verticalListSortingStrategy}
                 >
-                  {orderedProposals.map((p) => {
+                  {orderedProposals.map((p, index) => {
                     const isSelected = selectedProposalIds.includes(p.docId)
                     const alreadyInSetlist = session.selectedProposals?.includes(p.docId)
 
@@ -275,7 +323,11 @@ export default function AdminSessionDetail() {
                         isEditingSetlist={isEditingSetlist}
                         isSelected={isSelected}
                         alreadyInSetlist={alreadyInSetlist}
+                        isFirst={index === 0}
+                        isLast={index === orderedProposals.length - 1}
                         handleToggleProposal={handleToggleProposal}
+                        handleMoveUp={handleMoveUp}
+                        handleMoveDown={handleMoveDown}
                         getEntries={getEntries}
                       />
                     )
