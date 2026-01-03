@@ -6,14 +6,13 @@ import { Button, Container, Typography } from '@mui/material'
 import { Link } from 'react-router'
 
 export default function PartLeaderDashboard() {
-  const [latest, setLatest] = useState<Session | null>(null)
+  const [sessions, setSessions] = useState<Session[]>([])
 
   useEffect(() => {
     const run = async () => {
-      const q = query(collection(db, 'sessions'), orderBy('date', 'desc'), limit(1))
+      const q = query(collection(db, 'sessions'), orderBy('date', 'desc'), limit(10))
       const snap = await getDocs(q)
-      const doc0 = snap.docs[0]
-      if (doc0) setLatest({ id: doc0.id, ...(doc0.data() as any) })
+      setSessions(snap.docs.map((doc) => ({ id: doc.id, ...(doc.data() as any) })))
     }
     run().catch(console.error)
   }, [])
@@ -23,14 +22,18 @@ export default function PartLeaderDashboard() {
       <Typography variant="h5" gutterBottom>
         ホーム
       </Typography>
-      {latest ? (
-        <div>
-          <Typography variant="h6">{latest.title}</Typography>
-          <Typography color="text.secondary">{latest.date}</Typography>
-          <Typography sx={{ mt: 1 }}>状態: {latest.status}</Typography>
-          <Button component={Link} to={`/part_leader/sessions/${latest.id}`} variant="contained" sx={{ mt: 2 }}>
-            詳細を見る
-          </Button>
+      {sessions.length > 0 ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          {sessions.map((session) => (
+            <div key={session.id}>
+              <Typography variant="h6">{session.title}</Typography>
+              <Typography color="text.secondary">{session.date}</Typography>
+              <Typography sx={{ mt: 1 }}>状態: {session.status}</Typography>
+              <Button component={Link} to={`/part_leader/sessions/${session.id}`} variant="contained" sx={{ mt: 2 }}>
+                詳細を見る
+              </Button>
+            </div>
+          ))}
         </div>
       ) : (
         <Typography>セッションがまだありません。</Typography>
