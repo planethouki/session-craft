@@ -31,7 +31,7 @@ export const getSession = onCall<{
 
     const session = sessionData
 
-    if (session.status !== 'published') {
+    if (session.status !== 'published' && session.status !== 'adjustingEntries') {
       delete session.selectedProposals
     }
 

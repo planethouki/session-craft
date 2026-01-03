@@ -132,8 +132,8 @@ export const getEntries = onCall<{
       throw new HttpsError('internal', 'Session data is undefined')
     }
 
-    if (sessionData.status !== 'published' && sessionData.status !== 'finalized') {
-      throw new HttpsError('failed-precondition', 'Session is not published or finalized')
+    if (sessionData.status !== 'published' && sessionData.status !== 'adjustingEntries') {
+      throw new HttpsError('failed-precondition', 'Session is not published or adjustingEntries')
     }
 
     const entriesRef = sessionRef.collection('entries')
