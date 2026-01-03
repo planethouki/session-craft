@@ -4,7 +4,7 @@ import type { Proposal, ProposalResponse } from "./proposal";
 export type SessionStatus = 'draft' | 'collectingSongs' | 'collectingEntries' | 'selecting' | 'published' | 'finalized'
 
 export type Session = {
-  id?: string
+  id: string
   title: string
   date: string // ISO date (YYYY-MM-DD)
   status: SessionStatus
