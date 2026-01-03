@@ -3,12 +3,12 @@ import { Box, Typography } from '@mui/material'
 import { useAuth } from '../../auth.tsx'
 import useSWR from 'swr'
 import { getProposalsFetcher, getProposalsKey } from '../../swr/proposalApi.ts'
-import { getMyEntriesFetcher, getMyEntriesKey } from '../../swr/entryApi.ts'
+import { getEntriesFetcher, getEntriesKey } from '../../swr/entryApi.ts'
 import type {Session} from "../../models/session.ts";
 
 export default function Published({ session }: { session: Session }) {
   const { data: proposals = [] } = useSWR(getProposalsKey(session.id), getProposalsFetcher)
-  const { data: entries = [] } = useSWR(getMyEntriesKey(session.id), getMyEntriesFetcher)
+  const { data: entries = [] } = useSWR(getEntriesKey(session.id), getEntriesFetcher)
   const { firebaseUser: user } = useAuth()
 
   const consideredProposals = useMemo(() => {
@@ -25,7 +25,7 @@ export default function Published({ session }: { session: Session }) {
         </Typography>
         <Box>
           {consideredProposals.map((p) => {
-            const savedEntry = entries.find((e) => e.songId === p.docId)
+            const songEntries = entries.filter((e) => e.songId === p.docId)
             return (
               <Box
                 key={p.docId}
@@ -50,12 +50,10 @@ export default function Published({ session }: { session: Session }) {
                   {`by ${p.proposerUid}`}
                 </Box>
                 <Box>
-                  {session.status === 'selecting' &&
-                    <Typography variant="body2" sx={{ mr: 1, fontWeight: 'bold' }}>
-                      {savedEntry && `${savedEntry?.part.toUpperCase()} でエントリー中`}
-                      {p.proposerUid === user?.uid && `${p.myPart.toUpperCase()} でエントリー中（提出曲）`}
-                    </Typography>
-                  }
+                  <Typography variant="body2" sx={{ mr: 1, fontWeight: 'bold' }}>
+                    {songEntries.map(e => `${e.part.toUpperCase()} で ${e.memberUid} がエントリー中`)}
+                    {p.proposerUid === user?.uid && `${p.myPart.toUpperCase()} でエントリー中（提出曲）`}
+                  </Typography>
                 </Box>
               </Box>
             )
