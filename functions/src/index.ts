@@ -67,6 +67,7 @@ export const liffAuth = onCall<{ idToken: string }, Promise<{ customToken: strin
       const userData = {
         displayName: payload.name || null,
         photoURL: payload.picture || null,
+        myPart: 'oth',
         approved: false,
         roles: admin.firestore.FieldValue.arrayUnion('member'),
         createdAt: now,

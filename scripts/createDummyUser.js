@@ -35,6 +35,7 @@ const createDummyUsers = async () => {
       approved: true,
       displayName: `Dummy User ${i}`,
       photoURL: `https://picsum.photos/id/${i}/100/100`,
+      myPart: 'oth',
       roles: ['member'],
       createdAt: admin.firestore.Timestamp.fromDate(now),
       updatedAt: admin.firestore.Timestamp.fromDate(now),
