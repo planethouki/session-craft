@@ -2,7 +2,7 @@ import {initializeApp} from 'firebase/app'
 import {getAuth} from 'firebase/auth'
 import {getFirestore} from 'firebase/firestore'
 import {getFunctions, httpsCallable} from 'firebase/functions'
-import { type UserRequest } from "./models/user";
+import { type UserResponse } from "./models/user";
 import type { SessionResponse, AdminSessionResponse } from "./models/session";
 import type {CreateProposalRequest, GetProposalsResponse, UpdateProposalRequest} from "./models/proposal.ts";
 import type {CreateEntryRequest, GetMyEntriesResponse, GetEntriesResponse} from "./models/entry";
@@ -33,7 +33,7 @@ export const callDeleteSelf = httpsCallable<unknown, {
   ok: boolean
 }>(functions, 'deleteSelf')
 
-export const getUser = httpsCallable<unknown, UserRequest>(functions, 'getUser');
+export const getUser = httpsCallable<unknown, UserResponse>(functions, 'getUser');
 
 export const getSession = httpsCallable<{ sessionId: string }, SessionResponse>(functions, 'getSession');
 

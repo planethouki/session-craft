@@ -12,7 +12,7 @@ export type FirestoreUser = {
   updatedAt: Date;
 };
 
-export type UserRequest = {
+export type UserResponse = {
   docId: string;
   approved: boolean;
   approvedAt?: number;

@@ -1,5 +1,5 @@
 import { getUser } from "../firebase.ts";
-import type { FirestoreUser, UserRequest } from "../models/user";
+import type { FirestoreUser, UserResponse } from "../models/user";
 import { timestampToDate } from "../utils/dateUtils";
 
 export const getUserKey = "getUser";
@@ -7,17 +7,17 @@ export const getUserKey = "getUser";
 export const getUserFetcher = async () => {
   const res = await getUser();
 
-  const userRequest: UserRequest = res.data;
+  const userResponse: UserResponse = res.data;
   const firestoreUser: FirestoreUser = {
-    docId: userRequest.docId,
-    approved: userRequest.approved,
-    approvedAt: timestampToDate(userRequest.approvedAt),
-    displayName: userRequest.displayName,
-    photoURL: userRequest.photoURL,
-    myPart: userRequest.myPart,
-    roles: userRequest.roles,
-    createdAt: timestampToDate(userRequest.createdAt),
-    updatedAt: timestampToDate(userRequest.updatedAt),
+    docId: userResponse.docId,
+    approved: userResponse.approved,
+    approvedAt: timestampToDate(userResponse.approvedAt),
+    displayName: userResponse.displayName,
+    photoURL: userResponse.photoURL,
+    myPart: userResponse.myPart,
+    roles: userResponse.roles,
+    createdAt: timestampToDate(userResponse.createdAt),
+    updatedAt: timestampToDate(userResponse.updatedAt),
   };
 
   console.log(res.data, firestoreUser)
