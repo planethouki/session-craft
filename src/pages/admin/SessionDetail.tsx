@@ -82,25 +82,27 @@ export default function AdminSessionDetail() {
           </Typography>
           <Typography color="text.secondary">{session.date} / 状態: {session.status}</Typography>
 
-          <Box sx={{ mt: 2 }}>
-            {!isEditingSetlist ? (
-              <Button variant="contained" onClick={() => setIsEditingSetlist(true)}>
-                セットリストを決める
-              </Button>
-            ) : (
-              <Box sx={{ display: 'flex', gap: 1 }}>
-                <Button variant="contained" color="primary" onClick={handleSaveSetlist}>
-                  決定
+          {session.status === 'selecting' && (
+            <Box sx={{ mt: 2 }}>
+              {!isEditingSetlist ? (
+                <Button variant="contained" onClick={() => setIsEditingSetlist(true)}>
+                  セットリストを決める
                 </Button>
-                <Button variant="outlined" onClick={() => {
-                  setIsEditingSetlist(false)
-                  setSelectedProposalIds(session.selectedProposals || [])
-                }}>
-                  キャンセル
-                </Button>
-              </Box>
-            )}
-          </Box>
+              ) : (
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                  <Button variant="contained" color="primary" onClick={handleSaveSetlist}>
+                    決定
+                  </Button>
+                  <Button variant="outlined" onClick={() => {
+                    setIsEditingSetlist(false)
+                    setSelectedProposalIds(session.selectedProposals || [])
+                  }}>
+                    キャンセル
+                  </Button>
+                </Box>
+              )}
+            </Box>
+          )}
 
           <Box sx={{ mt: 3 }}>
             <Typography variant="h5">提出された曲</Typography>
