@@ -1,10 +1,113 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import { Link, useParams } from 'react-router'
-import { adminUpdateSelectedProposals } from '../../firebase.ts'
+import { adminUpdateSessionProposals } from '../../firebase.ts'
 import type { Proposal } from '../../models/proposal.ts'
-import { Box, Backdrop, Button, Checkbox, CircularProgress, Container, Typography } from '@mui/material'
+import { Box, Backdrop, Button, Checkbox, CircularProgress, Container, IconButton, Typography } from '@mui/material'
+import DragIndicatorIcon from '@mui/icons-material/DragIndicator'
 import useSWR, { useSWRConfig } from 'swr'
 import { getSessionFetcher, getSessionKey } from '../../swr/adminSessionApi'
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core'
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
+
+function SortableProposalItem({
+  p,
+  isEditingSetlist,
+  isSelected,
+  alreadyInSetlist,
+  handleToggleProposal,
+  getEntries,
+}: {
+  p: Proposal
+  isEditingSetlist: boolean
+  isSelected: boolean
+  alreadyInSetlist?: boolean
+  handleToggleProposal: (id: string) => void
+  getEntries: (p: Proposal) => { songId: string, part: string, userId: string }[]
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+  } = useSortable({ id: p.docId })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  }
+
+  return (
+    <Box
+      ref={setNodeRef}
+      style={style}
+      sx={{ mb: 3, p: 2, border: '1px solid #eee', borderRadius: 1, bgcolor: 'background.paper' }}
+    >
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+        {isEditingSetlist && (
+          <>
+            <IconButton size="small" {...attributes} {...listeners} sx={{ cursor: 'grab', mr: 1 }}>
+              <DragIndicatorIcon />
+            </IconButton>
+            <Checkbox
+              checked={isSelected}
+              onChange={() => handleToggleProposal(p.docId)}
+              sx={{ ml: -1 }}
+            />
+          </>
+        )}
+        <Typography variant="h6">
+          {`${p.title} / ${p.artist}`}
+        </Typography>
+        {!isEditingSetlist && alreadyInSetlist && (
+          <Typography
+            variant="caption"
+            sx={{ ml: 2, px: 1, py: 0.5, bgcolor: 'success.light', color: 'success.contrastText', borderRadius: 1 }}
+          >
+            セットリストに入っています
+          </Typography>
+        )}
+      </Box>
+      <Box>
+        {`パート / ${p.instrumentation}`}
+      </Box>
+      <Box>
+        {`YouTubeなど / ${p.sourceUrl}`}
+      </Box>
+      <Box>
+        {`スコア / ${p.scoreUrl}`}
+      </Box>
+      <Box>
+        {`その他 / ${p.notes}`}
+      </Box>
+      <Box>
+        {`by ${p.proposerUid}`}
+      </Box>
+      <Box>
+        {getEntries(p).map((e, i) =>
+          <Typography variant="body1" sx={{ mr: 1, fontWeight: 'bold' }} key={i}>
+            {e.userId} / {e.part}
+          </Typography>
+        )}
+      </Box>
+    </Box>
+  )
+}
 
 export default function AdminSessionDetail() {
   const { id } = useParams()
@@ -13,12 +116,42 @@ export default function AdminSessionDetail() {
   const [submitting, setSubmitting] = useState(false)
   const [isEditingSetlist, setIsEditingSetlist] = useState(false)
   const [selectedProposalIds, setSelectedProposalIds] = useState<string[]>([])
+  const [orderedProposals, setOrderedProposals] = useState<Proposal[]>([])
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
+
+  const sortedProposals = useMemo(() => {
+    if (!session) return []
+    return [...session.proposals].sort((a, b) => {
+      if (a.order !== undefined && b.order !== undefined) return a.order - b.order
+      if (a.order !== undefined) return -1
+      if (b.order !== undefined) return 1
+      return 0
+    })
+  }, [session])
 
   useEffect(() => {
-    if (session?.selectedProposals) {
-      setSelectedProposalIds(session.selectedProposals)
+    if (session) {
+      setSelectedProposalIds(session.selectedProposals || [])
+      setOrderedProposals(sortedProposals)
     }
-  }, [session])
+  }, [session, sortedProposals])
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event
+    if (over && active.id !== over.id) {
+      setOrderedProposals((items) => {
+        const oldIndex = items.findIndex((i) => i.docId === active.id)
+        const newIndex = items.findIndex((i) => i.docId === over.id)
+        return arrayMove(items, oldIndex, newIndex)
+      })
+    }
+  }
 
   const handleToggleProposal = (proposalId: string) => {
     setSelectedProposalIds(prev =>
@@ -32,7 +165,15 @@ export default function AdminSessionDetail() {
     if (!id) return
     setSubmitting(true)
     try {
-      await adminUpdateSelectedProposals({ sessionId: id, proposalIds: selectedProposalIds })
+      const proposalOrders = orderedProposals.map((p, index) => ({
+        proposalId: p.docId,
+        order: index + 1
+      }))
+      await adminUpdateSessionProposals({
+        sessionId: id,
+        selectedProposalIds,
+        proposalOrders
+      })
       await mutate(getSessionKey(id))
       setIsEditingSetlist(false)
     } catch (e) {
@@ -107,60 +248,33 @@ export default function AdminSessionDetail() {
           <Box sx={{ mt: 3 }}>
             <Typography variant="h5">提出された曲</Typography>
             <Box>
-              {session.proposals.map((p) => {
-                const isSelected = selectedProposalIds.includes(p.docId)
-                const alreadyInSetlist = session.selectedProposals?.includes(p.docId)
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext
+                  items={orderedProposals.map(p => p.docId)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  {orderedProposals.map((p) => {
+                    const isSelected = selectedProposalIds.includes(p.docId)
+                    const alreadyInSetlist = session.selectedProposals?.includes(p.docId)
 
-                return (
-                  <Box
-                    key={p.docId}
-                    sx={{ mb: 3, p: 2, border: '1px solid #eee', borderRadius: 1 }}
-                  >
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                      {isEditingSetlist && (
-                        <Checkbox
-                          checked={isSelected}
-                          onChange={() => handleToggleProposal(p.docId)}
-                          sx={{ ml: -1 }}
-                        />
-                      )}
-                      <Typography variant="h6">
-                        {`${p.title} / ${p.artist}`}
-                      </Typography>
-                      {!isEditingSetlist && alreadyInSetlist && (
-                        <Typography
-                          variant="caption"
-                          sx={{ ml: 2, px: 1, py: 0.5, bgcolor: 'success.light', color: 'success.contrastText', borderRadius: 1 }}
-                        >
-                          セットリストに入っています
-                        </Typography>
-                      )}
-                    </Box>
-                    <Box>
-                      {`パート / ${p.instrumentation}`}
-                    </Box>
-                    <Box>
-                      {`YouTubeなど / ${p.sourceUrl}`}
-                    </Box>
-                    <Box>
-                      {`スコア / ${p.scoreUrl}`}
-                    </Box>
-                    <Box>
-                      {`その他 / ${p.notes}`}
-                    </Box>
-                    <Box>
-                      {`by ${p.proposerUid}`}
-                    </Box>
-                    <Box>
-                      {getEntries(p).map((e, i) =>
-                        <Typography  variant="body1" sx={{ mr: 1, fontWeight: 'bold' }} key={i}>
-                          {e.userId} / {e.part}
-                        </Typography>
-                      )}
-                    </Box>
-                  </Box>
-                )
-              })}
+                    return (
+                      <SortableProposalItem
+                        key={p.docId}
+                        p={p}
+                        isEditingSetlist={isEditingSetlist}
+                        isSelected={isSelected}
+                        alreadyInSetlist={alreadyInSetlist}
+                        handleToggleProposal={handleToggleProposal}
+                        getEntries={getEntries}
+                      />
+                    )
+                  })}
+                </SortableContext>
+              </DndContext>
             </Box>
           </Box>
         </>

@@ -41,7 +41,11 @@ export const adminCreateSession = httpsCallable<{ title: string, date: string },
 
 export const adminGetSession = httpsCallable<{ sessionId: string }, AdminSessionResponse>(functions, 'adminGetSession');
 
-export const adminUpdateSelectedProposals = httpsCallable<{ sessionId: string, proposalIds: string[] }, void>(functions, 'adminUpdateSelectedProposals');
+export const adminUpdateSessionProposals = httpsCallable<{
+  sessionId: string,
+  selectedProposalIds: string[],
+  proposalOrders: { proposalId: string, order: number }[]
+}, void>(functions, 'adminUpdateSessionProposals');
 
 export const callCreateProposal = httpsCallable<CreateProposalRequest, { id: string }>(functions, 'createProposal');
 

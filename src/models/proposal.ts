@@ -11,6 +11,7 @@ export type Proposal = {
   sourceUrl: string
   scoreUrl: string
   notes: string
+  order?: number
   createdAt: Date
   updatedAt: Date
 }
@@ -49,6 +50,7 @@ export type ProposalResponse = {
   sourceUrl: string
   scoreUrl: string
   notes: string
+  order?: number
   createdAt: number
   updatedAt: number
 }

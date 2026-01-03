@@ -85,7 +85,11 @@ export const adminGetSession = onCall<{ sessionId: string }, Promise<any>>({ cor
   }
 })
 
-export const adminUpdateSelectedProposals = onCall<{ sessionId: string, proposalIds: string[] }, Promise<void>>({ cors: true }, async (request) => {
+export const adminUpdateSessionProposals = onCall<{
+  sessionId: string,
+  selectedProposalIds: string[],
+  proposalOrders: { proposalId: string, order: number }[]
+}, Promise<void>>({ cors: true }, async (request) => {
   const uid = request.auth?.uid
   if (!uid) throw new HttpsError('unauthenticated', 'User is not authenticated')
   const userSnap = await db.collection('users').doc(uid).get()
@@ -95,13 +99,24 @@ export const adminUpdateSelectedProposals = onCall<{ sessionId: string, proposal
     throw new HttpsError('permission-denied', 'User is not an admin')
   }
 
-  const { sessionId, proposalIds } = request.data
+  const { sessionId, selectedProposalIds, proposalOrders } = request.data
   const sessionRef = db.collection('sessions').doc(sessionId)
   const sessionSnap = await sessionRef.get()
   if (!sessionSnap.exists) throw new HttpsError('not-found', 'Session not found')
 
-  await sessionRef.update({
-    selectedProposals: proposalIds,
+  const batch = db.batch()
+
+  // Update session
+  batch.update(sessionRef, {
+    selectedProposals: selectedProposalIds,
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   })
+
+  // Update each proposal's order
+  proposalOrders.forEach(({ proposalId, order }) => {
+    const proposalRef = sessionRef.collection('proposals').doc(proposalId)
+    batch.update(proposalRef, { order })
+  })
+
+  await batch.commit()
 })
