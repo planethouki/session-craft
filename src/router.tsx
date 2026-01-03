@@ -14,6 +14,9 @@ import Layout from "./components/Layout.tsx";
 import Login from "./pages/Login"
 import ApprovalLayout from "./components/ApprovalLayout";
 import AdminSessionDetail from "./pages/admin/SessionDetail";
+import PartLeaderDashboard from "./pages/partLeader/PartLeaderDashboard";
+import PartLeaderSessionDetail from "./pages/partLeader/SessionDetail";
+import PartLeaderLayout from "./components/PartLeaderLayout";
 
 function Guard() {
   const { firebaseUser, loading } = useAuth()
@@ -35,6 +38,15 @@ function AdminGuard() {
   if (!firebaseUser) return <Login debug="Guard" />
   if (!firestoreUser) return <Login debug="AdminGuard" />
   if (!firestoreUser.roles?.includes('admin')) return <Login debug="AdminGuard" />
+  return <Outlet />
+}
+
+function PartLeaderGuard() {
+  const { firebaseUser, loading, firestoreUser } = useAuth()
+  if (loading) return <div style={{ padding: 24 }}>Loading...</div>
+  if (!firebaseUser) return <Login debug="Guard" />
+  if (!firestoreUser) return <Login debug="FirestoreGuard" />
+  if (!firestoreUser.roles?.includes('partLeader')) return <Login debug="PartLeaderGuard" />
   return <Outlet />
 }
 
@@ -76,6 +88,26 @@ function AppRoutes() {
           ]
         },
       ],
+    },
+    // Part Leader
+    {
+      path: '/part_leader',
+      Component: PartLeaderGuard,
+      children: [
+        {
+          Component: PartLeaderLayout,
+          children: [
+            {
+              index: true,
+              Component: PartLeaderDashboard
+            },
+            {
+              path: 'sessions/:id',
+              Component: PartLeaderSessionDetail
+            },
+          ]
+        }
+      ]
     },
     // // Admin
     {
