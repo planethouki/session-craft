@@ -43,12 +43,10 @@ export default function Selecting({ session }: { session: Session }) {
                   {`by ${p.proposerUid}`}
                 </Box>
                 <Box>
-                  {session.status === 'selecting' &&
-                    <Typography variant="body2" sx={{ mr: 1, fontWeight: 'bold' }}>
-                      {savedEntry && `${savedEntry?.part.toUpperCase()} でエントリー中`}
-                      {p.proposerUid === user?.uid && `${p.myPart.toUpperCase()} でエントリー中（提出曲）`}
-                    </Typography>
-                  }
+                  <Typography variant="body2" sx={{ mr: 1, fontWeight: 'bold' }}>
+                    {savedEntry && `${savedEntry?.part.toUpperCase()} でエントリー中`}
+                    {p.proposerUid === user?.uid && `${p.myPart.toUpperCase()} でエントリー中（提出曲）`}
+                  </Typography>
                 </Box>
               </Box>
             )
