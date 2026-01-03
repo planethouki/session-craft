@@ -2,6 +2,7 @@ import { onCall, HttpsError } from 'firebase-functions/v2/https'
 import * as admin from 'firebase-admin'
 import { checkUserApproved } from "./validations/user";
 import { validateInstrument } from "./validations/instrument";
+import { SessionStatus } from './types'
 
 const db = admin.firestore()
 
@@ -40,13 +41,13 @@ export const createProposal = onCall<{
     validateInstrument(myPart)
     await checkUserApproved(uid)
 
-    // Check if session exists and is in 'collectingSongs' status
+    // Check if session exists and is in SessionStatus.COLLECTING_SONGS status
     const sessionSnap = await db.collection('sessions').doc(sessionId).get()
     if (!sessionSnap.exists) {
       throw new HttpsError('not-found', 'Session not found')
     }
     const session = sessionSnap.data()
-    if (session?.status !== 'collectingSongs') {
+    if (session?.status !== SessionStatus.COLLECTING_SONGS) {
       throw new HttpsError('failed-precondition', 'Session is not collecting songs')
     }
 
@@ -106,10 +107,10 @@ export const deleteProposal = onCall<{
       throw new HttpsError('permission-denied', 'You can only delete your own proposal')
     }
 
-    // Check if session status is 'collectingSongs'
+    // Check if session status is SessionStatus.COLLECTING_SONGS
     const sessionSnap = await db.collection('sessions').doc(sessionId).get()
     const session = sessionSnap.data()
-    if (session?.status !== 'collectingSongs') {
+    if (session?.status !== SessionStatus.COLLECTING_SONGS) {
       throw new HttpsError('failed-precondition', 'Session is not in collecting songs status')
     }
 
@@ -161,7 +162,7 @@ export const updateProposal = onCall<{
       throw new HttpsError('not-found', 'Session not found')
     }
     const session = sessionSnap.data()
-    if (session?.status !== 'collectingSongs') {
+    if (session?.status !== SessionStatus.COLLECTING_SONGS) {
       throw new HttpsError('failed-precondition', 'Session is not collecting songs')
     }
 

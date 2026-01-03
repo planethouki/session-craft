@@ -1,6 +1,6 @@
 import { onCall, HttpsError } from 'firebase-functions/v2/https'
 import * as admin from 'firebase-admin'
-import { InstrumentalPart } from "./types";
+import { InstrumentalPart, SessionStatus } from "./types";
 import { checkUserApproved } from "./validations/user";
 import { validateInstrument } from "./validations/instrument";
 
@@ -38,7 +38,7 @@ export const createEntries = onCall<{
       throw new HttpsError('not-found', 'Session not found')
     }
     const session = sessionSnap.data()
-    if (session?.status !== 'collectingEntries') {
+    if (session?.status !== SessionStatus.COLLECTING_ENTRIES) {
       throw new HttpsError('failed-precondition', 'Session is not collecting entries')
     }
 
@@ -132,7 +132,7 @@ export const getEntries = onCall<{
       throw new HttpsError('internal', 'Session data is undefined')
     }
 
-    if (sessionData.status !== 'published' && sessionData.status !== 'adjustingEntries') {
+    if (sessionData.status !== SessionStatus.PUBLISHED && sessionData.status !== SessionStatus.ADJUSTING_ENTRIES) {
       throw new HttpsError('failed-precondition', 'Session is not published or adjustingEntries')
     }
 

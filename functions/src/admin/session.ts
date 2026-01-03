@@ -1,5 +1,6 @@
 import { onCall, HttpsError } from 'firebase-functions/v2/https'
 import * as admin from 'firebase-admin'
+import { SessionStatus } from '../types'
 
 const db = admin.firestore()
 
@@ -21,7 +22,7 @@ export const adminCreateSession = onCall<CreateSessionData, Promise<void>>({ cor
   await db.collection('sessions').add({
     title: request.data.title.trim(),
     date: request.data.date.trim(),
-    status: 'draft',
+    status: SessionStatus.DRAFT,
     createdAt: now,
     updatedAt: now,
   })

@@ -1,5 +1,6 @@
 import { onCall, HttpsError } from 'firebase-functions/v2/https'
 import * as admin from 'firebase-admin'
+import { SessionStatus } from './types'
 
 const db = admin.firestore()
 
@@ -31,7 +32,7 @@ export const getSession = onCall<{
 
     const session = sessionData
 
-    if (session.status !== 'published' && session.status !== 'adjustingEntries') {
+    if (session.status !== SessionStatus.PUBLISHED && session.status !== SessionStatus.ADJUSTING_ENTRIES) {
       delete session.selectedProposals
     }
 

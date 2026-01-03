@@ -7,6 +7,7 @@ import CollectingSongs from "../components/sessionDetail/CollectingSongs";
 import CollectingEntries from "../components/sessionDetail/CollectingEntries";
 import Selecting from "../components/sessionDetail/Selecting";
 import Published from "../components/sessionDetail/Published";
+import { SessionStatus } from "../models/session";
 
 export default function SessionDetail() {
   const { id } = useParams()
@@ -26,17 +27,17 @@ export default function SessionDetail() {
       </Typography>
       <Typography color="text.secondary">{session.date} / 状態: {session.status}</Typography>
 
-      {session.status === 'draft' && <Draft />}
+      {session.status === SessionStatus.DRAFT && <Draft />}
 
-      {session.status === 'collectingSongs' && <CollectingSongs session={session} />}
+      {session.status === SessionStatus.COLLECTING_SONGS && <CollectingSongs session={session} />}
 
-      {session.status === 'collectingEntries' && <CollectingEntries session={session} />}
+      {session.status === SessionStatus.COLLECTING_ENTRIES && <CollectingEntries session={session} />}
 
-      {session.status === 'selecting' && <Selecting session={session} />}
+      {session.status === SessionStatus.SELECTING && <Selecting session={session} />}
 
-      {session.status === 'adjustingEntries' && <Published session={session} />}
+      {session.status === SessionStatus.ADJUSTING_ENTRIES && <Published session={session} />}
 
-      {session.status === 'published' && <Published session={session} />}
+      {session.status === SessionStatus.PUBLISHED && <Published session={session} />}
     </Container>
   )
 }

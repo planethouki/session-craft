@@ -9,6 +9,7 @@ import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
 import { motion, LayoutGroup } from 'framer-motion'
 import useSWR, { useSWRConfig } from 'swr'
 import { getSessionFetcher, getSessionKey } from '../../swr/adminSessionApi'
+import { SessionStatus } from '../../models/session.ts'
 import {
   DndContext,
   closestCenter,
@@ -287,7 +288,7 @@ export default function AdminSessionDetail() {
           </Typography>
           <Typography color="text.secondary">{session.date} / 状態: {session.status}</Typography>
 
-          {session.status === 'selecting' && (
+          {session.status === SessionStatus.SELECTING && (
             <Box sx={{ mt: 2 }}>
               {!isEditingSetlist ? (
                 <Button variant="contained" onClick={() => setIsEditingSetlist(true)}>

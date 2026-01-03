@@ -1,7 +1,16 @@
 import type { Entry, EntryResponse } from "./entry";
 import type { Proposal, ProposalResponse } from "./proposal";
 
-export type SessionStatus = 'draft' | 'collectingSongs' | 'collectingEntries' | 'selecting' | 'adjustingEntries' | 'published'
+export const SessionStatus = {
+  DRAFT: 'draft',
+  COLLECTING_SONGS: 'collectingSongs',
+  COLLECTING_ENTRIES: 'collectingEntries',
+  SELECTING: 'selecting',
+  ADJUSTING_ENTRIES: 'adjustingEntries',
+  PUBLISHED: 'published',
+} as const
+
+export type SessionStatus = typeof SessionStatus[keyof typeof SessionStatus]
 
 export type Session = {
   id: string

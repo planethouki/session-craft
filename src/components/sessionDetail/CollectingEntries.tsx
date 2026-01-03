@@ -8,6 +8,7 @@ import useSWR, { useSWRConfig } from 'swr'
 import { getProposalsFetcher, getProposalsKey } from '../../swr/proposalApi.ts'
 import { getMyEntriesFetcher, getMyEntriesKey } from '../../swr/entryApi.ts'
 import type {Session} from "../../models/session.ts";
+import { SessionStatus } from "../../models/session.ts";
 
 export default function CollectingEntries({ session }: { session: Session }) {
   const { mutate } = useSWRConfig()
@@ -155,7 +156,7 @@ export default function CollectingEntries({ session }: { session: Session }) {
         </Box>
       </Box>
 
-      {session.status === 'collectingEntries' && (
+      {session.status === SessionStatus.COLLECTING_ENTRIES && (
         <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center', gap: 2 }}>
           {!isEditingEntries ? (
             <Button
