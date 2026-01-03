@@ -8,6 +8,7 @@ export type Session = {
   title: string
   date: string // ISO date (YYYY-MM-DD)
   status: SessionStatus
+  selectedProposals?: string[]
   createdAt: Date
   updatedAt: Date
 }
@@ -22,6 +23,7 @@ export type SessionResponse = {
   title: string
   date: string
   status: SessionStatus
+  selectedProposals?: string[]
   createdAt: number
   updatedAt: number
 }

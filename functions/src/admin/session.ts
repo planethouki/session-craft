@@ -84,3 +84,24 @@ export const adminGetSession = onCall<{ sessionId: string }, Promise<any>>({ cor
     proposals,
   }
 })
+
+export const adminUpdateSelectedProposals = onCall<{ sessionId: string, proposalIds: string[] }, Promise<void>>({ cors: true }, async (request) => {
+  const uid = request.auth?.uid
+  if (!uid) throw new HttpsError('unauthenticated', 'User is not authenticated')
+  const userSnap = await db.collection('users').doc(uid).get()
+  const user = userSnap.data()
+  if (!user) throw new HttpsError('not-found', 'User is not found')
+  if (!(user.roles && user.roles.includes('admin'))) {
+    throw new HttpsError('permission-denied', 'User is not an admin')
+  }
+
+  const { sessionId, proposalIds } = request.data
+  const sessionRef = db.collection('sessions').doc(sessionId)
+  const sessionSnap = await sessionRef.get()
+  if (!sessionSnap.exists) throw new HttpsError('not-found', 'Session not found')
+
+  await sessionRef.update({
+    selectedProposals: proposalIds,
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  })
+})

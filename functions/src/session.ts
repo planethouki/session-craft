@@ -29,9 +29,13 @@ export const getSession = onCall<{
       throw new HttpsError('internal', 'Session data is undefined')
     }
 
+    const session = sessionData
+
+    delete session.selectedProposals
+
     return {
       docId: sessionSnap.id,
-      ...sessionData,
+      ...session,
       createdAt: sessionData.createdAt.toMillis(),
       updatedAt: sessionData.updatedAt.toMillis(),
     }
