@@ -7,7 +7,6 @@ import { useAuth } from '../../auth.tsx'
 import useSWR, { useSWRConfig } from 'swr'
 import { getProposalsFetcher, getProposalsKey } from '../../swr/proposalApi.ts'
 import type {Session} from "../../models/session.ts";
-import { SessionStatus } from "../../models/session.ts";
 
 export default function CollectingSongs({ session }: { session: Session }) {
   const { mutate } = useSWRConfig()
@@ -191,7 +190,7 @@ export default function CollectingSongs({ session }: { session: Session }) {
                   {`by ${p.proposerUid}`}
                 </Box>
                 <Box>
-                  {p.proposerUid === user?.uid && session.status === SessionStatus.COLLECTING_SONGS && (
+                  {p.proposerUid === user?.uid && (
                     <Box>
                       <Button onClick={() => startEdit(p)}>
                         修正

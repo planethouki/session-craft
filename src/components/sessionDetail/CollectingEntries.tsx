@@ -8,7 +8,6 @@ import useSWR, { useSWRConfig } from 'swr'
 import { getProposalsFetcher, getProposalsKey } from '../../swr/proposalApi.ts'
 import { getMyEntriesFetcher, getMyEntriesKey } from '../../swr/entryApi.ts'
 import type {Session} from "../../models/session.ts";
-import { SessionStatus } from "../../models/session.ts";
 
 export default function CollectingEntries({ session }: { session: Session }) {
   const { mutate } = useSWRConfig()
@@ -156,38 +155,36 @@ export default function CollectingEntries({ session }: { session: Session }) {
         </Box>
       </Box>
 
-      {session.status === SessionStatus.COLLECTING_ENTRIES && (
-        <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center', gap: 2 }}>
-          {!isEditingEntries ? (
+      <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center', gap: 2 }}>
+        {!isEditingEntries ? (
+          <Button
+            variant="contained"
+            size="large"
+            onClick={() => setIsEditingEntries(true)}
+          >
+            {selectedEntries.length > 0 ? 'エントリーを編集する' : 'エントリーを開始する'}
+          </Button>
+        ) : (
+          <>
             <Button
               variant="contained"
               size="large"
-              onClick={() => setIsEditingEntries(true)}
+              onClick={submitEntries}
+              disabled={submitting}
             >
-              {selectedEntries.length > 0 ? 'エントリーを編集する' : 'エントリーを開始する'}
+              {entries.some(e => e.memberUid === user?.uid) ? '修正して提出' : '提出'}
             </Button>
-          ) : (
-            <>
-              <Button
-                variant="contained"
-                size="large"
-                onClick={submitEntries}
-                disabled={submitting}
-              >
-                {entries.some(e => e.memberUid === user?.uid) ? '修正して提出' : '提出'}
-              </Button>
-              <Button
-                variant="outlined"
-                size="large"
-                onClick={() => setIsEditingEntries(false)}
-                disabled={submitting}
-              >
-                キャンセル
-              </Button>
-            </>
-          )}
-        </Box>
-      )}
+            <Button
+              variant="outlined"
+              size="large"
+              onClick={() => setIsEditingEntries(false)}
+              disabled={submitting}
+            >
+              キャンセル
+            </Button>
+          </>
+        )}
+      </Box>
 
     </>
   )
