@@ -1,7 +1,7 @@
 import type { Entry, EntryResponse } from "./entry";
 import type { Proposal, ProposalResponse } from "./proposal";
 
-export type SessionStatus = 'draft' | 'collectingSongs' | 'collectingEntries' | 'selecting' | 'published' | 'finalized'
+export type SessionStatus = 'draft' | 'collectingSongs' | 'collectingEntries' | 'selecting' | 'adjustingEntries' | 'published'
 
 export type Session = {
   id: string
