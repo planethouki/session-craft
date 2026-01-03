@@ -6,6 +6,7 @@ import { Box, Backdrop, Button, Checkbox, CircularProgress, Container, IconButto
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator'
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
+import { motion, LayoutGroup } from 'framer-motion'
 import useSWR, { useSWRConfig } from 'swr'
 import { getSessionFetcher, getSessionKey } from '../../swr/adminSessionApi'
 import {
@@ -66,6 +67,11 @@ function SortableProposalItem({
   return (
     <Box
       ref={setNodeRef}
+      component={motion.div}
+      layout
+      transition={{
+        layout: { type: 'spring', stiffness: 300, damping: 30 }
+      }}
       style={style}
       sx={{ mb: 3, p: 2, border: '1px solid #eee', borderRadius: 1, bgcolor: 'background.paper' }}
     >
@@ -303,37 +309,39 @@ export default function AdminSessionDetail() {
           <Box sx={{ mt: 3 }}>
             <Typography variant="h5">提出された曲</Typography>
             <Box>
-              <DndContext
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragEnd={handleDragEnd}
-              >
-                <SortableContext
-                  items={orderedProposals.map(p => p.docId)}
-                  strategy={verticalListSortingStrategy}
+              <LayoutGroup>
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleDragEnd}
                 >
-                  {orderedProposals.map((p, index) => {
-                    const isSelected = selectedProposalIds.includes(p.docId)
-                    const alreadyInSetlist = session.selectedProposals?.includes(p.docId)
+                  <SortableContext
+                    items={orderedProposals.map(p => p.docId)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    {orderedProposals.map((p, index) => {
+                      const isSelected = selectedProposalIds.includes(p.docId)
+                      const alreadyInSetlist = session.selectedProposals?.includes(p.docId)
 
-                    return (
-                      <SortableProposalItem
-                        key={p.docId}
-                        p={p}
-                        isEditingSetlist={isEditingSetlist}
-                        isSelected={isSelected}
-                        alreadyInSetlist={alreadyInSetlist}
-                        isFirst={index === 0}
-                        isLast={index === orderedProposals.length - 1}
-                        handleToggleProposal={handleToggleProposal}
-                        handleMoveUp={handleMoveUp}
-                        handleMoveDown={handleMoveDown}
-                        getEntries={getEntries}
-                      />
-                    )
-                  })}
-                </SortableContext>
-              </DndContext>
+                      return (
+                        <SortableProposalItem
+                          key={p.docId}
+                          p={p}
+                          isEditingSetlist={isEditingSetlist}
+                          isSelected={isSelected}
+                          alreadyInSetlist={alreadyInSetlist}
+                          isFirst={index === 0}
+                          isLast={index === orderedProposals.length - 1}
+                          handleToggleProposal={handleToggleProposal}
+                          handleMoveUp={handleMoveUp}
+                          handleMoveDown={handleMoveDown}
+                          getEntries={getEntries}
+                        />
+                      )
+                    })}
+                  </SortableContext>
+                </DndContext>
+              </LayoutGroup>
             </Box>
           </Box>
         </>
