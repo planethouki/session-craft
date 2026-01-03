@@ -31,3 +31,7 @@ export type EntryResponse = {
 export type GetMyEntriesResponse = {
   entries: Array<EntryResponse>
 }
+
+export type GetEntriesResponse = {
+  entries: Array<EntryResponse>
+}

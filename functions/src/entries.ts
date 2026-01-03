@@ -103,3 +103,52 @@ export const getMyEntries = onCall<{
     return { entries }
   }
 )
+
+export const getEntries = onCall<{
+  sessionId: string
+}, Promise<{
+  entries: any[]
+}>>(
+  { cors: true },
+  async (request) => {
+    const uid = request.auth?.uid
+    if (!uid) {
+      throw new HttpsError('unauthenticated', 'User is not authenticated')
+    }
+
+    const { sessionId } = request.data
+    if (!sessionId) {
+      throw new HttpsError('invalid-argument', 'Missing sessionId')
+    }
+
+    const sessionRef = db.collection('sessions').doc(sessionId)
+    const sessionSnap = await sessionRef.get()
+    if (!sessionSnap.exists) {
+      throw new HttpsError('not-found', 'Session not found')
+    }
+
+    const sessionData = sessionSnap.data()
+    if (!sessionData) {
+      throw new HttpsError('internal', 'Session data is undefined')
+    }
+
+    if (sessionData.status !== 'published' && sessionData.status !== 'finalized') {
+      throw new HttpsError('failed-precondition', 'Session is not published or finalized')
+    }
+
+    const entriesRef = sessionRef.collection('entries')
+    const snapshot = await entriesRef.get()
+
+    const entries = snapshot.docs.map(doc => {
+      const data = doc.data()
+      return {
+        docId: doc.id,
+        ...data,
+        createdAt: data.createdAt.toMillis(),
+        updatedAt: data.updatedAt.toMillis(),
+      }
+    })
+
+    return { entries }
+  }
+)

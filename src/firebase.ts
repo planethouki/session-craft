@@ -5,7 +5,7 @@ import {getFunctions, httpsCallable} from 'firebase/functions'
 import { type UserRequest } from "./models/user";
 import type { SessionResponse, AdminSessionResponse } from "./models/session";
 import type {CreateProposalRequest, GetProposalsResponse, UpdateProposalRequest} from "./models/proposal.ts";
-import type {CreateEntryRequest, GetMyEntriesResponse} from "./models/entry";
+import type {CreateEntryRequest, GetMyEntriesResponse, GetEntriesResponse} from "./models/entry";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_API_KEY as string,
@@ -61,3 +61,5 @@ export const callGetProposals = httpsCallable<{ sessionId: string }, GetProposal
 export const callCreateEntries = httpsCallable<CreateEntryRequest, { ok: boolean }>(functions, 'createEntries');
 
 export const callGetMyEntries = httpsCallable<{ sessionId: string }, GetMyEntriesResponse>(functions, 'getMyEntries');
+
+export const callGetEntries = httpsCallable<{ sessionId: string }, GetEntriesResponse>(functions, 'getEntries');

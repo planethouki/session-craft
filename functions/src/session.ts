@@ -31,7 +31,9 @@ export const getSession = onCall<{
 
     const session = sessionData
 
-    delete session.selectedProposals
+    if (session.status !== 'published') {
+      delete session.selectedProposals
+    }
 
     return {
       docId: sessionSnap.id,

@@ -13,6 +13,7 @@ export const getSessionFetcher = async ([, sessionId]: [string, string]): Promis
     title: sessionRequest.title,
     date: sessionRequest.date,
     status: sessionRequest.status,
+    selectedProposals: sessionRequest.selectedProposals,
     createdAt: timestampToDate(sessionRequest.createdAt),
     updatedAt: timestampToDate(sessionRequest.updatedAt),
   };
