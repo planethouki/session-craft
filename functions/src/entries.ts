@@ -44,6 +44,7 @@ export const createEntries = onCall<{
 
     const batch = db.batch()
     const entriesRef = sessionRef.collection('entries')
+    const entryHistoriesRef = sessionRef.collection('entryHistories')
 
     // Delete existing entries for this user
     const existingSnap = await entriesRef.where('memberUid', '==', uid).get()
@@ -62,6 +63,7 @@ export const createEntries = onCall<{
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       }
       batch.set(entriesRef.doc(), entryDoc)
+      batch.set(entryHistoriesRef.doc(), entryDoc)
     }
 
     await batch.commit()
