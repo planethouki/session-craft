@@ -57,18 +57,21 @@ function SortableProposalItem({
     setNodeRef,
     transform,
     transition,
+    isDragging,
   } = useSortable({ id: p.docId })
 
   const style = {
-    transform: CSS.Transform.toString(transform),
+    transform: CSS.Translate.toString(transform),
     transition,
+    zIndex: isDragging ? 1 : 'auto',
+    position: 'relative' as const,
   }
 
   return (
     <Box
       ref={setNodeRef}
       component={motion.div}
-      layout
+      layout={!isDragging}
       transition={{
         layout: { type: 'spring', stiffness: 300, damping: 30 }
       }}
