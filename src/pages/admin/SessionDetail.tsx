@@ -11,6 +11,7 @@ import {
   closestCenter,
   KeyboardSensor,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   type DragEndEvent,
@@ -61,7 +62,7 @@ function SortableProposalItem({
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
         {isEditingSetlist && (
           <>
-            <IconButton size="small" {...attributes} {...listeners} sx={{ cursor: 'grab', mr: 1 }}>
+            <IconButton size="small" {...attributes} {...listeners} sx={{ cursor: 'grab', mr: 1, touchAction: 'none' }}>
               <DragIndicatorIcon />
             </IconButton>
             <Checkbox
@@ -120,6 +121,12 @@ export default function AdminSessionDetail() {
 
   const sensors = useSensors(
     useSensor(PointerSensor),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 250,
+        tolerance: 5,
+      },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
