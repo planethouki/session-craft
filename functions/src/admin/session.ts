@@ -29,15 +29,18 @@ export const adminCreateSession = onCall<CreateSessionData, Promise<void>>({ cor
 
 export const adminGetSession = onCall<{ sessionId: string }, Promise<any>>({ cors: true }, async (request) => {
   const uid = request.auth?.uid
-
   if (!uid) throw new HttpsError('unauthenticated', 'User is not authenticated')
+  const userSnap = await db.collection('users').doc(uid).get()
+  const user = userSnap.data()
+  if (!user) throw new HttpsError('not-found', 'User is not found')
+  if (!(user.roles && user.roles.includes('admin'))) {
+    throw new HttpsError('permission-denied', 'User is not an admin')
+  }
 
   const sessionSnap = await db.collection('sessions').doc(request.data.sessionId).get()
-
   if (!sessionSnap.exists) throw new HttpsError('not-found', 'Session not found')
 
   const data = sessionSnap.data()
-
   if (!data) throw new HttpsError('internal', 'Session data is undefined')
 
   const [entriesSnap, proposalsSnap] = await Promise.all([
