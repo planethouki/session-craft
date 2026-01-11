@@ -16,6 +16,7 @@ export const getUserFetcher = async () => {
     photoURL: userResponse.photoURL,
     myPart: userResponse.myPart,
     roles: userResponse.roles,
+    leaderParts: userResponse.leaderParts ?? [],
     createdAt: timestampToDate(userResponse.createdAt),
     updatedAt: timestampToDate(userResponse.updatedAt),
   };

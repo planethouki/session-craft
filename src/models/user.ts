@@ -1,3 +1,5 @@
+import type {InstrumentalPart} from "./instrumentalPart";
+
 export type Role = 'admin' | 'partLeader' | 'member'
 
 export type FirestoreUser = {
@@ -6,8 +8,9 @@ export type FirestoreUser = {
   approvedAt?: Date;
   displayName: string;
   photoURL: string;
-  myPart: string;
+  myPart: InstrumentalPart;
   roles: Role[];
+  leaderParts: InstrumentalPart[];
   createdAt: Date;
   updatedAt: Date;
 };
@@ -18,8 +21,9 @@ export type UserResponse = {
   approvedAt?: number;
   displayName: string;
   photoURL: string;
-  myPart: string;
+  myPart: InstrumentalPart;
   roles: Role[];
+  leaderParts?: InstrumentalPart[];
   createdAt: number;
   updatedAt: number;
 };
