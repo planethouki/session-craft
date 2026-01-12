@@ -6,6 +6,7 @@ export type Entry = {
   songId: string
   memberUid: string
   part: InstrumentalPart
+  isSelfProposal: boolean
   createdAt: Date
   updatedAt: Date
 }
@@ -24,6 +25,7 @@ export type EntryResponse = {
   songId: string
   memberUid: string
   part: InstrumentalPart
+  isSelfProposal: boolean
   createdAt: number
   updatedAt: number
 }
