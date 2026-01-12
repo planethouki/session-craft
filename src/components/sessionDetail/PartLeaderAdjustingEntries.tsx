@@ -9,7 +9,7 @@ import type {Session} from "../../models/session.ts";
 export default function PartLeaderAdjustingEntries({ session }: { session: Session }) {
   const { data: proposals = [] } = useSWR(getProposalsKey(session.id), getProposalsFetcher)
   const { data: entries = [] } = useSWR(getEntriesKey(session.id), getEntriesFetcher)
-  const { firebaseUser: user } = useAuth()
+  const { firebaseUser, firestoreUser } = useAuth()
 
   const consideredProposals = useMemo(() => {
     return proposals
@@ -26,6 +26,8 @@ export default function PartLeaderAdjustingEntries({ session }: { session: Sessi
         <Box>
           {consideredProposals.map((p) => {
             const songEntries = entries.filter((e) => e.songId === p.docId)
+            const leaderPartsEntries = songEntries.filter((e) => firestoreUser?.leaderParts.includes(e.part))
+            const otherEntries = songEntries.filter((e) => !firestoreUser?.leaderParts.includes(e.part))
             return (
               <Box
                 key={p.docId}
@@ -50,9 +52,10 @@ export default function PartLeaderAdjustingEntries({ session }: { session: Sessi
                   {`by ${p.proposerUid}`}
                 </Box>
                 <Box>
-                  <Typography variant="body2" sx={{ mr: 1, fontWeight: 'bold' }}>
-                    {songEntries.map(e => `${e.part.toUpperCase()} で ${e.memberUid} がエントリー中`)}
-                    {p.proposerUid === user?.uid && `${p.myPart.toUpperCase()} でエントリー中（提出曲）`}
+                  <Typography component="ul" variant="body2" sx={{ mr: 1, fontWeight: 'bold' }}>
+                    {leaderPartsEntries.map(e => <li>{e.part.toUpperCase()} で {e.memberUid} がエントリー中</li>)}
+                    {otherEntries.map(e => <li>{e.part.toUpperCase()} で {e.memberUid} がエントリー中</li>)}
+                    {p.proposerUid === firebaseUser?.uid && <li>{p.myPart.toUpperCase()} でエントリー中（提出曲）</li>}
                   </Typography>
                 </Box>
               </Box>
