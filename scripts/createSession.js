@@ -38,20 +38,30 @@ const createSession = async () => {
   })
   console.log(`Created session ${sessionRef.id}`);
 
+  const usersRef = db.collection('users');
   const proposalsRef = sessionRef.collection('proposals');
   const entriesRef = sessionRef.collection('entries');
   const parts = ['vo', 'gt', 'ba', 'dr', 'kb', 'oth'];
 
+  const usersQuery = await usersRef.get()
+  const users = usersQuery.docs.map(doc => {
+    return {
+      uid: doc.id,
+      ...doc.data()
+    }
+  })
+
   const selectedProposals = [];
 
-  for (let i = 1; i <= 10; i++) {
+  for (let i = 1; i <= users.length; i++) {
+    const user = users[i - 1];
     const proposal = {
       sessionId: sessionRef.id,
-      proposerUid: `dummy_user_${i}`,
+      proposerUid: user.uid,
       title: `Dummy Title ${i}`,
       artist: `Dummy Artist ${i}`,
       instrumentation: 'Vo, Gt, Ba, Dr',
-      myPart: parts[i % parts.length],
+      myPart: user.myPart,
       sourceUrl: 'https://example.com/source',
       scoreUrl: 'https://example.com/score',
       notes: `Dummy notes for proposal ${i}`,
@@ -68,6 +78,16 @@ const createSession = async () => {
 
     console.log(`Created proposal ${proposalRef.id}`);
 
+    await entriesRef.add({
+      sessionId: sessionRef.id,
+      songId: proposalRef.id,
+      memberUid: user.uid,
+      part: user.myPart,
+      isSelfProposal: true,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    })
+
     const jn = getRandomInt(3, 7);
     for (let j = 0; j < jn; j++) {
       const entry = {
@@ -75,6 +95,7 @@ const createSession = async () => {
         songId: proposalRef.id,
         memberUid: `dummy_user_${getRandomInt(1, 10)}`,
         part: parts[getRandomInt(0, parts.length - 1)],
+        isSelfProposal: false,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       };
