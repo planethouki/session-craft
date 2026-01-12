@@ -59,6 +59,7 @@ export const createEntries = onCall<{
         songId: entry.songId,
         memberUid: uid,
         part: entry.part,
+        isSelfProposal: false,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       }

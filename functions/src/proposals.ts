@@ -72,9 +72,26 @@ export const createProposal = onCall<{
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     }
 
-    const docRef = await db.collection('sessions').doc(sessionId).collection('proposals').add(proposal)
+    const batch = db.batch()
+    const proposalRef = db.collection('sessions').doc(sessionId).collection('proposals').doc()
+    batch.set(proposalRef, proposal)
 
-    return { id: docRef.id }
+    const entry = {
+      sessionId,
+      songId: proposalRef.id,
+      memberUid: uid,
+      part: myPart,
+      isSelfProposal: true,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    }
+
+    const entryRef = db.collection('sessions').doc(sessionId).collection('entries').doc()
+    batch.set(entryRef, entry)
+
+    await batch.commit()
+
+    return { id: proposalRef.id }
   }
 )
 
@@ -114,7 +131,16 @@ export const deleteProposal = onCall<{
       throw new HttpsError('failed-precondition', 'Session is not in collecting songs status')
     }
 
-    await proposalRef.delete()
+    const batch = db.batch()
+    batch.delete(proposalRef)
+
+    const entriesRef = db.collection('sessions').doc(sessionId).collection('entries')
+    const entrySnap = await entriesRef.where('songId', '==', proposalId).get()
+    entrySnap.docs.forEach(doc => {
+      batch.delete(doc.ref)
+    })
+
+    await batch.commit()
 
     return { ok: true }
   }
@@ -178,7 +204,8 @@ export const updateProposal = onCall<{
       throw new HttpsError('permission-denied', 'You can only update your own proposal')
     }
 
-    await proposalRef.update({
+    const batch = db.batch()
+    batch.update(proposalRef, {
       title,
       artist,
       instrumentation,
@@ -188,6 +215,36 @@ export const updateProposal = onCall<{
       notes: notes || '',
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     })
+
+    const entriesRef = db.collection('sessions').doc(sessionId).collection('entries')
+    const entrySnap = await entriesRef
+      .where('songId', '==', proposalId)
+      .get()
+
+    const filteredDocs = entrySnap.docs.filter(doc => {
+      const data = doc.data()
+      return data.memberUid === uid && data.isSelfProposal === true
+    })
+
+    // 既存のエントリーを削除
+    filteredDocs.forEach(doc => {
+      batch.delete(doc.ref)
+    })
+
+    // 新しくエントリーを作成
+    const newEntryRef = entriesRef.doc()
+    const newEntry = {
+      sessionId,
+      songId: proposalId,
+      memberUid: uid,
+      part: myPart,
+      isSelfProposal: true,
+      createdAt: proposal?.createdAt || admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    }
+    batch.set(newEntryRef, newEntry)
+
+    await batch.commit()
 
     return { ok: true }
   }
