@@ -1,0 +1,65 @@
+import {initializeApp} from 'firebase/app'
+import {getAuth} from 'firebase/auth'
+import {getFirestore} from 'firebase/firestore'
+import {getFunctions, httpsCallable} from 'firebase/functions'
+import { type UserResponse } from "./models/user";
+import type { SessionResponse, AdminSessionResponse } from "./models/session";
+import type {CreateProposalRequest, GetProposalsResponse, UpdateProposalRequest} from "./models/proposal.ts";
+import type {CreateEntryRequest, GetMyEntriesResponse, GetEntriesResponse} from "./models/entry";
+
+const firebaseConfig = {
+  apiKey: import.meta.env.VITE_API_KEY as string,
+  authDomain: import.meta.env.VITE_AUTH_DOMAIN as string,
+  projectId: import.meta.env.VITE_PROJECT_ID as string,
+  storageBucket: import.meta.env.VITE_STORAGE_BUCKET as string,
+  messagingSenderId: import.meta.env.VITE_MESSAGING_SENDER_ID as string,
+  appId: import.meta.env.VITE_APP_ID as string,
+}
+
+export const app = initializeApp(firebaseConfig)
+export const auth = getAuth(app)
+export const db = getFirestore(app)
+export const functions = getFunctions(app, 'asia-northeast1')
+
+export const callLiffAuth = httpsCallable<{ idToken: string }, {
+  customToken: string
+}>(functions, 'liffAuth')
+
+export const callApproveWithCode = httpsCallable<{ code: string }, {
+  ok: boolean
+}>(functions, 'approveWithCode')
+
+export const callDeleteSelf = httpsCallable<unknown, {
+  ok: boolean
+}>(functions, 'deleteSelf')
+
+export const getUser = httpsCallable<unknown, UserResponse>(functions, 'getUser');
+
+export const getSession = httpsCallable<{ sessionId: string }, SessionResponse>(functions, 'getSession');
+
+export const adminCreateSession = httpsCallable<{ title: string, date: string }, unknown>(functions, 'adminCreateSession');
+
+export const adminGetSession = httpsCallable<{ sessionId: string }, AdminSessionResponse>(functions, 'adminGetSession');
+
+export const adminUpdateSessionProposals = httpsCallable<{
+  sessionId: string,
+  selectedProposalIds: string[],
+  proposalOrders: { proposalId: string, order: number }[]
+}, void>(functions, 'adminUpdateSessionProposals');
+
+export const callCreateProposal = httpsCallable<CreateProposalRequest, { id: string }>(functions, 'createProposal');
+
+export const callDeleteProposal = httpsCallable<{
+  sessionId: string
+  proposalId: string
+}, { ok: boolean }>(functions, 'deleteProposal');
+
+export const callUpdateProposal = httpsCallable<UpdateProposalRequest, { ok: boolean }>(functions, 'updateProposal');
+
+export const callGetProposals = httpsCallable<{ sessionId: string }, GetProposalsResponse>(functions, 'getProposals');
+
+export const callCreateEntries = httpsCallable<CreateEntryRequest, { ok: boolean }>(functions, 'createEntries');
+
+export const callGetMyEntries = httpsCallable<{ sessionId: string }, GetMyEntriesResponse>(functions, 'getMyEntries');
+
+export const callGetEntries = httpsCallable<{ sessionId: string }, GetEntriesResponse>(functions, 'getEntries');
