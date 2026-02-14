@@ -5,6 +5,8 @@ import * as admin from 'firebase-admin'
 
 import { messagingApi, WebhookRequestBody, WebhookEvent } from '@line/bot-sdk';
 
+import { UserState } from "./types/UserState";
+
 const GOOGLE_GENAI_API_KEY = defineSecret('GOOGLE_GENAI_API_KEY')
 const LINE_CHANNEL_ACCESS_TOKEN = defineSecret('LINE_CHANNEL_ACCESS_TOKEN')
 
@@ -45,13 +47,14 @@ async function handleEvent(ev: WebhookEvent) {
   const userRef = db.doc(`users/${userId}`);
   const userSnap = await userRef.get();
   const user = userSnap.exists ? userSnap.data() as any : { state: "IDLE" };
+  const userState: UserState = user.state;
 
   // 期間内かチェック（提出フローに入る直前が分かりやすい）
-  if ((text === "提出" || user.state !== "IDLE") && !(await isSubmissionOpen())) {
+  if ((text === "提出" || userState !== "IDLE") && !(await isSubmissionOpen())) {
     return replyText(replyToken, "今月の提出期間外だよ。次回開始したら案内するね。");
   }
 
-  switch (user.state) {
+  switch (userState) {
     case "IDLE":
       if (text === "提出") return startSubmission(userId, replyToken);
       return replyText(replyToken, "「提出」と送ると課題曲を登録できるよ。");
