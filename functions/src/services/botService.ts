@@ -2,14 +2,13 @@ import { defineSecret } from "firebase-functions/params";
 import * as admin from 'firebase-admin'
 import { messagingApi, WebhookEvent } from '@line/bot-sdk';
 
-import { UserState } from "../types/UserState";
+import { getUser, getActiveSessionId } from "./firestoreService";
 
 const LINE_CHANNEL_ACCESS_TOKEN = defineSecret('LINE_CHANNEL_ACCESS_TOKEN')
 
 export async function handleEvent(ev: WebhookEvent) {
   if (ev.type !== "message" || ev.message.type !== "text") return;
 
-  const db = admin.firestore();
   const userId = ev.source.userId;
   if (!userId) return;
 
@@ -21,17 +20,14 @@ export async function handleEvent(ev: WebhookEvent) {
   if (text === "ヘルプ") return replyHelp(replyToken);
   // if (text === "状況") return replyStatus(userId, replyToken);
 
-  const userRef = db.doc(`users/${userId}`);
-  const userSnap = await userRef.get();
-  const user = userSnap.exists ? userSnap.data() as any : { state: "IDLE" };
-  const userState: UserState = user.state;
+  const user = await getUser(userId);
 
   // 期間内かチェック（提出フローに入る直前が分かりやすい）
-  if ((text === "提出" || userState !== "IDLE") && !(await isSubmissionOpen())) {
+  if ((text === "提出" || user.state !== "IDLE") && !(await isSubmissionOpen())) {
     return replyText(replyToken, "今月の提出期間外だよ。次回開始したら案内するね。");
   }
 
-  switch (userState) {
+  switch (user.state) {
     case "IDLE":
       if (text === "提出") return startSubmission(userId, replyToken);
       return replyText(replyToken, "「提出」と送ると課題曲を登録できるよ。");
@@ -60,13 +56,6 @@ async function isSubmissionOpen(): Promise<boolean> {
   const endAt = data.endAt as admin.firestore.Timestamp;
 
   return now.toMillis() >= startAt.toMillis() && now.toMillis() <= endAt.toMillis();
-}
-
-async function getActiveSessionId(): Promise<string> {
-  const db = admin.firestore();
-  const sessionSnap = await db.doc('sessions/current').get();
-  if (!sessionSnap.exists) throw new Error("No active session");
-  return sessionSnap.data()?.sessionId || "unknown";
 }
 
 async function startSubmission(userId: string, replyToken: string) {
