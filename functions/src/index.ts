@@ -7,6 +7,7 @@ import * as logger from "firebase-functions/logger";
 import { WebhookRequestBody } from "@line/bot-sdk";
 
 import { handleEvent } from './services/botService'
+import {messageService} from "./services/messageService";
 
 setGlobalOptions({
   maxInstances: 10,
@@ -31,6 +32,8 @@ export const lineWebhook = onRequest({
     res.status(200).send('OK');
     return;
   }
+
+  messageService.init(LINE_CHANNEL_ACCESS_TOKEN.value());
 
   await Promise.all(
     body.events.map((ev) => handleEvent(ev))

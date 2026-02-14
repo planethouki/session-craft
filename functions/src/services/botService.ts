@@ -1,5 +1,4 @@
-import { defineSecret } from "firebase-functions/params";
-import { messagingApi, WebhookEvent } from '@line/bot-sdk';
+import { WebhookEvent } from '@line/bot-sdk';
 
 import {
   findOrCreateUser,
@@ -10,7 +9,7 @@ import {
   createSubmission
 } from "./firestoreService";
 
-const LINE_CHANNEL_ACCESS_TOKEN = defineSecret('LINE_CHANNEL_ACCESS_TOKEN')
+import { messageService } from "./messageService";
 
 export async function handleEvent(ev: WebhookEvent) {
   if (ev.type !== "message" || ev.message.type !== "text") return;
@@ -143,11 +142,5 @@ async function replyHelp(replyToken: string) {
 }
 
 async function replyText(replyToken: string, text: string) {
-  const client = new messagingApi.MessagingApiClient({
-    channelAccessToken: LINE_CHANNEL_ACCESS_TOKEN.value(),
-  });
-  return client.replyMessage({
-    replyToken,
-    messages: [{ type: 'text', text }],
-  });
+  return messageService.replyText(replyToken, text);
 }
