@@ -1,35 +1,12 @@
-import { onRequest } from 'firebase-functions/v2/https'
 import { defineSecret } from "firebase-functions/params";
-import * as logger from 'firebase-functions/logger'
 import * as admin from 'firebase-admin'
-
-import { messagingApi, WebhookRequestBody, WebhookEvent } from '@line/bot-sdk';
+import { messagingApi, WebhookEvent } from '@line/bot-sdk';
 
 import { UserState } from "./types/UserState";
 
-const GOOGLE_GENAI_API_KEY = defineSecret('GOOGLE_GENAI_API_KEY')
 const LINE_CHANNEL_ACCESS_TOKEN = defineSecret('LINE_CHANNEL_ACCESS_TOKEN')
 
-export const lineWebhook = onRequest({
-  secrets: [ GOOGLE_GENAI_API_KEY, LINE_CHANNEL_ACCESS_TOKEN ],
-}, async (req, res) => {
-  logger.info('LINE Webhook received', { body: req.body })
-
-  const body = req.body as WebhookRequestBody;
-
-  if (!body.events) {
-    res.status(200).send('OK');
-    return;
-  }
-
-  await Promise.all(
-    body.events.map((ev) => handleEvent(ev))
-  );
-
-  res.status(200).send('OK')
-})
-
-async function handleEvent(ev: WebhookEvent) {
+export async function handleEvent(ev: WebhookEvent) {
   if (ev.type !== "message" || ev.message.type !== "text") return;
 
   const db = admin.firestore();
