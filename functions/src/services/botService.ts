@@ -2,7 +2,7 @@ import { defineSecret } from "firebase-functions/params";
 import * as admin from 'firebase-admin'
 import { messagingApi, WebhookEvent } from '@line/bot-sdk';
 
-import { UserState } from "./types/UserState";
+import { UserState } from "../types/UserState";
 
 const LINE_CHANNEL_ACCESS_TOKEN = defineSecret('LINE_CHANNEL_ACCESS_TOKEN')
 

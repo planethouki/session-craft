@@ -6,7 +6,7 @@ import * as admin from 'firebase-admin'
 import * as logger from "firebase-functions/logger";
 import { WebhookRequestBody } from "@line/bot-sdk";
 
-import { handleEvent } from './bot'
+import { handleEvent } from './services/botService'
 
 setGlobalOptions({
   maxInstances: 10,
@@ -39,4 +39,4 @@ export const lineWebhook = onRequest({
   res.status(200).send('OK')
 })
 
-export * from './bot'
+export * from './services/botService'
