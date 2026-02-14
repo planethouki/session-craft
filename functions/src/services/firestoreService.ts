@@ -1,6 +1,7 @@
 import * as admin from 'firebase-admin'
-import {UserState, UserStates} from "../types/UserState";
+import { UserState, UserStates } from "../types/UserState";
 import { User } from "../types/User";
+import { Submission } from "../types/Submission";
 
 export async function getUser(userId: string): Promise<User> {
   const db = admin.firestore();
@@ -43,9 +44,88 @@ export async function getUser(userId: string): Promise<User> {
   }
 }
 
+export async function updateUserState(userId: string, data: Partial<User>): Promise<void> {
+  const db = admin.firestore();
+  const updateData: any = {
+    stateUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  };
+  if (data.state) updateData.state = data.state;
+  if (data.activeSessionId) updateData.activeSessionId = data.activeSessionId;
+  if (data.draft) {
+    if (data.draft.title !== undefined) updateData["draft.title"] = data.draft.title;
+    if (data.draft.artist !== undefined) updateData["draft.artist"] = data.draft.artist;
+    if (data.draft.url !== undefined) updateData["draft.url"] = data.draft.url;
+    if (Object.keys(data.draft).length === 0) updateData.draft = {};
+  }
+
+  await db.doc(`users/${userId}`).update(updateData);
+}
+
+// ユーザーの作成または完全な上書き（merge: true）が必要な場合用
+export async function setUser(userId: string, user: Partial<User>): Promise<void> {
+  const db = admin.firestore();
+  const data: any = {
+    ...user,
+    stateUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  };
+  await db.doc(`users/${userId}`).set(data, { merge: true });
+}
+
 export async function getActiveSessionId(): Promise<string> {
   const db = admin.firestore();
   const sessionSnap = await db.doc('sessions/current').get();
   if (!sessionSnap.exists) throw new Error("No active session");
   return sessionSnap.data()?.sessionId || "unknown";
+}
+
+export async function isSubmissionOpen(): Promise<boolean> {
+  const db = admin.firestore();
+  const sessionSnap = await db.doc('sessions/current').get();
+  if (!sessionSnap.exists) return false;
+  const data = sessionSnap.data();
+  if (!data) return false;
+
+  const now = admin.firestore.Timestamp.now();
+  const startAt = data.startAt as admin.firestore.Timestamp;
+  const endAt = data.endAt as admin.firestore.Timestamp;
+
+  return now.toMillis() >= startAt.toMillis() && now.toMillis() <= endAt.toMillis();
+}
+
+export async function getSubmission(sessionId: string, userId: string): Promise<Submission | null> {
+  const db = admin.firestore();
+  const subId = `${sessionId}_${userId}`;
+  const subSnap = await db.doc(`submissions/${subId}`).get();
+
+  if (!subSnap.exists) return null;
+  const data = subSnap.data();
+  if (!data) return null;
+
+  return {
+    sessionId: data.sessionId,
+    userId: data.userId,
+    titleRaw: data.titleRaw,
+    artistRaw: data.artistRaw,
+    url: data.url,
+    createdAt: data.createdAt.toDate(),
+    updatedAt: data.updatedAt.toDate(),
+  };
+}
+
+export async function createSubmission(submission: Omit<Submission, 'createdAt' | 'updatedAt'>): Promise<void> {
+  const db = admin.firestore();
+  const subId = `${submission.sessionId}_${submission.userId}`;
+  const subRef = db.doc(`submissions/${subId}`);
+
+  await db.runTransaction(async (tx) => {
+    const subSnap = await tx.get(subRef);
+    if (subSnap.exists) {
+      return;
+    }
+    tx.set(subRef, {
+      ...submission,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+  });
 }
