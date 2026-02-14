@@ -25,7 +25,9 @@ export const lineWebhook = onRequest({
     plugins: [googleAI({ apiKey: GOOGLE_GENAI_API_KEY.value() })],
   });
 
-  const helloFlow = ai.defineFlow('helloFlow', async (name) => {
+  const helloFlow = ai.defineFlow({
+    name: 'helloFlow',
+  }, async (name) => {
     // make a generation request
     // const { text } = await ai.generate(`Hello Gemini, my name is ${name}`);
     const { text } = await ai.generate({
