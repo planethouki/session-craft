@@ -2,11 +2,10 @@ import { defineSecret } from "firebase-functions/params";
 import { messagingApi, WebhookEvent } from '@line/bot-sdk';
 
 import {
-  getUser,
+  findOrCreateUser,
   getActiveSessionId,
   isSubmissionOpen,
   updateUserState,
-  setUser,
   getSubmission,
   createSubmission
 } from "./firestoreService";
@@ -27,7 +26,7 @@ export async function handleEvent(ev: WebhookEvent) {
   if (text === "ヘルプ") return replyHelp(replyToken);
   // if (text === "状況") return replyStatus(userId, replyToken);
 
-  const user = await getUser(userId);
+  const user = await findOrCreateUser(userId);
 
   // 期間内かチェック（提出フローに入る直前が分かりやすい）
   if ((text === "提出" || user.state !== "IDLE") && !(await isSubmissionOpen())) {
@@ -59,9 +58,8 @@ async function startSubmission(userId: string, replyToken: string) {
     return replyText(replyToken, `今月はすでに提出済みだよ：\n${sub.titleRaw} / ${sub.artistRaw}\n変更したいなら「変更」と送ってね。`);
   }
 
-  await setUser(userId, {
+  await updateUserState(userId, {
     state: "ASK_TITLE",
-    activeSessionId: sessionId,
     draft: {},
   });
 
@@ -110,7 +108,7 @@ async function onConfirm(userId: string, replyToken: string, text: string) {
     return replyText(replyToken, "「はい」か「いいえ」で答えてね。");
   }
 
-  const user = await getUser(userId);
+  const user = await findOrCreateUser(userId);
   if (!user) return replyText(replyToken, "エラーが発生しました。");
 
   const { activeSessionId, draft } = user;

@@ -3,13 +3,23 @@ import { UserState, UserStates } from "../types/UserState";
 import { User } from "../types/User";
 import { Submission } from "../types/Submission";
 
-export async function getUser(userId: string): Promise<User> {
+export async function findOrCreateUser(userId: string): Promise<User> {
   const db = admin.firestore();
   const userRef = db.doc(`users/${userId}`);
   const userSnap = await userRef.get();
 
   if (!userSnap.exists) {
     const activeSessionId = await getActiveSessionId();
+
+    const data: any = {
+      state: "IDLE",
+      draft: {},
+      activeSessionId,
+      stateUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    };
+
+    await userRef.set(data);
+
     return {
       state: "IDLE",
       draft: {},
@@ -21,13 +31,7 @@ export async function getUser(userId: string): Promise<User> {
   const user = userSnap.data();
 
   if (!user) {
-    const activeSessionId = await getActiveSessionId();
-    return {
-      state: "IDLE",
-      draft: {},
-      activeSessionId,
-      stateUpdatedAt: new Date(),
-    }
+    throw new Error("User data is empty");
   }
 
   const state: UserState = UserStates.includes(user.state) ? user.state : "IDLE";
