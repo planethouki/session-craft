@@ -9,7 +9,7 @@ import {
   createSubmission
 } from "./firestoreService";
 
-import { messageService } from "./messageService";
+import { replyText } from "./messageService";
 
 export async function handleEvent(ev: WebhookEvent) {
   if (ev.type !== "message" || ev.message.type !== "text") return;
@@ -139,8 +139,4 @@ async function resetState(userId: string, replyToken: string, message: string) {
 
 async function replyHelp(replyToken: string) {
   return replyText(replyToken, "「提出」と送ると課題曲を登録できるよ。\n「キャンセル」で入力を中断できるよ。");
-}
-
-async function replyText(replyToken: string, text: string) {
-  return messageService.replyText(replyToken, text);
 }

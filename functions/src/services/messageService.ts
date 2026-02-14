@@ -30,5 +30,10 @@ class MessageService {
   }
 }
 
+function replyText(replyToken: string, text: string) {
+  return messageService.replyText(replyToken, text);
+}
+
 export const messageService = new MessageService();
 export type { MessageService };
+export { replyText };
