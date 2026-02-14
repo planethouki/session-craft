@@ -2,6 +2,7 @@ import * as admin from 'firebase-admin'
 import { UserState, UserStates } from "../types/UserState";
 import { User } from "../types/User";
 import { Submission } from "../types/Submission";
+import { Session } from "../types/Session";
 
 export async function findOrCreateUser(userId: string): Promise<User> {
   const db = admin.firestore();
@@ -75,25 +76,28 @@ export async function setUser(userId: string, user: Partial<User>): Promise<void
   await db.doc(`users/${userId}`).set(data, { merge: true });
 }
 
-export async function getActiveSessionId(): Promise<string> {
+export async function getCurrentSession(): Promise<Session | null> {
   const db = admin.firestore();
   const sessionSnap = await db.doc('sessions/current').get();
-  if (!sessionSnap.exists) throw new Error("No active session");
-  return sessionSnap.data()?.sessionId || "unknown";
+  if (!sessionSnap.exists) return null;
+  const data = sessionSnap.data();
+  if (!data) return null;
+  return {
+    ...data,
+    sessionDate: data.sessionDate.toDate(),
+  } as Session;
+}
+
+export async function getActiveSessionId(): Promise<string> {
+  const s = await getCurrentSession();
+  if (!s) throw new Error("No active session");
+  return s.sessionId;
 }
 
 export async function isSubmissionOpen(): Promise<boolean> {
-  const db = admin.firestore();
-  const sessionSnap = await db.doc('sessions/current').get();
-  if (!sessionSnap.exists) return false;
-  const data = sessionSnap.data();
+  const data = await getCurrentSession();
   if (!data) return false;
-
-  const now = admin.firestore.Timestamp.now();
-  const startAt = data.startAt as admin.firestore.Timestamp;
-  const endAt = data.endAt as admin.firestore.Timestamp;
-
-  return now.toMillis() >= startAt.toMillis() && now.toMillis() <= endAt.toMillis();
+  return data.state === "SUBMISSION";
 }
 
 export async function getSubmission(sessionId: string, userId: string): Promise<Submission | null> {
