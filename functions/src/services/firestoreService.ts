@@ -22,9 +22,7 @@ export async function findOrCreateUser(userId: string): Promise<User> {
     await userRef.set(data);
 
     return {
-      state: "IDLE",
-      draft: {},
-      activeSessionId,
+      ...data,
       stateUpdatedAt: new Date(),
     }
   }
