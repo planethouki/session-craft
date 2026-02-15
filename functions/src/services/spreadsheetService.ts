@@ -65,9 +65,11 @@ export async function updateSpreadsheetSubmissions(sessionId: string, spreadshee
         sub.myParts.join(", "),
         sub.audioUrl || "",
         sub.scoreUrl || "",
-        [sub.referenceUrl1, sub.referenceUrl2, sub.referenceUrl3, sub.referenceUrl4, sub.referenceUrl5]
-        .filter(url => url)
-          .join("\n"),
+        sub.referenceUrl1 || "",
+        sub.referenceUrl2 || "",
+        sub.referenceUrl3 || "",
+        sub.referenceUrl4 || "",
+        sub.referenceUrl5 || "",
         sub.description || "",
         sub.createdAt.toLocaleString("ja-JP"),
       ];
@@ -87,7 +89,11 @@ export async function updateSpreadsheetSubmissions(sessionId: string, spreadshee
     "担当楽器",
     "音源URL",
     "コード譜URL",
-    "参考URL",
+    "参考URL1",
+    "参考URL2",
+    "参考URL3",
+    "参考URL4",
+    "参考URL5",
     "備考",
     "提出日時",
   ];
