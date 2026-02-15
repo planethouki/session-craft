@@ -2,6 +2,7 @@ import { setGlobalOptions } from 'firebase-functions'
 import { onInit } from 'firebase-functions/v2/core'
 import { defineSecret } from "firebase-functions/params";
 import { onRequest } from "firebase-functions/https";
+import { onDocumentWritten } from "firebase-functions/v2/firestore";
 import * as admin from 'firebase-admin'
 import * as logger from "firebase-functions/logger";
 import { WebhookRequestBody } from "@line/bot-sdk";
@@ -43,6 +44,39 @@ export const lineWebhook = onRequest({
 
   res.status(200).send('OK')
 })
+
+export const onSubmissionWritten = onDocumentWritten("submissions/{submissionId}", async (event) => {
+  logger.info("Submission written", { params: event.params });
+
+  const session = await getCurrentSession();
+  if (!session) {
+    logger.warn("Active session not found");
+    return;
+  }
+
+  const submissionIds = session.submissionSpreadsheetIds || [];
+  if (submissionIds.length > 0) {
+    await updateSpreadsheetSubmissions(session.sessionId, submissionIds);
+    logger.info("Spreadsheet submissions updated", { sessionId: session.sessionId });
+  }
+});
+
+export const onEntryWritten = onDocumentWritten("entries/{entryId}", async (event) => {
+  logger.info("Entry written", { params: event.params });
+
+  const session = await getCurrentSession();
+  if (!session) {
+    logger.warn("Active session not found");
+    return;
+  }
+
+  const entryIds = session.entrySpreadsheetIds || [];
+  if (entryIds.length > 0) {
+    await updateSpreadsheetEntries(session.sessionId, entryIds);
+    logger.info("Spreadsheet entries updated", { sessionId: session.sessionId });
+  }
+});
+
 
 export const updateSpreadsheet = onRequest(async (req, res) => {
   logger.info('Update spreadsheet request received');

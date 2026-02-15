@@ -7,12 +7,10 @@ import {
   createOrUpdateEntry,
   deleteEntry,
   getEntriesByUser,
-  getCurrentSession,
 } from "../firestoreService";
 import { replyText, replyFlexMessage } from "../messageService";
 import { InstrumentalParts, InstrumentalPart } from "../../types/InstrumentalPart";
 import { createPartsFlexMessage, createSelectionFlexMessage } from "../../utils/flexButton";
-import { updateSpreadsheetEntries } from "../spreadsheetService";
 
 export async function handleEntry(userId: string, replyToken: string, text: string) {
   // 共通コマンド
@@ -137,11 +135,6 @@ async function onSelectPart(userId: string, replyToken: string, text: string) {
       await deleteEntry(sessionId, submissionUserId, userId);
       await updateUserState(userId, { state: "IDLE", entryDraft: {} });
 
-      const session = await getCurrentSession();
-      if (session?.entrySpreadsheetIds) {
-        await updateSpreadsheetEntries(sessionId, session.entrySpreadsheetIds);
-      }
-
       return replyText(replyToken, `${songTitle} のエントリーを解除したよ。`);
     }
     await createOrUpdateEntry({
@@ -151,11 +144,6 @@ async function onSelectPart(userId: string, replyToken: string, text: string) {
       parts: currentParts,
     });
     await updateUserState(userId, { state: "IDLE", entryDraft: {} });
-
-    const session = await getCurrentSession();
-    if (session?.entrySpreadsheetIds) {
-      await updateSpreadsheetEntries(sessionId, session.entrySpreadsheetIds);
-    }
 
     return replyText(replyToken, `${songTitle} のエントリーを更新したよ！`);
   }
@@ -240,11 +228,6 @@ async function executeDeleteEntry(userId: string, replyToken: string, entryIndex
   const songTitle = song ? song.title : "不明な曲";
 
   await deleteEntry(sessionId, entry.submissionUserId, userId);
-
-  const session = await getCurrentSession();
-  if (session?.entrySpreadsheetIds) {
-    await updateSpreadsheetEntries(sessionId, session.entrySpreadsheetIds);
-  }
 
   return replyText(replyToken, `${songTitle} のエントリーを解除したよ。`);
 }

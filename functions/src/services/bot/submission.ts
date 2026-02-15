@@ -6,7 +6,6 @@ import {
   getSubmissions,
   createSubmission,
   deleteSubmission,
-  getCurrentSession,
   createOrUpdateEntry,
   deleteEntriesBySubmission,
 } from "../firestoreService";
@@ -14,7 +13,6 @@ import {
 import { replyText, replyFlexMessage } from "../messageService";
 import { InstrumentalParts, InstrumentalPart, DefaultInstrumentalParts } from "../../types/InstrumentalPart";
 import { createPartsFlexMessage, createConfirmFlexMessage } from "../../utils/flexButton";
-import { updateSpreadsheetSubmissions } from "../spreadsheetService";
 
 export async function handleSubmission(userId: string, replyToken: string, text: string) {
 
@@ -371,12 +369,6 @@ async function onConfirm(userId: string, replyToken: string, text: string) {
     parts: myParts,
   });
 
-  // スプレッドシート更新
-  const session = await getCurrentSession();
-  if (session?.submissionSpreadsheetIds) {
-    await updateSpreadsheetSubmissions(sessionId, session.submissionSpreadsheetIds);
-  }
-
   // stateリセット
   await updateUserState(userId, { state: "IDLE", submissionDraft: {} });
 
@@ -446,12 +438,6 @@ async function deleteSubmissionCommand(userId: string, replyToken: string) {
 
   await deleteSubmission(sessionId, userId);
   await deleteEntriesBySubmission(sessionId, userId);
-
-  // スプレッドシート更新
-  const session = await getCurrentSession();
-  if (session?.submissionSpreadsheetIds) {
-    await updateSpreadsheetSubmissions(sessionId, session.submissionSpreadsheetIds);
-  }
 
   return replyText(replyToken, "提出を削除したよ。");
 }
