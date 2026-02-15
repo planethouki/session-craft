@@ -18,36 +18,30 @@ class MessageService {
     });
   }
 
-  async replyText(replyToken: string, text: string) {
+  async replyMessage(replyToken: string, messages: messagingApi.Message[]) {
     if (!this.client) {
       throw new Error("MessageService is not initialized. Call messageService.init() first.");
     }
 
     return this.client.replyMessage({
       replyToken,
-      messages: [{ type: "text", text }],
-    });
-  }
-
-  async replyFlexMessage(replyToken: string, message: messagingApi.FlexMessage) {
-    if (!this.client) {
-      throw new Error("MessageService is not initialized. Call messageService.init() first.");
-    }
-
-    return this.client.replyMessage({
-      replyToken,
-      messages: [message],
+      messages,
     });
   }
 }
 
 function replyText(replyToken: string, text: string) {
-  return messageService.replyText(replyToken, text);
+  return messageService.replyMessage(replyToken, [{ type: "text", text }]);
 }
 
-function replyFlexMessage(replyToken: string, message: FlexMessage) {
+function replyFlexMessage(replyToken: string, message: FlexMessage, beforeText?: string) {
+  const messages: messagingApi.Message[] = []
+  if (beforeText) {
+    messages.push({ type: "text", text: beforeText })
+  }
   // @ts-ignore messagingApi.FlexMessage と FlexMessage は違うみたい
-  return messageService.replyFlexMessage(replyToken, message);
+  messages.push(message)
+  return messageService.replyMessage(replyToken, messages);
 }
 
 export const messageService = new MessageService();

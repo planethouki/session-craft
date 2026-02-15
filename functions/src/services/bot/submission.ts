@@ -100,7 +100,7 @@ async function onParts(userId: string, replyToken: string, text: string) {
 
   if (text === "選択終了") {
     if (currentParts.length === 0) {
-      return replyText(replyToken, "最低一つは楽器を選んでね。");
+      return replyPartsFlex(replyToken, "必要な楽器を選んでね（複数可）", currentParts, undefined, "最低一つは楽器を選んでね。");
     }
     await updateUserState(userId, {
       state: "ASK_MY_PARTS",
@@ -113,7 +113,7 @@ async function onParts(userId: string, replyToken: string, text: string) {
 
   const part = text as InstrumentalPart;
   if (!InstrumentalParts.includes(part)) {
-    return replyText(replyToken, "ボタンから選んでね。");
+    return replyPartsFlex(replyToken, "必要な楽器を選んでね（複数可）", currentParts, undefined, "ボタンから選んでね。");
   }
 
   const newParts = currentParts.includes(part)
@@ -136,7 +136,7 @@ async function onMyParts(userId: string, replyToken: string, text: string) {
 
   if (text === "選択終了") {
     if (currentMyParts.length === 0) {
-      return replyText(replyToken, "最低一つは自分の担当楽器を選んでね。");
+      return replyPartsFlex(replyToken, "自分が担当する楽器を選んでね（複数可）", currentMyParts, requiredParts, "最低一つは自分の担当楽器を選んでね。");
     }
     await updateUserState(userId, {
       state: "CONFIRM",
@@ -157,7 +157,7 @@ async function onMyParts(userId: string, replyToken: string, text: string) {
 
   const part = text as InstrumentalPart;
   if (!InstrumentalParts.includes(part)) {
-    return replyText(replyToken, "ボタンから選んでね。");
+    return replyPartsFlex(replyToken, "自分が担当する楽器を選んでね（複数可）", currentMyParts, requiredParts, "ボタンから選んでね。");
   }
 
   const newMyParts = currentMyParts.includes(part)
@@ -173,9 +173,9 @@ async function onMyParts(userId: string, replyToken: string, text: string) {
   return replyPartsFlex(replyToken, "自分が担当する楽器を選んでね（複数可）", newMyParts, requiredParts);
 }
 
-async function replyPartsFlex(replyToken: string, title: string, selected: InstrumentalPart[], filter?: InstrumentalPart[]) {
+async function replyPartsFlex(replyToken: string, title: string, selected: InstrumentalPart[], filter?: InstrumentalPart[], beforeText?: string) {
   const message = createPartsFlexMessage(title, selected, filter);
-  return replyFlexMessage(replyToken, message);
+  return replyFlexMessage(replyToken, message, beforeText);
 }
 
 async function onConfirm(userId: string, replyToken: string, text: string) {
