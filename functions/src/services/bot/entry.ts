@@ -16,6 +16,7 @@ export async function handleEntry(userId: string, replyToken: string, text: stri
   // 共通コマンド
   if (text === "キャンセル") return resetState(userId, replyToken, "キャンセルしたよ。");
   if (text === "状況") return replyMyEntries(userId, replyToken);
+  if (text === "情報") return replyAllSubmissionsDetail(replyToken);
 
   const user = await getUser(userId);
 
@@ -182,6 +183,7 @@ async function replyHelp(replyToken: string) {
     "「エントリー」で曲一覧を表示するよ。",
     "曲の番号（例：1）を送ると詳細表示とパート選択ができるよ。",
     "「状況」で自分のエントリーを確認できるよ。",
+    "「情報」ですべての曲の詳細を確認できるよ。",
     "「削除」でエントリーを解除できるよ。",
     "「キャンセル」で中断できるよ。",
   ].join("\n");
@@ -244,4 +246,49 @@ async function replyMyEntries(userId: string, replyToken: string) {
   });
 
   return replyText(replyToken, `あなたのエントリー状況：\n${lines.join("\n")}`);
+}
+
+async function replyAllSubmissionsDetail(replyToken: string) {
+  const sessionId = await getActiveSessionId();
+  const subs = await getSubmissions(sessionId);
+
+  if (subs.length === 0) {
+    return replyText(replyToken, "まだ曲が提出されていないよ。");
+  }
+
+  // 関連する全ユーザーのIDを収集
+  const userIds = new Set<string>();
+  subs.forEach(s => userIds.add(s.userId));
+
+  const userMap = new Map<string, string>();
+  await Promise.all(Array.from(userIds).map(async (id) => {
+    try {
+      const u = await getUser(id);
+      userMap.set(id, u.nickname || "不明");
+    } catch (e) {
+      userMap.set(id, "不明");
+    }
+  }));
+
+  const message = subs.map((s, i) => {
+    const submitterNickname = userMap.get(s.userId) || "不明";
+    const lines = [
+      `曲名: ${s.title}`,
+      `アーティスト: ${s.artist}`,
+      `選曲者: ${submitterNickname}`,
+    ]
+
+    if (s.audioUrl) lines.push(`音源URL: ${s.audioUrl}`)
+    if (s.scoreUrl) lines.push(`コード譜URL: ${s.scoreUrl}`)
+    if (s.referenceUrl1) lines.push(`参考1: ${s.referenceUrl1}`)
+    if (s.referenceUrl2) lines.push(`参考2: ${s.referenceUrl2}`)
+    if (s.referenceUrl3) lines.push(`参考3: ${s.referenceUrl3}`)
+    if (s.referenceUrl4) lines.push(`参考4: ${s.referenceUrl4}`)
+    if (s.referenceUrl5) lines.push(`参考5: ${s.referenceUrl5}`)
+    if (s.description) lines.push(`その他: ${s.description}`)
+
+    return lines.join("\n");
+  }).join("\n\n");
+
+  return replyText(replyToken, message);
 }
