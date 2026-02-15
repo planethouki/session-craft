@@ -215,6 +215,12 @@ export async function deleteEntriesBySubmission(sessionId: string, submissionUse
   await batch.commit();
 }
 
+export async function deleteEntry(sessionId: string, submissionUserId: string, userId: string): Promise<void> {
+  const db = admin.firestore();
+  const entryId = `${sessionId}_${submissionUserId}_${userId}`;
+  await db.doc(`entries/${entryId}`).delete();
+}
+
 export async function createOrUpdateEntry(entry: Omit<Entry, 'createdAt' | 'updatedAt'>): Promise<void> {
   const db = admin.firestore();
   const entryId = `${entry.sessionId}_${entry.submissionUserId}_${entry.userId}`;

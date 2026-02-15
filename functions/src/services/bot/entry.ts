@@ -5,18 +5,17 @@ import {
   getSubmissions,
   getEntry,
   createOrUpdateEntry,
+  deleteEntry,
   getEntriesByUser,
-  getEntriesBySession,
 } from "../firestoreService";
 import { replyText, replyFlexMessage } from "../messageService";
 import { InstrumentalParts, InstrumentalPart } from "../../types/InstrumentalPart";
-import { createPartsFlexMessage } from "../../utils/flexButton";
+import { createPartsFlexMessage, createSelectionFlexMessage } from "../../utils/flexButton";
 
 export async function handleEntry(userId: string, replyToken: string, text: string) {
   // 共通コマンド
   if (text === "キャンセル") return resetState(userId, replyToken, "キャンセルしたよ。");
   if (text === "状況") return replyMyEntries(userId, replyToken);
-  if (text === "一覧") return replyEntryList(replyToken);
 
   const user = await getUser(userId);
 
@@ -27,6 +26,17 @@ export async function handleEntry(userId: string, replyToken: string, text: stri
   // IDLE状態など
   if (text === "エントリー" || text === "参加") {
     return replySongList(replyToken);
+  }
+
+  if (text === "削除") {
+    return replyDeleteSelection(userId, replyToken);
+  }
+
+  // 「削除 1」などの削除実行
+  const deleteMatch = text.match(/^削除\s*(\d+)$/);
+  if (deleteMatch) {
+    const entryIndex = parseInt(deleteMatch[1]) - 1;
+    return executeDeleteEntry(userId, replyToken, entryIndex);
   }
 
   // 「1」「エントリー 1」などの曲選択
@@ -47,7 +57,7 @@ async function replySongList(replyToken: string) {
     return replyText(replyToken, "まだ曲が提出されていないよ。");
   }
 
-  const list = subs.map((s, i) => `${i + 1}. ${s.title} / ${s.artist}`).join("\n");
+  const list = subs.map((s, i) => `${i + 1}. ${s.title} / ${s.artist} [${s.parts.join("/")}]`).join("\n");
   const message = [
     "エントリーしたい曲の番号を教えてね（例：1）",
     "",
@@ -105,6 +115,11 @@ async function onSelectPart(userId: string, replyToken: string, text: string) {
   }
 
   if (text === "エントリー確定") {
+    if (currentParts.length === 0) {
+      await deleteEntry(sessionId, submissionUserId, userId);
+      await updateUserState(userId, { state: "IDLE", entryDraft: {} });
+      return replyText(replyToken, `${songTitle} のエントリーを解除したよ。`);
+    }
     await createOrUpdateEntry({
       sessionId,
       submissionUserId,
@@ -152,9 +167,50 @@ async function replyHelp(replyToken: string) {
     "「エントリー」で曲一覧を表示するよ。",
     "曲の番号（例：1）を送ると詳細表示とパート選択ができるよ。",
     "「状況」で自分のエントリーを確認できるよ。",
+    "「削除」でエントリーを解除できるよ。",
     "「キャンセル」で中断できるよ。",
   ].join("\n");
   return replyText(replyToken, message);
+}
+
+async function replyDeleteSelection(userId: string, replyToken: string) {
+  const sessionId = await getActiveSessionId();
+  const entries = await getEntriesByUser(sessionId, userId);
+  const subs = await getSubmissions(sessionId);
+
+  if (entries.length === 0) {
+    return replyText(replyToken, "まだエントリーしていないよ。");
+  }
+
+  const options = entries.map((entry, i) => {
+    const song = subs.find(s => s.userId === entry.submissionUserId);
+    const songTitle = song ? song.title : "不明な曲";
+    return {
+      label: `${i + 1}. ${songTitle}`,
+      text: `削除 ${i + 1}`,
+    };
+  });
+
+  const message = createSelectionFlexMessage("解除するエントリーを選択してね", options);
+  return replyFlexMessage(replyToken, message);
+}
+
+async function executeDeleteEntry(userId: string, replyToken: string, entryIndex: number) {
+  const sessionId = await getActiveSessionId();
+  const entries = await getEntriesByUser(sessionId, userId);
+
+  if (entryIndex < 0 || entryIndex >= entries.length) {
+    return replyText(replyToken, "無効な番号だよ。");
+  }
+
+  const entry = entries[entryIndex];
+  const subs = await getSubmissions(sessionId);
+  const song = subs.find(s => s.userId === entry.submissionUserId);
+  const songTitle = song ? song.title : "不明な曲";
+
+  await deleteEntry(sessionId, entry.submissionUserId, userId);
+
+  return replyText(replyToken, `${songTitle} のエントリーを解除したよ。`);
 }
 
 async function replyMyEntries(userId: string, replyToken: string) {
@@ -173,28 +229,4 @@ async function replyMyEntries(userId: string, replyToken: string) {
   });
 
   return replyText(replyToken, `あなたのエントリー状況：\n${lines.join("\n")}`);
-}
-
-async function replyEntryList(replyToken: string) {
-  const sessionId = await getActiveSessionId();
-  const subs = await getSubmissions(sessionId);
-  const entries = await getEntriesBySession(sessionId);
-
-  if (subs.length === 0) {
-    return replyText(replyToken, "まだ曲が提出されていないよ。");
-  }
-
-  const lines = subs.map((song, i) => {
-    const songEntries = entries.filter(e => e.submissionUserId === song.userId);
-    const entryDetails = songEntries.map(e => {
-      // 本来はユーザー名を表示したいが、ここでは簡易的にIDを表示するか、
-      // ユーザー情報を別途取得する必要がある。
-      // 今回は一旦「誰かがエントリー中」というニュアンスで。
-      return `${e.parts.join(", ")}`;
-    }).filter(s => s.length > 0);
-
-    return `${i + 1}. ${song.title} [${song.parts.join("/")}]\n   エントリー: ${entryDetails.join(" / ") || "なし"}`;
-  });
-
-  return replyText(replyToken, `現在の全体エントリー状況：\n${lines.join("\n\n")}`);
 }

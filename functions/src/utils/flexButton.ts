@@ -120,3 +120,43 @@ export function createConfirmFlexMessage(title: string, summary: string): FlexMe
     },
   };
 }
+
+export function createSelectionFlexMessage(title: string, options: { label: string; text: string }[]): FlexMessage {
+  const buttons: FlexButton[] = options.map(opt => ({
+    type: "button",
+    action: {
+      type: "message",
+      label: opt.label,
+      text: opt.text,
+    },
+    style: "secondary",
+    margin: "sm",
+  }));
+
+  return {
+    type: "flex",
+    altText: title,
+    contents: {
+      type: "bubble",
+      body: {
+        type: "box",
+        layout: "vertical",
+        contents: [
+          {
+            type: "text",
+            text: title,
+            weight: "bold",
+            size: "md",
+          },
+          {
+            type: "box",
+            layout: "vertical",
+            margin: "lg",
+            spacing: "sm",
+            contents: buttons,
+          },
+        ],
+      },
+    },
+  };
+}
