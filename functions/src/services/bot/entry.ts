@@ -57,7 +57,22 @@ async function replySongList(replyToken: string) {
     return replyText(replyToken, "まだ曲が提出されていないよ。");
   }
 
-  const list = subs.map((s, i) => `${i + 1}. ${s.title} / ${s.artist} [${s.parts.join("/")}]`).join("\n");
+  const list = subs.map((s, i) => {
+    let text = `${i + 1}. ${s.title} / ${s.artist} [${s.parts.join("/")}]`;
+    const urls: string[] = [];
+    if (s.audioUrl) urls.push(`音源: ${s.audioUrl}`);
+    if (s.scoreUrl) urls.push(`譜面: ${s.scoreUrl}`);
+    if (s.referenceUrl1) urls.push(`参考1: ${s.referenceUrl1}`);
+    if (s.referenceUrl2) urls.push(`参考2: ${s.referenceUrl2}`);
+    if (s.referenceUrl3) urls.push(`参考3: ${s.referenceUrl3}`);
+    if (s.referenceUrl4) urls.push(`参考4: ${s.referenceUrl4}`);
+    if (s.referenceUrl5) urls.push(`参考5: ${s.referenceUrl5}`);
+
+    if (urls.length > 0) {
+      text += "\n" + urls.map(u => `   ${u}`).join("\n");
+    }
+    return text;
+  }).join("\n");
   const message = [
     "エントリーしたい曲の番号を教えてね（例：1）",
     "",
@@ -89,14 +104,7 @@ async function startEntryForSong(userId: string, replyToken: string, songIndex: 
     }
   });
 
-  const detail = [
-    `曲名: ${song.title}`,
-    `アーティスト: ${song.artist}`,
-    `音源: ${song.audioUrl || "なし"}`,
-    `必要楽器: ${song.parts.join(", ")}`,
-  ].join("\n");
-
-  return replyPartsFlex(replyToken, `${song.title} にエントリー`, selectedParts, song.parts, detail);
+  return replyPartsFlex(replyToken, `${song.title} にエントリー`, selectedParts, song.parts);
 }
 
 async function onSelectPart(userId: string, replyToken: string, text: string) {
