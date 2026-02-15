@@ -8,7 +8,9 @@ import {
   deleteSubmission,
 } from "../firestoreService";
 
-import { replyText } from "../messageService";
+import { replyText, messageService } from "../messageService";
+import { InstrumentalParts, InstrumentalPart } from "../../types/InstrumentalPart";
+import { FlexMessage, FlexButton, FlexBox } from "@line/bot-sdk";
 
 export async function handleSubmission(userId: string, replyToken: string, text: string) {
 
@@ -31,6 +33,10 @@ export async function handleSubmission(userId: string, replyToken: string, text:
       return onArtist(userId, replyToken, text);
     case "ASK_URL":
       return onUrl(userId, replyToken, text);
+    case "ASK_PARTS":
+      return onParts(userId, replyToken, text);
+    case "ASK_MY_PARTS":
+      return onMyParts(userId, replyToken, text);
     case "CONFIRM":
       return onConfirm(userId, replyToken, text);
     default:
@@ -78,13 +84,166 @@ async function onUrl(userId: string, replyToken: string, urlText: string) {
   const url = (urlText === "なし") ? "" : urlText;
 
   await updateUserState(userId, {
-    state: "CONFIRM",
+    state: "ASK_PARTS",
     draft: {
       url,
+      parts: [],
     },
   });
 
-  return replyText(replyToken, `これで登録する？\n（はい / いいえ）\nURL: ${url || "なし"}`);
+  return replyPartsFlex(replyToken, "必要な楽器を選んでね（複数可）", []);
+}
+
+async function onParts(userId: string, replyToken: string, text: string) {
+  const user = await findOrCreateUser(userId);
+  const currentParts = user.draft.parts || [];
+
+  if (text === "選択終了") {
+    if (currentParts.length === 0) {
+      return replyText(replyToken, "最低一つは楽器を選んでね。");
+    }
+    await updateUserState(userId, {
+      state: "ASK_MY_PARTS",
+      draft: {
+        myParts: [],
+      },
+    });
+    return replyPartsFlex(replyToken, "自分が担当する楽器を選んでね（複数可）", [], currentParts);
+  }
+
+  const part = text as InstrumentalPart;
+  if (!InstrumentalParts.includes(part)) {
+    return replyText(replyToken, "ボタンから選んでね。");
+  }
+
+  const newParts = currentParts.includes(part)
+    ? currentParts.filter(p => p !== part)
+    : [...currentParts, part];
+
+  await updateUserState(userId, {
+    draft: {
+      parts: newParts,
+    },
+  });
+
+  return replyPartsFlex(replyToken, "必要な楽器を選んでね（複数可）", newParts);
+}
+
+async function onMyParts(userId: string, replyToken: string, text: string) {
+  const user = await findOrCreateUser(userId);
+  const currentMyParts = user.draft.myParts || [];
+  const requiredParts = user.draft.parts || [];
+
+  if (text === "選択終了") {
+    if (currentMyParts.length === 0) {
+      return replyText(replyToken, "最低一つは自分の担当楽器を選んでね。");
+    }
+    await updateUserState(userId, {
+      state: "CONFIRM",
+    });
+
+    const { draft } = user;
+    const summary = [
+      `曲名: ${draft.title}`,
+      `アーティスト: ${draft.artist}`,
+      `URL: ${draft.url || "なし"}`,
+      `必要楽器: ${requiredParts.join(", ")}`,
+      `担当楽器: ${currentMyParts.join(", ")}`,
+    ].join("\n");
+
+    return replyText(replyToken, `これで登録する？\n（はい / いいえ）\n\n${summary}`);
+  }
+
+  const part = text as InstrumentalPart;
+  if (!InstrumentalParts.includes(part)) {
+    return replyText(replyToken, "ボタンから選んでね。");
+  }
+
+  const newMyParts = currentMyParts.includes(part)
+    ? currentMyParts.filter(p => p !== part)
+    : [...currentMyParts, part];
+
+  await updateUserState(userId, {
+    draft: {
+      myParts: newMyParts,
+    },
+  });
+
+  return replyPartsFlex(replyToken, "自分が担当する楽器を選んでね（複数可）", newMyParts, requiredParts);
+}
+
+async function replyPartsFlex(replyToken: string, title: string, selected: InstrumentalPart[], filter?: InstrumentalPart[]) {
+  const partsToShow = filter || InstrumentalParts;
+
+  const buttons: FlexButton[] = partsToShow.map(part => {
+    const isSelected = selected.includes(part);
+    return {
+      type: "button",
+      action: {
+        type: "message",
+        label: isSelected ? `[${part}]` : part,
+        text: part,
+      },
+      style: isSelected ? "primary" : "secondary",
+      margin: "sm",
+      height: "sm",
+    };
+  });
+
+  // 3列ずつに分ける
+  const rows: FlexBox[] = [];
+  for (let i = 0; i < buttons.length; i += 3) {
+    rows.push({
+      type: "box",
+      layout: "horizontal",
+      contents: buttons.slice(i, i + 3),
+    });
+  }
+
+  const message: FlexMessage = {
+    type: "flex",
+    altText: title,
+    contents: {
+      type: "bubble",
+      body: {
+        type: "box",
+        layout: "vertical",
+        contents: [
+          {
+            type: "text",
+            text: title,
+            weight: "bold",
+            size: "md",
+          },
+          {
+            type: "box",
+            layout: "vertical",
+            margin: "lg",
+            spacing: "sm",
+            contents: rows,
+          },
+          {
+            type: "button",
+            action: {
+              type: "message",
+              label: "選択終了",
+              text: "選択終了",
+            },
+            style: "link",
+            margin: "md",
+          },
+        ],
+      },
+    },
+  };
+
+  const client = (messageService as any).client;
+  if (!client) throw new Error("MessageService is not initialized.");
+
+  return client.replyMessage({
+    replyToken,
+    messages: [message],
+  });
 }
 
 async function onConfirm(userId: string, replyToken: string, text: string) {
@@ -103,6 +262,8 @@ async function onConfirm(userId: string, replyToken: string, text: string) {
   const titleRaw = draft?.title ?? "";
   const artistRaw = draft?.artist ?? "";
   const url = draft?.url ?? "";
+  const parts = draft?.parts ?? [];
+  const myParts = draft?.myParts ?? [];
 
   const sessionId = await getActiveSessionId();
 
@@ -112,6 +273,8 @@ async function onConfirm(userId: string, replyToken: string, text: string) {
     titleRaw,
     artistRaw,
     url,
+    parts,
+    myParts,
   });
 
   // stateリセット
@@ -147,7 +310,15 @@ async function replyStatus(userId: string, replyToken: string) {
     return replyText(replyToken, "今月はまだ提出していないよ。");
   }
 
-  return replyText(replyToken, `現在の提出状況：\n${sub.titleRaw} / ${sub.artistRaw}\nURL: ${sub.url || "なし"}`);
+  const statusText = [
+    `現在の提出状況：`,
+    `${sub.titleRaw} / ${sub.artistRaw}`,
+    `URL: ${sub.url || "なし"}`,
+    `必要楽器: ${sub.parts.join(", ")}`,
+    `担当楽器: ${sub.myParts.join(", ")}`,
+  ].join("\n");
+
+  return replyText(replyToken, statusText);
 }
 
 async function replyList(replyToken: string) {

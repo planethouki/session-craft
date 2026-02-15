@@ -41,6 +41,8 @@ export async function findOrCreateUser(userId: string): Promise<User> {
       title: user.draft?.title,
       artist: user.draft?.artist,
       url: user.draft?.url,
+      parts: user.draft?.parts,
+      myParts: user.draft?.myParts,
     },
     stateUpdatedAt: user.stateUpdatedAt.toDate(),
   }
@@ -56,6 +58,8 @@ export async function updateUserState(userId: string, data: Partial<User>): Prom
     if (data.draft.title !== undefined) updateData["draft.title"] = data.draft.title;
     if (data.draft.artist !== undefined) updateData["draft.artist"] = data.draft.artist;
     if (data.draft.url !== undefined) updateData["draft.url"] = data.draft.url;
+    if (data.draft.parts !== undefined) updateData["draft.parts"] = data.draft.parts;
+    if (data.draft.myParts !== undefined) updateData["draft.myParts"] = data.draft.myParts;
     if (Object.keys(data.draft).length === 0) updateData.draft = {};
   }
 
@@ -111,6 +115,8 @@ export async function getSubmission(sessionId: string, userId: string): Promise<
     titleRaw: data.titleRaw,
     artistRaw: data.artistRaw,
     url: data.url,
+    parts: data.parts || [],
+    myParts: data.myParts || [],
     createdAt: data.createdAt.toDate(),
     updatedAt: data.updatedAt.toDate(),
   };
@@ -132,6 +138,8 @@ export async function getSubmissions(sessionId: string): Promise<Submission[]> {
         titleRaw: data.titleRaw,
         artistRaw: data.artistRaw,
         url: data.url,
+        parts: data.parts || [],
+        myParts: data.myParts || [],
         createdAt: data.createdAt.toDate(),
         updatedAt: data.updatedAt.toDate(),
       } as Submission;

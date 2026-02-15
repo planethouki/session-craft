@@ -1,3 +1,5 @@
+import { InstrumentalPart } from "./InstrumentalPart";
+
 export type Submission = {
   sessionId: string;
   userId: string;
@@ -6,4 +8,6 @@ export type Submission = {
   url: string;
   createdAt: Date;
   updatedAt: Date;
+  parts: InstrumentalPart[];
+  myParts: InstrumentalPart[];
 }
