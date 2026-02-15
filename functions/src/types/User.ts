@@ -7,6 +7,5 @@ export type User = {
     artist?: string;
     url?: string;
   }
-  activeSessionId: string;
   stateUpdatedAt: Date;
 }

@@ -95,13 +95,15 @@ async function onConfirm(userId: string, replyToken: string, text: string) {
   const user = await findOrCreateUser(userId);
   if (!user) return replyText(replyToken, "エラーが発生しました。");
 
-  const { activeSessionId, draft } = user;
+  const { draft } = user;
   const titleRaw = draft?.title ?? "";
   const artistRaw = draft?.artist ?? "";
   const url = draft?.url ?? "";
 
+  const sessionId = await getActiveSessionId();
+
   await createSubmission({
-    sessionId: activeSessionId,
+    sessionId,
     userId,
     titleRaw,
     artistRaw,

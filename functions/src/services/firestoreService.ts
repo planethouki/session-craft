@@ -42,7 +42,6 @@ export async function findOrCreateUser(userId: string): Promise<User> {
       artist: user.draft?.artist,
       url: user.draft?.url,
     },
-    activeSessionId: user.activeSessionId,
     stateUpdatedAt: user.stateUpdatedAt.toDate(),
   }
 }
@@ -53,7 +52,6 @@ export async function updateUserState(userId: string, data: Partial<User>): Prom
     stateUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
   };
   if (data.state) updateData.state = data.state;
-  if (data.activeSessionId) updateData.activeSessionId = data.activeSessionId;
   if (data.draft) {
     if (data.draft.title !== undefined) updateData["draft.title"] = data.draft.title;
     if (data.draft.artist !== undefined) updateData["draft.artist"] = data.draft.artist;
