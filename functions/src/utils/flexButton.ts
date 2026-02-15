@@ -1,7 +1,7 @@
 import { FlexMessage, FlexButton, FlexBox } from "@line/bot-sdk";
 import { InstrumentalParts, InstrumentalPart } from "../types/InstrumentalPart";
 
-export function createPartsFlexMessage(title: string, selected: InstrumentalPart[], filter?: InstrumentalPart[]): FlexMessage {
+export function createPartsFlexMessage(title: string, selected: InstrumentalPart[], filter?: InstrumentalPart[], finishText: string = "選択終了"): FlexMessage {
   const partsToShow = filter || InstrumentalParts;
 
   const buttons: FlexButton[] = partsToShow.map(part => {
@@ -55,8 +55,8 @@ export function createPartsFlexMessage(title: string, selected: InstrumentalPart
             type: "button",
             action: {
               type: "message",
-              label: "選択終了",
-              text: "選択終了",
+              label: finishText,
+              text: finishText,
             },
             style: "link",
             margin: "md",

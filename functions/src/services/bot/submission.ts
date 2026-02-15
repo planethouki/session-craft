@@ -7,6 +7,8 @@ import {
   createSubmission,
   deleteSubmission,
   getCurrentSession,
+  createOrUpdateEntry,
+  deleteEntriesBySubmission,
 } from "../firestoreService";
 
 import { replyText, replyFlexMessage } from "../messageService";
@@ -360,6 +362,14 @@ async function onConfirm(userId: string, replyToken: string, text: string) {
     myParts,
   });
 
+  // 提出者本人分のEntryドキュメントを自動作成
+  await createOrUpdateEntry({
+    sessionId,
+    submissionUserId: userId,
+    userId: userId,
+    parts: myParts,
+  });
+
   // スプレッドシート更新
   const session = await getCurrentSession();
   if (session?.spreadsheetIds) {
@@ -434,6 +444,7 @@ async function deleteSubmissionCommand(userId: string, replyToken: string) {
   }
 
   await deleteSubmission(sessionId, userId);
+  await deleteEntriesBySubmission(sessionId, userId);
 
   // スプレッドシート更新
   const session = await getCurrentSession();

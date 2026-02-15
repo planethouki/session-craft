@@ -3,6 +3,7 @@ import { UserState, UserStates } from "../types/UserState";
 import { User } from "../types/User";
 import { Submission } from "../types/Submission";
 import { Session } from "../types/Session";
+import { Entry } from "../types/Entry";
 
 export async function getUser(userId: string): Promise<User> {
   const db = admin.firestore();
@@ -187,4 +188,98 @@ export async function deleteSubmission(sessionId: string, userId: string): Promi
   const db = admin.firestore();
   const subId = `${sessionId}_${userId}`;
   await db.doc(`submissions/${subId}`).delete();
+}
+
+export async function deleteEntriesBySubmission(sessionId: string, submissionUserId: string): Promise<void> {
+  const db = admin.firestore();
+  const entriesSnap = await db.collection('entries')
+    .where('sessionId', '==', sessionId)
+    .where('submissionUserId', '==', submissionUserId)
+    .get();
+
+  const batch = db.batch();
+  entriesSnap.docs.forEach(doc => {
+    batch.delete(doc.ref);
+  });
+  await batch.commit();
+}
+
+export async function createOrUpdateEntry(entry: Omit<Entry, 'createdAt' | 'updatedAt'>): Promise<void> {
+  const db = admin.firestore();
+  const entryId = `${entry.sessionId}_${entry.submissionUserId}_${entry.userId}`;
+  const entryRef = db.doc(`entries/${entryId}`);
+
+  const now = admin.firestore.FieldValue.serverTimestamp();
+  const entrySnap = await entryRef.get();
+
+  if (entrySnap.exists) {
+    await entryRef.update({
+      parts: entry.parts,
+      updatedAt: now,
+    });
+  } else {
+    await entryRef.set({
+      ...entry,
+      createdAt: now,
+      updatedAt: now,
+    });
+  }
+}
+
+export async function getEntry(sessionId: string, submissionUserId: string, entryUserId: string): Promise<Entry | null> {
+  const db = admin.firestore();
+  const entryId = `${sessionId}_${submissionUserId}_${entryUserId}`;
+  const entrySnap = await db.doc(`entries/${entryId}`).get();
+
+  if (!entrySnap.exists) return null;
+  const data = entrySnap.data();
+  if (!data) return null;
+
+  return {
+    sessionId: data.sessionId,
+    submissionUserId: data.submissionUserId,
+    userId: data.userId,
+    parts: data.parts || [],
+    createdAt: data.createdAt.toDate(),
+    updatedAt: data.updatedAt.toDate(),
+  };
+}
+
+export async function getEntriesBySession(sessionId: string): Promise<Entry[]> {
+  const db = admin.firestore();
+  const entriesSnap = await db.collection('entries')
+    .where('sessionId', '==', sessionId)
+    .get();
+
+  return entriesSnap.docs.map(doc => {
+    const data = doc.data();
+    return {
+      sessionId: data.sessionId,
+      submissionUserId: data.submissionUserId,
+      userId: data.userId,
+      parts: data.parts || [],
+      createdAt: data.createdAt.toDate(),
+      updatedAt: data.updatedAt.toDate(),
+    } as Entry;
+  });
+}
+
+export async function getEntriesByUser(sessionId: string, userId: string): Promise<Entry[]> {
+  const db = admin.firestore();
+  const entriesSnap = await db.collection('entries')
+    .where('sessionId', '==', sessionId)
+    .where('userId', '==', userId)
+    .get();
+
+  return entriesSnap.docs.map(doc => {
+    const data = doc.data();
+    return {
+      sessionId: data.sessionId,
+      submissionUserId: data.submissionUserId,
+      userId: data.userId,
+      parts: data.parts || [],
+      createdAt: data.createdAt.toDate(),
+      updatedAt: data.updatedAt.toDate(),
+    } as Entry;
+  });
 }

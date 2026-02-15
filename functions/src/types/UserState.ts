@@ -13,6 +13,7 @@ export const UserStates = [
   "ASK_MY_PARTS",
   "ASK_DESCRIPTION",
   "CONFIRM",
+  "SELECT_ENTRY_PART",
 ] as const;
 
 export type UserState = (typeof UserStates)[number];

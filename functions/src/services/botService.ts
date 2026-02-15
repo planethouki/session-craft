@@ -3,6 +3,7 @@ import { WebhookEvent } from '@line/bot-sdk';
 import { getCurrentSession, getUser, setUser } from "./firestoreService";
 import { replyText, getProfile } from "./messageService";
 import { handleSubmission } from "./bot/submission";
+import { handleEntry } from "./bot/entry";
 import { User } from '../types/User';
 
 export async function handleEvent(ev: WebhookEvent) {
@@ -59,6 +60,9 @@ export async function handleEvent(ev: WebhookEvent) {
   switch (session.state) {
     case "SUBMISSION":
       await handleSubmission(userId, replyToken, text);
+      break;
+    case "ENTRY":
+      await handleEntry(userId, replyToken, text);
       break;
     default:
       return;
