@@ -7,4 +7,5 @@ export type Session = {
   sessionDate: Date
   sessionLocation: string
   state: SessionState
+  spreadsheetIds: string[]
 }
