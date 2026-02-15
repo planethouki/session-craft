@@ -60,21 +60,25 @@ async function replySongList(replyToken: string, beforeText?: string) {
     return replyText(replyToken, "まだ曲が提出されていないよ。");
   }
 
-  const list = subs.map((s, i) => {
-    let text = `${i + 1}. ${s.title} / ${s.artist} [${s.parts.join("/")}]`;
-    const urls: string[] = [];
-    if (s.audioUrl) urls.push(`音源: ${s.audioUrl}`);
-    if (s.scoreUrl) urls.push(`譜面: ${s.scoreUrl}`);
-    if (s.referenceUrl1) urls.push(`参考1: ${s.referenceUrl1}`);
-    if (s.referenceUrl2) urls.push(`参考2: ${s.referenceUrl2}`);
-    if (s.referenceUrl3) urls.push(`参考3: ${s.referenceUrl3}`);
-    if (s.referenceUrl4) urls.push(`参考4: ${s.referenceUrl4}`);
-    if (s.referenceUrl5) urls.push(`参考5: ${s.referenceUrl5}`);
-
-    if (urls.length > 0) {
-      text += "\n" + urls.map(u => `   ${u}`).join("\n");
+  // 曲を提出した人のニックネームを取得
+  const submitterIds = Array.from(new Set(subs.map(s => s.userId)));
+  const userMap = new Map<string, string>();
+  await Promise.all(submitterIds.map(async (id) => {
+    try {
+      const u = await getUser(id);
+      userMap.set(id, u.nickname || "不明");
+    } catch (e) {
+      userMap.set(id, "不明");
     }
-    return text;
+  }));
+
+  const list = subs.map((s, i) => {
+    const submitterNickname = userMap.get(s.userId) || "不明";
+    const lines = []
+    lines.push(`${s.title} / ${s.artist}`);
+    lines.push(`Part [${s.parts.join("/")}]`);
+    lines.push(`By ${submitterNickname} [${s.myParts.join("/")}]`);
+    return lines.join("\n");
   }).join("\n");
   const message = [
     "エントリーしたい曲の番号を教えてね（例：1）",
