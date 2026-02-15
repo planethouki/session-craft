@@ -10,3 +10,10 @@ export const InstrumentalParts =[
 ] as const;
 
 export type InstrumentalPart = (typeof InstrumentalParts)[number];
+
+export const DefaultInstrumentalParts: InstrumentalPart[] = [
+  "Vo",
+  "Gt",
+  "Ba",
+  "Dr",
+];

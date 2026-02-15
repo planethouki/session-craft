@@ -9,7 +9,7 @@ import {
 } from "../firestoreService";
 
 import { replyText, replyFlexMessage } from "../messageService";
-import { InstrumentalParts, InstrumentalPart } from "../../types/InstrumentalPart";
+import { InstrumentalParts, InstrumentalPart, DefaultInstrumentalParts } from "../../types/InstrumentalPart";
 import { createPartsFlexMessage } from "../../utils/flexButton";
 
 export async function handleSubmission(userId: string, replyToken: string, text: string) {
@@ -87,11 +87,11 @@ async function onUrl(userId: string, replyToken: string, urlText: string) {
     state: "ASK_PARTS",
     draft: {
       url,
-      parts: [],
+      parts: [...DefaultInstrumentalParts],
     },
   });
 
-  return replyPartsFlex(replyToken, "必要な楽器を選んでね（複数可）", []);
+  return replyPartsFlex(replyToken, "必要な楽器を選んでね（複数可）", [...DefaultInstrumentalParts]);
 }
 
 async function onParts(userId: string, replyToken: string, text: string) {
