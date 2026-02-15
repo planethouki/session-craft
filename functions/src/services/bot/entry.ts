@@ -76,7 +76,7 @@ async function replySongList(replyToken: string, beforeText?: string) {
   const list = subs.map((s, i) => {
     const submitterNickname = userMap.get(s.userId) || "不明";
     const lines = []
-    lines.push(`${s.title} / ${s.artist}`);
+    lines.push(`${i+1}. ${s.title} / ${s.artist}`);
     lines.push(`Part [${s.parts.join("/")}]`);
     lines.push(`By ${submitterNickname} [${s.myParts.join("/")}]`);
     return lines.join("\n");
@@ -274,10 +274,12 @@ async function replyAllSubmissionsDetail(replyToken: string) {
 
   const message = subs.map((s, i) => {
     const submitterNickname = userMap.get(s.userId) || "不明";
+
     const lines = [
-      `曲名: ${s.title}`,
-      `アーティスト: ${s.artist}`,
+      `${i+1}. ${s.title} / ${s.artist}`,
       `選曲者: ${submitterNickname}`,
+      `必要楽器: ${(s.parts || []).join(", ")}`,
+      `担当楽器: ${(s.myParts || []).join(", ")}`,
     ]
 
     if (s.audioUrl) lines.push(`音源URL: ${s.audioUrl}`)
@@ -287,10 +289,6 @@ async function replyAllSubmissionsDetail(replyToken: string) {
     if (s.referenceUrl3) lines.push(`参考3: ${s.referenceUrl3}`)
     if (s.referenceUrl4) lines.push(`参考4: ${s.referenceUrl4}`)
     if (s.referenceUrl5) lines.push(`参考5: ${s.referenceUrl5}`)
-
-    lines.push(`必要楽器: ${(s.parts || []).join(", ")}`)
-    lines.push(`担当楽器: ${(s.myParts || []).join(", ")}`)
-
     if (s.description) lines.push(`その他: ${s.description}`)
 
     return lines.join("\n");
