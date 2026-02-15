@@ -50,7 +50,7 @@ export async function updateSpreadsheetSubmissions(sessionId: string, spreadshee
   const submissions = await getSubmissions(sessionId);
 
   // ユーザー情報を取得して表示名を補完
-  const rows = await Promise.all(submissions.map(async (sub) => {
+  const rows = await Promise.all(submissions.map(async (sub, index) => {
       let userName = "";
       try {
         const user = await getUser(sub.userId);
@@ -60,6 +60,7 @@ export async function updateSpreadsheetSubmissions(sessionId: string, spreadshee
       }
 
       return [
+        index + 1,
         sub.title,
         sub.artist,
         userName,
@@ -84,6 +85,7 @@ export async function updateSpreadsheetSubmissions(sessionId: string, spreadshee
   const sheets = google.sheets({ version: "v4", auth });
 
   const header = [
+    "No",
     "曲名",
     "アーティスト",
     "提出者",
@@ -147,7 +149,7 @@ export async function updateSpreadsheetEntries(sessionId: string, spreadsheetIds
     return userCache[userId];
   };
 
-  const rows = await Promise.all(submissions.map(async (sub) => {
+  const rows = await Promise.all(submissions.map(async (sub, index) => {
     const songEntries = entriesBySession.filter((e: Entry) => e.submissionUserId === sub.userId && e.sessionId === sub.sessionId);
     const userName = await getCachedUserName(sub.userId);
 
@@ -167,6 +169,7 @@ export async function updateSpreadsheetEntries(sessionId: string, spreadsheetIds
     });
 
     return [
+      index + 1,
       sub.title,
       sub.artist,
       userName,
@@ -189,6 +192,7 @@ export async function updateSpreadsheetEntries(sessionId: string, spreadsheetIds
   const sheets = google.sheets({ version: "v4", auth });
 
   const header = [
+    "No",
     "曲名",
     "アーティスト",
     "提出者",
