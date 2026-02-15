@@ -1,6 +1,7 @@
 import { google } from "googleapis";
 import { getSubmissions, getUser, getEntriesBySession } from "./firestoreService";
 import { Entry } from "../types/Entry";
+import { InstrumentalParts } from "../types/InstrumentalPart";
 
 // Google Sheetsのシート名制約に合わせて最低限サニタイズ
 function toSheetTitle(sessionId: string): string {
@@ -110,7 +111,7 @@ export async function updateSpreadsheetSubmissions(sessionId: string, spreadshee
       // 一旦全クリアして書き込む（単純化のため）
       await sheets.spreadsheets.values.clear({
         spreadsheetId,
-        range: `${sheetTitle}!A1:Z100`,
+        range: `${sheetTitle}!A1:Z1000`,
       });
 
       await sheets.spreadsheets.values.update({
@@ -148,28 +149,36 @@ export async function updateSpreadsheetEntries(sessionId: string, spreadsheetIds
 
   const rows = await Promise.all(submissions.map(async (sub) => {
     const songEntries = entriesBySession.filter((e: Entry) => e.submissionUserId === sub.userId && e.sessionId === sub.sessionId);
+    const userName = await getCachedUserName(sub.userId);
 
     // パートごとにエントリーしている人を集計
     const partEntries: { [key: string]: string[] } = {};
     for (const entry of songEntries) {
-      const userName = await getCachedUserName(entry.userId);
+      const entryUserName = await getCachedUserName(entry.userId);
       for (const part of entry.parts) {
         if (!partEntries[part]) partEntries[part] = [];
-        partEntries[part].push(userName);
+        partEntries[part].push(entryUserName);
       }
     }
 
-    const entryStatus = sub.parts.map(part => {
+    const partColumns = InstrumentalParts.map(part => {
       const members = partEntries[part] || [];
-      return `${part}: ${members.join(", ")}`;
-    }).join("\n");
+      return members.join(", ");
+    });
 
     return [
       sub.title,
       sub.artist,
-      entryStatus,
+      userName,
+      ...partColumns,
       sub.audioUrl || "",
       sub.scoreUrl || "",
+      sub.referenceUrl1 || "",
+      sub.referenceUrl2 || "",
+      sub.referenceUrl3 || "",
+      sub.referenceUrl4 || "",
+      sub.referenceUrl5 || "",
+      sub.description || "",
     ];
   }));
 
@@ -182,9 +191,16 @@ export async function updateSpreadsheetEntries(sessionId: string, spreadsheetIds
   const header = [
     "曲名",
     "アーティスト",
-    "エントリー状況",
+    "提出者",
+    ...InstrumentalParts,
     "音源URL",
     "コード譜URL",
+    "参考URL1",
+    "参考URL2",
+    "参考URL3",
+    "参考URL4",
+    "参考URL5",
+    "備考",
   ];
 
   const values = [header, ...rows];
@@ -197,7 +213,7 @@ export async function updateSpreadsheetEntries(sessionId: string, spreadsheetIds
 
       await sheets.spreadsheets.values.clear({
         spreadsheetId,
-        range: `${sheetTitle}!A1:Z100`,
+        range: `${sheetTitle}!A1:Z1000`,
       });
 
       await sheets.spreadsheets.values.update({
