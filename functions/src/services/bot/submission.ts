@@ -22,7 +22,7 @@ export async function handleSubmission(userId: string, replyToken: string, text:
   switch (user.state) {
     case "IDLE":
       if (text === "提出") return startSubmission(userId, replyToken);
-      return replyText(replyToken, "「提出」と送ると課題曲を登録できるよ。");
+      return replyHelp(replyToken);
     case "ASK_TITLE":
       return onTitle(userId, replyToken, text);
     case "ASK_ARTIST":
@@ -127,7 +127,13 @@ async function resetState(userId: string, replyToken: string, message: string) {
 }
 
 async function replyHelp(replyToken: string) {
-  return replyText(replyToken, "「提出」と送ると課題曲を登録できるよ。\n「状況」で現在の提出を確認できるよ。\n「削除」で提出を消去できるよ。\n「キャンセル」で入力を中断できるよ。");
+  const lines = [
+    "「提出」と送ると課題曲を登録できるよ。",
+    "「状況」で現在の提出を確認できるよ。",
+    "「削除」で提出を消去できるよ。",
+    "「キャンセル」で入力を中断できるよ。",
+  ]
+  return replyText(replyToken, lines.join("\n"));
 }
 
 async function replyStatus(userId: string, replyToken: string) {
