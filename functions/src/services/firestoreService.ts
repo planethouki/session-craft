@@ -116,6 +116,29 @@ export async function getSubmission(sessionId: string, userId: string): Promise<
   };
 }
 
+export async function getSubmissions(sessionId: string): Promise<Submission[]> {
+  const db = admin.firestore();
+  const subsSnap = await db.collection('submissions')
+    .where('sessionId', '==', sessionId)
+    .get();
+
+  return subsSnap
+    .docs
+    .map(doc => {
+      const data = doc.data();
+      return {
+        sessionId: data.sessionId,
+        userId: data.userId,
+        titleRaw: data.titleRaw,
+        artistRaw: data.artistRaw,
+        url: data.url,
+        createdAt: data.createdAt.toDate(),
+        updatedAt: data.updatedAt.toDate(),
+      } as Submission;
+    })
+    .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+}
+
 export async function createSubmission(submission: Omit<Submission, 'createdAt' | 'updatedAt'>): Promise<void> {
   const db = admin.firestore();
   const subId = `${submission.sessionId}_${submission.userId}`;
