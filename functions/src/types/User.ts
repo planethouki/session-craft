@@ -7,7 +7,14 @@ export type User = {
   draft: {
     title?: string;
     artist?: string;
-    url?: string;
+    audioUrl?: string;
+    scoreUrl?: string;
+    referenceUrl1?: string;
+    referenceUrl2?: string;
+    referenceUrl3?: string;
+    referenceUrl4?: string;
+    referenceUrl5?: string;
+    description?: string;
     parts?: InstrumentalPart[];
     myParts?: InstrumentalPart[];
   }

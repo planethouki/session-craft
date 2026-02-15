@@ -31,12 +31,26 @@ export async function handleSubmission(userId: string, replyToken: string, text:
       return onTitle(userId, replyToken, text);
     case "ASK_ARTIST":
       return onArtist(userId, replyToken, text);
-    case "ASK_URL":
-      return onUrl(userId, replyToken, text);
+    case "ASK_AUDIO_URL":
+      return onAudioUrl(userId, replyToken, text);
+    case "ASK_SCORE_URL":
+      return onScoreUrl(userId, replyToken, text);
+    case "ASK_REFERENCE_URL_1":
+      return onReferenceUrl1(userId, replyToken, text);
+    case "ASK_REFERENCE_URL_2":
+      return onReferenceUrl2(userId, replyToken, text);
+    case "ASK_REFERENCE_URL_3":
+      return onReferenceUrl3(userId, replyToken, text);
+    case "ASK_REFERENCE_URL_4":
+      return onReferenceUrl4(userId, replyToken, text);
+    case "ASK_REFERENCE_URL_5":
+      return onReferenceUrl5(userId, replyToken, text);
     case "ASK_PARTS":
       return onParts(userId, replyToken, text);
     case "ASK_MY_PARTS":
       return onMyParts(userId, replyToken, text);
+    case "ASK_DESCRIPTION":
+      return onDescription(userId, replyToken, text);
     case "CONFIRM":
       return onConfirm(userId, replyToken, text);
     default:
@@ -72,21 +86,74 @@ async function onTitle(userId: string, replyToken: string, title: string) {
 
 async function onArtist(userId: string, replyToken: string, artist: string) {
   await updateUserState(userId, {
-    state: "ASK_URL",
+    state: "ASK_AUDIO_URL",
     draft: {
       artist,
     },
   });
-  return replyText(replyToken, "参考URLあれば送ってね（なければ「なし」）");
+  return replyText(replyToken, "音源のURLは？（なければ「なし」）");
 }
 
-async function onUrl(userId: string, replyToken: string, urlText: string) {
-  const url = (urlText === "なし") ? "" : urlText;
+async function onAudioUrl(userId: string, replyToken: string, text: string) {
+  const audioUrl = (text === "なし") ? "" : text;
+  await updateUserState(userId, {
+    state: "ASK_SCORE_URL",
+    draft: { audioUrl },
+  });
+  return replyText(replyToken, "コード譜のURLは？（なければ「なし」）");
+}
 
+async function onScoreUrl(userId: string, replyToken: string, text: string) {
+  const scoreUrl = (text === "なし") ? "" : text;
+  await updateUserState(userId, {
+    state: "ASK_REFERENCE_URL_1",
+    draft: { scoreUrl },
+  });
+  return replyText(replyToken, "参考動画①のURLは？（なければ「なし」）");
+}
+
+async function onReferenceUrl1(userId: string, replyToken: string, text: string) {
+  const referenceUrl1 = (text === "なし") ? "" : text;
+  await updateUserState(userId, {
+    state: "ASK_REFERENCE_URL_2",
+    draft: { referenceUrl1 },
+  });
+  return replyText(replyToken, "参考動画②のURLは？（なければ「なし」）");
+}
+
+async function onReferenceUrl2(userId: string, replyToken: string, text: string) {
+  const referenceUrl2 = (text === "なし") ? "" : text;
+  await updateUserState(userId, {
+    state: "ASK_REFERENCE_URL_3",
+    draft: { referenceUrl2 },
+  });
+  return replyText(replyToken, "参考動画③のURLは？（なければ「なし」）");
+}
+
+async function onReferenceUrl3(userId: string, replyToken: string, text: string) {
+  const referenceUrl3 = (text === "なし") ? "" : text;
+  await updateUserState(userId, {
+    state: "ASK_REFERENCE_URL_4",
+    draft: { referenceUrl3 },
+  });
+  return replyText(replyToken, "参考動画④のURLは？（なければ「なし」）");
+}
+
+async function onReferenceUrl4(userId: string, replyToken: string, text: string) {
+  const referenceUrl4 = (text === "なし") ? "" : text;
+  await updateUserState(userId, {
+    state: "ASK_REFERENCE_URL_5",
+    draft: { referenceUrl4 },
+  });
+  return replyText(replyToken, "参考動画⑤のURLは？（なければ「なし」）");
+}
+
+async function onReferenceUrl5(userId: string, replyToken: string, text: string) {
+  const referenceUrl5 = (text === "なし") ? "" : text;
   await updateUserState(userId, {
     state: "ASK_PARTS",
     draft: {
-      url,
+      referenceUrl5,
       parts: [...DefaultInstrumentalParts],
     },
   });
@@ -139,20 +206,10 @@ async function onMyParts(userId: string, replyToken: string, text: string) {
       return replyPartsFlex(replyToken, "自分が担当する楽器を選んでね（複数可）", currentMyParts, requiredParts, "最低一つは自分の担当楽器を選んでね。");
     }
     await updateUserState(userId, {
-      state: "CONFIRM",
+      state: "ASK_DESCRIPTION",
     });
 
-    const { draft } = user;
-    const summary = [
-      `曲名: ${draft.title}`,
-      `アーティスト: ${draft.artist}`,
-      `URL: ${draft.url || "なし"}`,
-      `必要楽器: ${requiredParts.join(", ")}`,
-      `担当楽器: ${currentMyParts.join(", ")}`,
-    ].join("\n");
-
-    const message = createConfirmFlexMessage("これで登録する？", summary);
-    return replyFlexMessage(replyToken, message);
+    return replyText(replyToken, "その他伝達事項はありますか？（なければ「なし」）");
   }
 
   const part = text as InstrumentalPart;
@@ -171,6 +228,34 @@ async function onMyParts(userId: string, replyToken: string, text: string) {
   });
 
   return replyPartsFlex(replyToken, "自分が担当する楽器を選んでね（複数可）", newMyParts, requiredParts);
+}
+
+async function onDescription(userId: string, replyToken: string, text: string) {
+  const description = (text === "なし") ? "" : text;
+
+  await updateUserState(userId, {
+    state: "CONFIRM",
+    draft: { description },
+  });
+
+  const { draft } = await findOrCreateUser(userId); // 最新のdraftを取得
+  const summary = [
+    `曲名: ${draft.title}`,
+    `アーティスト: ${draft.artist}`,
+    `音源URL: ${draft.audioUrl || "なし"}`,
+    `コード譜URL: ${draft.scoreUrl || "なし"}`,
+    `参考1: ${draft.referenceUrl1 || "なし"}`,
+    `参考2: ${draft.referenceUrl2 || "なし"}`,
+    `参考3: ${draft.referenceUrl3 || "なし"}`,
+    `参考4: ${draft.referenceUrl4 || "なし"}`,
+    `参考5: ${draft.referenceUrl5 || "なし"}`,
+    `必要楽器: ${(draft.parts || []).join(", ")}`,
+    `担当楽器: ${(draft.myParts || []).join(", ")}`,
+    `その他: ${draft.description || "なし"}`,
+  ].join("\n");
+
+  const message = createConfirmFlexMessage("これで登録する？", summary);
+  return replyFlexMessage(replyToken, message);
 }
 
 async function replyPartsFlex(replyToken: string, title: string, selected: InstrumentalPart[], filter?: InstrumentalPart[], beforeText?: string) {
@@ -193,7 +278,14 @@ async function onConfirm(userId: string, replyToken: string, text: string) {
   const { draft } = user;
   const titleRaw = draft?.title ?? "";
   const artistRaw = draft?.artist ?? "";
-  const url = draft?.url ?? "";
+  const audioUrl = draft?.audioUrl ?? "";
+  const scoreUrl = draft?.scoreUrl ?? "";
+  const referenceUrl1 = draft?.referenceUrl1 ?? "";
+  const referenceUrl2 = draft?.referenceUrl2 ?? "";
+  const referenceUrl3 = draft?.referenceUrl3 ?? "";
+  const referenceUrl4 = draft?.referenceUrl4 ?? "";
+  const referenceUrl5 = draft?.referenceUrl5 ?? "";
+  const description = draft?.description ?? "";
   const parts = draft?.parts ?? [];
   const myParts = draft?.myParts ?? [];
 
@@ -204,7 +296,14 @@ async function onConfirm(userId: string, replyToken: string, text: string) {
     userId,
     titleRaw,
     artistRaw,
-    url,
+    audioUrl,
+    scoreUrl,
+    referenceUrl1,
+    referenceUrl2,
+    referenceUrl3,
+    referenceUrl4,
+    referenceUrl5,
+    description,
     parts,
     myParts,
   });
@@ -245,9 +344,12 @@ async function replyStatus(userId: string, replyToken: string) {
   const statusText = [
     `現在の提出状況：`,
     `${sub.titleRaw} / ${sub.artistRaw}`,
-    `URL: ${sub.url || "なし"}`,
+    `音源URL: ${sub.audioUrl || "なし"}`,
+    `コード譜URL: ${sub.scoreUrl || "なし"}`,
+    `参考URL1: ${sub.referenceUrl1 || "なし"}`,
     `必要楽器: ${sub.parts.join(", ")}`,
     `担当楽器: ${sub.myParts.join(", ")}`,
+    `その他: ${sub.description || "なし"}`,
   ].join("\n");
 
   return replyText(replyToken, statusText);

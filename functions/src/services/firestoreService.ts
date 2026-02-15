@@ -40,7 +40,14 @@ export async function findOrCreateUser(userId: string): Promise<User> {
     draft: {
       title: user.draft?.title,
       artist: user.draft?.artist,
-      url: user.draft?.url,
+      audioUrl: user.draft?.audioUrl,
+      scoreUrl: user.draft?.scoreUrl,
+      referenceUrl1: user.draft?.referenceUrl1,
+      referenceUrl2: user.draft?.referenceUrl2,
+      referenceUrl3: user.draft?.referenceUrl3,
+      referenceUrl4: user.draft?.referenceUrl4,
+      referenceUrl5: user.draft?.referenceUrl5,
+      description: user.draft?.description,
       parts: user.draft?.parts,
       myParts: user.draft?.myParts,
     },
@@ -57,7 +64,14 @@ export async function updateUserState(userId: string, data: Partial<User>): Prom
   if (data.draft) {
     if (data.draft.title !== undefined) updateData["draft.title"] = data.draft.title;
     if (data.draft.artist !== undefined) updateData["draft.artist"] = data.draft.artist;
-    if (data.draft.url !== undefined) updateData["draft.url"] = data.draft.url;
+    if (data.draft.audioUrl !== undefined) updateData["draft.audioUrl"] = data.draft.audioUrl;
+    if (data.draft.scoreUrl !== undefined) updateData["draft.scoreUrl"] = data.draft.scoreUrl;
+    if (data.draft.referenceUrl1 !== undefined) updateData["draft.referenceUrl1"] = data.draft.referenceUrl1;
+    if (data.draft.referenceUrl2 !== undefined) updateData["draft.referenceUrl2"] = data.draft.referenceUrl2;
+    if (data.draft.referenceUrl3 !== undefined) updateData["draft.referenceUrl3"] = data.draft.referenceUrl3;
+    if (data.draft.referenceUrl4 !== undefined) updateData["draft.referenceUrl4"] = data.draft.referenceUrl4;
+    if (data.draft.referenceUrl5 !== undefined) updateData["draft.referenceUrl5"] = data.draft.referenceUrl5;
+    if (data.draft.description !== undefined) updateData["draft.description"] = data.draft.description;
     if (data.draft.parts !== undefined) updateData["draft.parts"] = data.draft.parts;
     if (data.draft.myParts !== undefined) updateData["draft.myParts"] = data.draft.myParts;
     if (Object.keys(data.draft).length === 0) updateData.draft = {};
@@ -114,7 +128,14 @@ export async function getSubmission(sessionId: string, userId: string): Promise<
     userId: data.userId,
     titleRaw: data.titleRaw,
     artistRaw: data.artistRaw,
-    url: data.url,
+    audioUrl: data.audioUrl,
+    scoreUrl: data.scoreUrl,
+    referenceUrl1: data.referenceUrl1,
+    referenceUrl2: data.referenceUrl2,
+    referenceUrl3: data.referenceUrl3,
+    referenceUrl4: data.referenceUrl4,
+    referenceUrl5: data.referenceUrl5,
+    description: data.description,
     parts: data.parts || [],
     myParts: data.myParts || [],
     createdAt: data.createdAt.toDate(),
@@ -137,7 +158,14 @@ export async function getSubmissions(sessionId: string): Promise<Submission[]> {
         userId: data.userId,
         titleRaw: data.titleRaw,
         artistRaw: data.artistRaw,
-        url: data.url,
+        audioUrl: data.audioUrl,
+        scoreUrl: data.scoreUrl,
+        referenceUrl1: data.referenceUrl1,
+        referenceUrl2: data.referenceUrl2,
+        referenceUrl3: data.referenceUrl3,
+        referenceUrl4: data.referenceUrl4,
+        referenceUrl5: data.referenceUrl5,
+        description: data.description,
         parts: data.parts || [],
         myParts: data.myParts || [],
         createdAt: data.createdAt.toDate(),

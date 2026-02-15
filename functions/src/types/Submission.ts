@@ -5,7 +5,14 @@ export type Submission = {
   userId: string;
   titleRaw: string;
   artistRaw: string;
-  url: string;
+  audioUrl?: string;
+  scoreUrl?: string;
+  referenceUrl1?: string;
+  referenceUrl2?: string;
+  referenceUrl3?: string;
+  referenceUrl4?: string;
+  referenceUrl5?: string;
+  description?: string;
   createdAt: Date;
   updatedAt: Date;
   parts: InstrumentalPart[];
