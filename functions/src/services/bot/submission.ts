@@ -229,7 +229,7 @@ async function replyHelp(replyToken: string) {
     "「状況」で現在の提出を確認できるよ。",
     "「一覧」でみんなの提出を確認できるよ。",
     "「削除」で提出を消去できるよ。",
-    "「キャンセル」で入力を中断できるよ。",
+    "「キャンセル」で入力を中止できるよ。",
   ]
   return replyText(replyToken, lines.join("\n"));
 }
