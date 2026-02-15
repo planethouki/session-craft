@@ -7,7 +7,7 @@ import * as logger from "firebase-functions/logger";
 import { WebhookRequestBody } from "@line/bot-sdk";
 
 import { handleEvent } from './services/botService'
-import {messageService} from "./services/messageService";
+import { messageService } from "./services/messageService";
 
 setGlobalOptions({
   maxInstances: 10,
