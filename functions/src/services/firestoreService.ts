@@ -41,6 +41,7 @@ export async function getUser(userId: string): Promise<User> {
     displayName: user.displayName || "",
     photoURL: user.photoURL || "",
     profileUpdatedAt: user.profileUpdatedAt?.toDate() || new Date(0),
+    nickname: user.nickname || "",
   }
 }
 

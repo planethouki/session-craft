@@ -28,6 +28,7 @@ export async function handleEvent(ev: WebhookEvent) {
       displayName: profile.displayName,
       photoURL: profile.pictureUrl || "",
       profileUpdatedAt: new Date(),
+      nickname: profile.displayName,
     };
     await setUser(userId, user);
   }

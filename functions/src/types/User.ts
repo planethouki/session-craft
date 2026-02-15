@@ -22,4 +22,5 @@ export type User = {
   displayName: string;
   photoURL: string;
   profileUpdatedAt: Date;
+  nickname: string;
 }
