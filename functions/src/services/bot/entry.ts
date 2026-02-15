@@ -285,6 +285,10 @@ async function replyAllSubmissionsDetail(replyToken: string) {
     if (s.referenceUrl3) lines.push(`参考3: ${s.referenceUrl3}`)
     if (s.referenceUrl4) lines.push(`参考4: ${s.referenceUrl4}`)
     if (s.referenceUrl5) lines.push(`参考5: ${s.referenceUrl5}`)
+
+    lines.push(`必要楽器: ${(s.parts || []).join(", ")}`)
+    lines.push(`担当楽器: ${(s.myParts || []).join(", ")}`)
+
     if (s.description) lines.push(`その他: ${s.description}`)
 
     return lines.join("\n");
