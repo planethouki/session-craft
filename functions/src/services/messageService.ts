@@ -28,10 +28,22 @@ class MessageService {
       messages,
     });
   }
+
+  async getProfile(userId: string) {
+    if (!this.client) {
+      throw new Error("MessageService is not initialized. Call messageService.init() first.");
+    }
+
+    return this.client.getProfile(userId);
+  }
 }
 
 function replyText(replyToken: string, text: string) {
   return messageService.replyMessage(replyToken, [{ type: "text", text }]);
+}
+
+async function getProfile(userId: string) {
+  return messageService.getProfile(userId);
 }
 
 function replyFlexMessage(replyToken: string, message: FlexMessage, beforeText?: string) {
@@ -46,4 +58,4 @@ function replyFlexMessage(replyToken: string, message: FlexMessage, beforeText?:
 
 export const messageService = new MessageService();
 export type { MessageService };
-export { replyText, replyFlexMessage };
+export { replyText, replyFlexMessage, getProfile };

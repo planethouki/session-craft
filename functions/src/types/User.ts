@@ -19,4 +19,7 @@ export type User = {
     myParts?: InstrumentalPart[];
   }
   stateUpdatedAt: Date;
+  displayName: string;
+  photoURL: string;
+  profileUpdatedAt: Date;
 }

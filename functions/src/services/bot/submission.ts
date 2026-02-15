@@ -1,5 +1,5 @@
 import {
-  findOrCreateUser,
+  getUser,
   getActiveSessionId,
   updateUserState,
   getSubmission,
@@ -21,7 +21,7 @@ export async function handleSubmission(userId: string, replyToken: string, text:
   if (text === "一覧") return replyList(replyToken);
   if (text === "削除") return deleteSubmissionCommand(userId, replyToken);
 
-  const user = await findOrCreateUser(userId);
+  const user = await getUser(userId);
 
   switch (user.state) {
     case "IDLE":
@@ -212,7 +212,7 @@ async function onReferenceUrl5(userId: string, replyToken: string, text: string)
 }
 
 async function onParts(userId: string, replyToken: string, text: string) {
-  const user = await findOrCreateUser(userId);
+  const user = await getUser(userId);
   const currentParts = user.draft.parts || [];
 
   if (text === "選択終了") {
@@ -247,7 +247,7 @@ async function onParts(userId: string, replyToken: string, text: string) {
 }
 
 async function onMyParts(userId: string, replyToken: string, text: string) {
-  const user = await findOrCreateUser(userId);
+  const user = await getUser(userId);
   const currentMyParts = user.draft.myParts || [];
   const requiredParts = user.draft.parts || [];
 
@@ -288,7 +288,7 @@ async function onDescription(userId: string, replyToken: string, text: string) {
     draft: { description },
   });
 
-  const { draft } = await findOrCreateUser(userId); // 最新のdraftを取得
+  const { draft } = await getUser(userId); // 最新のdraftを取得
   const summary = [
     `曲名: ${draft.title}`,
     `アーティスト: ${draft.artist}`,
@@ -322,7 +322,7 @@ async function onConfirm(userId: string, replyToken: string, text: string) {
     return replyText(replyToken, "「提出する」か「最初からやり直す」を選んでね。");
   }
 
-  const user = await findOrCreateUser(userId);
+  const user = await getUser(userId);
   if (!user) return replyText(replyToken, "エラーが発生しました。");
 
   const { draft } = user;

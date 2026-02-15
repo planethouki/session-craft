@@ -4,24 +4,13 @@ import { User } from "../types/User";
 import { Submission } from "../types/Submission";
 import { Session } from "../types/Session";
 
-export async function findOrCreateUser(userId: string): Promise<User> {
+export async function getUser(userId: string): Promise<User> {
   const db = admin.firestore();
   const userRef = db.doc(`users/${userId}`);
   const userSnap = await userRef.get();
 
   if (!userSnap.exists) {
-    const data: any = {
-      state: "IDLE",
-      draft: {},
-      stateUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    };
-
-    await userRef.set(data);
-
-    return {
-      ...data,
-      stateUpdatedAt: new Date(),
-    }
+    throw new Error(`User ${userId} not found`);
   }
 
   const user = userSnap.data();
@@ -49,6 +38,9 @@ export async function findOrCreateUser(userId: string): Promise<User> {
       myParts: user.draft?.myParts,
     },
     stateUpdatedAt: user.stateUpdatedAt.toDate(),
+    displayName: user.displayName || "",
+    photoURL: user.photoURL || "",
+    profileUpdatedAt: user.profileUpdatedAt?.toDate() || new Date(0),
   }
 }
 
@@ -82,8 +74,13 @@ export async function setUser(userId: string, user: Partial<User>): Promise<void
   const db = admin.firestore();
   const data: any = {
     ...user,
-    stateUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
   };
+  if (user.state) {
+    data.stateUpdatedAt = admin.firestore.FieldValue.serverTimestamp();
+  }
+  if (user.displayName || user.photoURL) {
+    data.profileUpdatedAt = admin.firestore.FieldValue.serverTimestamp();
+  }
   await db.doc(`users/${userId}`).set(data, { merge: true });
 }
 
