@@ -1,5 +1,6 @@
 import { google } from "googleapis";
-import { getSubmissions, getUser } from "./firestoreService";
+import { getSubmissions, getUser, getEntriesBySession } from "./firestoreService";
+import { Entry } from "../types/Entry";
 
 // Google Sheetsのシート名制約に合わせて最低限サニタイズ
 function toSheetTitle(sessionId: string): string {
@@ -122,6 +123,93 @@ export async function updateSpreadsheetSubmissions(sessionId: string, spreadshee
       });
     } catch (error) {
       console.error(`Error updating spreadsheet ${spreadsheetId}:`, error);
+    }
+  }
+}
+
+export async function updateSpreadsheetEntries(sessionId: string, spreadsheetIds: string[]) {
+  if (!spreadsheetIds || spreadsheetIds.length === 0) return;
+
+  const submissions = await getSubmissions(sessionId);
+  const entriesBySession = await getEntriesBySession(sessionId);
+
+  // ユーザー情報のキャッシュ
+  const userCache: { [key: string]: string } = {};
+  const getCachedUserName = async (userId: string) => {
+    if (userCache[userId]) return userCache[userId];
+    try {
+      const user = await getUser(userId);
+      userCache[userId] = user.nickname || user.displayName || userId;
+    } catch (e) {
+      userCache[userId] = userId;
+    }
+    return userCache[userId];
+  };
+
+  const rows = await Promise.all(submissions.map(async (sub) => {
+    const songEntries = entriesBySession.filter((e: Entry) => e.submissionUserId === sub.userId && e.sessionId === sub.sessionId);
+
+    // パートごとにエントリーしている人を集計
+    const partEntries: { [key: string]: string[] } = {};
+    for (const entry of songEntries) {
+      const userName = await getCachedUserName(entry.userId);
+      for (const part of entry.parts) {
+        if (!partEntries[part]) partEntries[part] = [];
+        partEntries[part].push(userName);
+      }
+    }
+
+    const entryStatus = sub.parts.map(part => {
+      const members = partEntries[part] || [];
+      return `${part}: ${members.join(", ")}`;
+    }).join("\n");
+
+    return [
+      sub.title,
+      sub.artist,
+      entryStatus,
+      sub.audioUrl || "",
+      sub.scoreUrl || "",
+    ];
+  }));
+
+  const auth = new google.auth.GoogleAuth({
+    scopes: ["https://www.googleapis.com/auth/spreadsheets"],
+  });
+
+  const sheets = google.sheets({ version: "v4", auth });
+
+  const header = [
+    "曲名",
+    "アーティスト",
+    "エントリー状況",
+    "音源URL",
+    "コード譜URL",
+  ];
+
+  const values = [header, ...rows];
+
+  const sheetTitle = toSheetTitle(sessionId);
+
+  for (const spreadsheetId of spreadsheetIds) {
+    try {
+      await ensureSheetExists(sheets, spreadsheetId, sheetTitle);
+
+      await sheets.spreadsheets.values.clear({
+        spreadsheetId,
+        range: `${sheetTitle}!A1:Z100`,
+      });
+
+      await sheets.spreadsheets.values.update({
+        spreadsheetId,
+        range: `${sheetTitle}!A1`,
+        valueInputOption: "RAW",
+        requestBody: {
+          values,
+        },
+      });
+    } catch (error) {
+      console.error(`Error updating entry spreadsheet ${spreadsheetId}:`, error);
     }
   }
 }

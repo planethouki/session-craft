@@ -9,7 +9,7 @@ import { WebhookRequestBody } from "@line/bot-sdk";
 import { handleEvent } from './services/botService'
 import { messageService } from "./services/messageService";
 import { getCurrentSession } from "./services/firestoreService";
-import { updateSpreadsheetSubmissions } from "./services/spreadsheetService";
+import { updateSpreadsheetSubmissions, updateSpreadsheetEntries } from "./services/spreadsheetService";
 
 setGlobalOptions({
   maxInstances: 10,
@@ -54,12 +54,20 @@ export const updateSpreadsheet = onRequest(async (req, res) => {
       return;
     }
 
-    if (!session.spreadsheetIds || session.spreadsheetIds.length === 0) {
+    const submissionIds = session.submissionSpreadsheetIds || [];
+    const entryIds = session.entrySpreadsheetIds || [];
+
+    if (submissionIds.length === 0 && entryIds.length === 0) {
       res.status(400).send('Spreadsheet IDs not set for the current session');
       return;
     }
 
-    await updateSpreadsheetSubmissions(session.sessionId, session.spreadsheetIds);
+    if (submissionIds.length > 0) {
+      await updateSpreadsheetSubmissions(session.sessionId, submissionIds);
+    }
+    if (entryIds.length > 0) {
+      await updateSpreadsheetEntries(session.sessionId, entryIds);
+    }
 
     logger.info('Spreadsheet update successful', { sessionId: session.sessionId });
     res.status(200).send('OK');

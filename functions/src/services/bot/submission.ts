@@ -373,8 +373,8 @@ async function onConfirm(userId: string, replyToken: string, text: string) {
 
   // スプレッドシート更新
   const session = await getCurrentSession();
-  if (session?.spreadsheetIds) {
-    await updateSpreadsheetSubmissions(sessionId, session.spreadsheetIds);
+  if (session?.submissionSpreadsheetIds) {
+    await updateSpreadsheetSubmissions(sessionId, session.submissionSpreadsheetIds);
   }
 
   // stateリセット
@@ -449,8 +449,8 @@ async function deleteSubmissionCommand(userId: string, replyToken: string) {
 
   // スプレッドシート更新
   const session = await getCurrentSession();
-  if (session?.spreadsheetIds) {
-    await updateSpreadsheetSubmissions(sessionId, session.spreadsheetIds);
+  if (session?.submissionSpreadsheetIds) {
+    await updateSpreadsheetSubmissions(sessionId, session.submissionSpreadsheetIds);
   }
 
   return replyText(replyToken, "提出を削除したよ。");
