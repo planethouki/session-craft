@@ -10,7 +10,7 @@ import {
 
 import { replyText, replyFlexMessage } from "../messageService";
 import { InstrumentalParts, InstrumentalPart, DefaultInstrumentalParts } from "../../types/InstrumentalPart";
-import { createPartsFlexMessage } from "../../utils/flexButton";
+import { createPartsFlexMessage, createConfirmFlexMessage } from "../../utils/flexButton";
 
 export async function handleSubmission(userId: string, replyToken: string, text: string) {
 
@@ -151,7 +151,8 @@ async function onMyParts(userId: string, replyToken: string, text: string) {
       `担当楽器: ${currentMyParts.join(", ")}`,
     ].join("\n");
 
-    return replyText(replyToken, `これで登録する？\n（はい / いいえ）\n\n${summary}`);
+    const message = createConfirmFlexMessage("これで登録する？", summary);
+    return replyFlexMessage(replyToken, message);
   }
 
   const part = text as InstrumentalPart;
@@ -178,12 +179,12 @@ async function replyPartsFlex(replyToken: string, title: string, selected: Instr
 }
 
 async function onConfirm(userId: string, replyToken: string, text: string) {
-  if (text === "いいえ") {
+  if (text === "最初からやり直す") {
     await updateUserState(userId, { state: "ASK_TITLE", draft: {} });
     return replyText(replyToken, "OK！最初からやり直そう。曲名は？");
   }
-  if (text !== "はい") {
-    return replyText(replyToken, "「はい」か「いいえ」で答えてね。");
+  if (text !== "提出する") {
+    return replyText(replyToken, "「提出する」か「最初からやり直す」を選んでね。");
   }
 
   const user = await findOrCreateUser(userId);

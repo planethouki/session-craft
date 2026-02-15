@@ -66,3 +66,57 @@ export function createPartsFlexMessage(title: string, selected: InstrumentalPart
     },
   };
 }
+
+export function createConfirmFlexMessage(title: string, summary: string): FlexMessage {
+  return {
+    type: "flex",
+    altText: title,
+    contents: {
+      type: "bubble",
+      body: {
+        type: "box",
+        layout: "vertical",
+        contents: [
+          {
+            type: "text",
+            text: title,
+            weight: "bold",
+            size: "md",
+          },
+          {
+            type: "text",
+            text: summary,
+            wrap: true,
+            margin: "md",
+          },
+          {
+            type: "box",
+            layout: "horizontal",
+            margin: "xl",
+            spacing: "md",
+            contents: [
+              {
+                type: "button",
+                action: {
+                  type: "message",
+                  label: "提出する",
+                  text: "提出する",
+                },
+                style: "primary",
+              },
+              {
+                type: "button",
+                action: {
+                  type: "message",
+                  label: "やり直す",
+                  text: "最初からやり直す",
+                },
+                style: "secondary",
+              },
+            ],
+          },
+        ],
+      },
+    },
+  };
+}
