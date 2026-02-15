@@ -1,4 +1,4 @@
-import { messagingApi } from "@line/bot-sdk";
+import { messagingApi, FlexMessage } from "@line/bot-sdk";
 
 class MessageService {
   private client: messagingApi.MessagingApiClient | null = null;
@@ -28,12 +28,28 @@ class MessageService {
       messages: [{ type: "text", text }],
     });
   }
+
+  async replyFlexMessage(replyToken: string, message: messagingApi.FlexMessage) {
+    if (!this.client) {
+      throw new Error("MessageService is not initialized. Call messageService.init() first.");
+    }
+
+    return this.client.replyMessage({
+      replyToken,
+      messages: [message],
+    });
+  }
 }
 
 function replyText(replyToken: string, text: string) {
   return messageService.replyText(replyToken, text);
 }
 
+function replyFlexMessage(replyToken: string, message: FlexMessage) {
+  // @ts-ignore messagingApi.FlexMessage と FlexMessage は違うみたい
+  return messageService.replyFlexMessage(replyToken, message);
+}
+
 export const messageService = new MessageService();
 export type { MessageService };
-export { replyText };
+export { replyText, replyFlexMessage };

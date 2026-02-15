@@ -8,9 +8,9 @@ import {
   deleteSubmission,
 } from "../firestoreService";
 
-import { replyText, messageService } from "../messageService";
+import { replyText, replyFlexMessage } from "../messageService";
 import { InstrumentalParts, InstrumentalPart } from "../../types/InstrumentalPart";
-import { FlexMessage, FlexButton, FlexBox } from "@line/bot-sdk";
+import { createPartsFlexMessage } from "../../utils/flexButton";
 
 export async function handleSubmission(userId: string, replyToken: string, text: string) {
 
@@ -173,77 +173,8 @@ async function onMyParts(userId: string, replyToken: string, text: string) {
 }
 
 async function replyPartsFlex(replyToken: string, title: string, selected: InstrumentalPart[], filter?: InstrumentalPart[]) {
-  const partsToShow = filter || InstrumentalParts;
-
-  const buttons: FlexButton[] = partsToShow.map(part => {
-    const isSelected = selected.includes(part);
-    return {
-      type: "button",
-      action: {
-        type: "message",
-        label: isSelected ? `[${part}]` : part,
-        text: part,
-      },
-      style: isSelected ? "primary" : "secondary",
-      margin: "sm",
-      height: "sm",
-    };
-  });
-
-  // 3列ずつに分ける
-  const rows: FlexBox[] = [];
-  for (let i = 0; i < buttons.length; i += 3) {
-    rows.push({
-      type: "box",
-      layout: "horizontal",
-      contents: buttons.slice(i, i + 3),
-    });
-  }
-
-  const message: FlexMessage = {
-    type: "flex",
-    altText: title,
-    contents: {
-      type: "bubble",
-      body: {
-        type: "box",
-        layout: "vertical",
-        contents: [
-          {
-            type: "text",
-            text: title,
-            weight: "bold",
-            size: "md",
-          },
-          {
-            type: "box",
-            layout: "vertical",
-            margin: "lg",
-            spacing: "sm",
-            contents: rows,
-          },
-          {
-            type: "button",
-            action: {
-              type: "message",
-              label: "選択終了",
-              text: "選択終了",
-            },
-            style: "link",
-            margin: "md",
-          },
-        ],
-      },
-    },
-  };
-
-  const client = (messageService as any).client;
-  if (!client) throw new Error("MessageService is not initialized.");
-
-  return client.replyMessage({
-    replyToken,
-    messages: [message],
-  });
+  const message = createPartsFlexMessage(title, selected, filter);
+  return replyFlexMessage(replyToken, message);
 }
 
 async function onConfirm(userId: string, replyToken: string, text: string) {
