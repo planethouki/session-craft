@@ -3,8 +3,8 @@ import { InstrumentalPart } from "./InstrumentalPart";
 export type Submission = {
   sessionId: string;
   userId: string;
-  titleRaw: string;
-  artistRaw: string;
+  title: string;
+  artist: string;
   audioUrl?: string;
   scoreUrl?: string;
   referenceUrl1?: string;

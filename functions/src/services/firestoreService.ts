@@ -126,8 +126,8 @@ export async function getSubmission(sessionId: string, userId: string): Promise<
   return {
     sessionId: data.sessionId,
     userId: data.userId,
-    titleRaw: data.titleRaw,
-    artistRaw: data.artistRaw,
+    title: data.title,
+    artist: data.artist,
     audioUrl: data.audioUrl,
     scoreUrl: data.scoreUrl,
     referenceUrl1: data.referenceUrl1,
@@ -156,8 +156,8 @@ export async function getSubmissions(sessionId: string): Promise<Submission[]> {
       return {
         sessionId: data.sessionId,
         userId: data.userId,
-        titleRaw: data.titleRaw,
-        artistRaw: data.artistRaw,
+        title: data.title,
+        artist: data.artist,
         audioUrl: data.audioUrl,
         scoreUrl: data.scoreUrl,
         referenceUrl1: data.referenceUrl1,

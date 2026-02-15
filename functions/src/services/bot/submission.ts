@@ -63,7 +63,7 @@ async function startSubmission(userId: string, replyToken: string) {
   const sub = await getSubmission(sessionId, userId);
 
   if (sub) {
-    return replyText(replyToken, `今月はすでに提出済みだよ：\n${sub.titleRaw} / ${sub.artistRaw}\n変更したいなら「変更」と送ってね。`);
+    return replyText(replyToken, `今月はすでに提出済みだよ：\n${sub.title} / ${sub.artist}\n変更したいなら「変更」と送ってね。`);
   }
 
   await updateUserState(userId, {
@@ -276,8 +276,8 @@ async function onConfirm(userId: string, replyToken: string, text: string) {
   if (!user) return replyText(replyToken, "エラーが発生しました。");
 
   const { draft } = user;
-  const titleRaw = draft?.title ?? "";
-  const artistRaw = draft?.artist ?? "";
+  const title = draft?.title ?? "";
+  const artist = draft?.artist ?? "";
   const audioUrl = draft?.audioUrl ?? "";
   const scoreUrl = draft?.scoreUrl ?? "";
   const referenceUrl1 = draft?.referenceUrl1 ?? "";
@@ -294,8 +294,8 @@ async function onConfirm(userId: string, replyToken: string, text: string) {
   await createSubmission({
     sessionId,
     userId,
-    titleRaw,
-    artistRaw,
+    title,
+    artist,
     audioUrl,
     scoreUrl,
     referenceUrl1,
@@ -311,7 +311,7 @@ async function onConfirm(userId: string, replyToken: string, text: string) {
   // stateリセット
   await updateUserState(userId, { state: "IDLE", draft: {} });
 
-  return replyText(replyToken, `登録したよ！\n${titleRaw} / ${artistRaw}`);
+  return replyText(replyToken, `登録したよ！\n${title} / ${artist}`);
 }
 
 async function resetState(userId: string, replyToken: string, message: string) {
@@ -343,7 +343,7 @@ async function replyStatus(userId: string, replyToken: string) {
 
   const statusText = [
     `現在の提出状況：`,
-    `${sub.titleRaw} / ${sub.artistRaw}`,
+    `${sub.title} / ${sub.artist}`,
     `音源URL: ${sub.audioUrl || "なし"}`,
     `コード譜URL: ${sub.scoreUrl || "なし"}`,
     `参考URL1: ${sub.referenceUrl1 || "なし"}`,
@@ -363,7 +363,7 @@ async function replyList(replyToken: string) {
     return replyText(replyToken, "まだ誰も提出していないよ。");
   }
 
-  const list = subs.map((s, i) => `${i + 1}. ${s.titleRaw} / ${s.artistRaw}`).join("\n");
+  const list = subs.map((s, i) => `${i + 1}. ${s.title} / ${s.artist}`).join("\n");
   return replyText(replyToken, `現在の提出一覧：\n${list}`);
 }
 
