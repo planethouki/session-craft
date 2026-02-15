@@ -113,37 +113,87 @@ async function onScoreUrl(userId: string, replyToken: string, text: string) {
 }
 
 async function onReferenceUrl1(userId: string, replyToken: string, text: string) {
-  const referenceUrl1 = (text === "なし") ? "" : text;
+  if (text === "なし") {
+    await updateUserState(userId, {
+      state: "ASK_PARTS",
+      draft: {
+        referenceUrl1: "",
+        referenceUrl2: "",
+        referenceUrl3: "",
+        referenceUrl4: "",
+        referenceUrl5: "",
+        parts: [...DefaultInstrumentalParts],
+      },
+    });
+    return replyPartsFlex(replyToken, "必要な楽器を選んでね（複数可）", [...DefaultInstrumentalParts]);
+  }
+
   await updateUserState(userId, {
     state: "ASK_REFERENCE_URL_2",
-    draft: { referenceUrl1 },
+    draft: { referenceUrl1: text },
   });
   return replyText(replyToken, "参考動画②のURLは？（なければ「なし」）");
 }
 
 async function onReferenceUrl2(userId: string, replyToken: string, text: string) {
-  const referenceUrl2 = (text === "なし") ? "" : text;
+  if (text === "なし") {
+    await updateUserState(userId, {
+      state: "ASK_PARTS",
+      draft: {
+        referenceUrl2: "",
+        referenceUrl3: "",
+        referenceUrl4: "",
+        referenceUrl5: "",
+        parts: [...DefaultInstrumentalParts],
+      },
+    });
+    return replyPartsFlex(replyToken, "必要な楽器を選んでね（複数可）", [...DefaultInstrumentalParts]);
+  }
+
   await updateUserState(userId, {
     state: "ASK_REFERENCE_URL_3",
-    draft: { referenceUrl2 },
+    draft: { referenceUrl2: text },
   });
   return replyText(replyToken, "参考動画③のURLは？（なければ「なし」）");
 }
 
 async function onReferenceUrl3(userId: string, replyToken: string, text: string) {
-  const referenceUrl3 = (text === "なし") ? "" : text;
+  if (text === "なし") {
+    await updateUserState(userId, {
+      state: "ASK_PARTS",
+      draft: {
+        referenceUrl3: "",
+        referenceUrl4: "",
+        referenceUrl5: "",
+        parts: [...DefaultInstrumentalParts],
+      },
+    });
+    return replyPartsFlex(replyToken, "必要な楽器を選んでね（複数可）", [...DefaultInstrumentalParts]);
+  }
+
   await updateUserState(userId, {
     state: "ASK_REFERENCE_URL_4",
-    draft: { referenceUrl3 },
+    draft: { referenceUrl3: text },
   });
   return replyText(replyToken, "参考動画④のURLは？（なければ「なし」）");
 }
 
 async function onReferenceUrl4(userId: string, replyToken: string, text: string) {
-  const referenceUrl4 = (text === "なし") ? "" : text;
+  if (text === "なし") {
+    await updateUserState(userId, {
+      state: "ASK_PARTS",
+      draft: {
+        referenceUrl4: "",
+        referenceUrl5: "",
+        parts: [...DefaultInstrumentalParts],
+      },
+    });
+    return replyPartsFlex(replyToken, "必要な楽器を選んでね（複数可）", [...DefaultInstrumentalParts]);
+  }
+
   await updateUserState(userId, {
     state: "ASK_REFERENCE_URL_5",
-    draft: { referenceUrl4 },
+    draft: { referenceUrl4: text },
   });
   return replyText(replyToken, "参考動画⑤のURLは？（なければ「なし」）");
 }
