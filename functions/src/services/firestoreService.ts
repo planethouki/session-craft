@@ -10,12 +10,9 @@ export async function findOrCreateUser(userId: string): Promise<User> {
   const userSnap = await userRef.get();
 
   if (!userSnap.exists) {
-    const activeSessionId = await getActiveSessionId();
-
     const data: any = {
       state: "IDLE",
       draft: {},
-      activeSessionId,
       stateUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
     };
 
