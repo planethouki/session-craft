@@ -121,15 +121,16 @@ export async function createSubmission(submission: Omit<Submission, 'createdAt' 
   const subId = `${submission.sessionId}_${submission.userId}`;
   const subRef = db.doc(`submissions/${subId}`);
 
-  await db.runTransaction(async (tx) => {
-    const subSnap = await tx.get(subRef);
-    if (subSnap.exists) {
-      return;
-    }
-    tx.set(subRef, {
-      ...submission,
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    });
-  });
+  const now = admin.firestore.FieldValue.serverTimestamp();
+  await subRef.set({
+    ...submission,
+    createdAt: now,
+    updatedAt: now,
+  }, { merge: true });
+}
+
+export async function deleteSubmission(sessionId: string, userId: string): Promise<void> {
+  const db = admin.firestore();
+  const subId = `${sessionId}_${userId}`;
+  await db.doc(`submissions/${subId}`).delete();
 }

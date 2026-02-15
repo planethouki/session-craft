@@ -3,7 +3,8 @@ import {
   getActiveSessionId,
   updateUserState,
   getSubmission,
-  createSubmission
+  createSubmission,
+  deleteSubmission,
 } from "../firestoreService";
 
 import { replyText } from "../messageService";
@@ -13,7 +14,8 @@ export async function handleSubmission(userId: string, replyToken: string, text:
   // いつでも効くコマンド
   if (text === "キャンセル") return resetState(userId, replyToken, "キャンセルしたよ。");
   if (text === "ヘルプ") return replyHelp(replyToken);
-  // if (text === "状況") return replyStatus(userId, replyToken);
+  if (text === "状況") return replyStatus(userId, replyToken);
+  if (text === "削除") return deleteSubmissionCommand(userId, replyToken);
 
   const user = await findOrCreateUser(userId);
 
@@ -125,5 +127,28 @@ async function resetState(userId: string, replyToken: string, message: string) {
 }
 
 async function replyHelp(replyToken: string) {
-  return replyText(replyToken, "「提出」と送ると課題曲を登録できるよ。\n「キャンセル」で入力を中断できるよ。");
+  return replyText(replyToken, "「提出」と送ると課題曲を登録できるよ。\n「状況」で現在の提出を確認できるよ。\n「削除」で提出を消去できるよ。\n「キャンセル」で入力を中断できるよ。");
+}
+
+async function replyStatus(userId: string, replyToken: string) {
+  const sessionId = await getActiveSessionId();
+  const sub = await getSubmission(sessionId, userId);
+
+  if (!sub) {
+    return replyText(replyToken, "今月はまだ提出していないよ。");
+  }
+
+  return replyText(replyToken, `現在の提出状況：\n${sub.titleRaw} / ${sub.artistRaw}\nURL: ${sub.url || "なし"}`);
+}
+
+async function deleteSubmissionCommand(userId: string, replyToken: string) {
+  const sessionId = await getActiveSessionId();
+  const sub = await getSubmission(sessionId, userId);
+
+  if (!sub) {
+    return replyText(replyToken, "削除する提出がないよ。");
+  }
+
+  await deleteSubmission(sessionId, userId);
+  return replyText(replyToken, "提出を削除したよ。");
 }
