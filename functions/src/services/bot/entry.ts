@@ -70,12 +70,11 @@ async function startEntryForSong(userId: string, replyToken: string, songIndex: 
   const selectedParts = entry ? entry.parts : [];
 
   // UserStateを更新して、どの曲に対してエントリー中かを保持する。
-  // ここでは簡易的にdraft.titleにsubmissionUserIdを、draft.artistに曲名を一時保持する（暫定）
   await updateUserState(userId, {
     state: "SELECT_ENTRY_PART",
-    draft: {
-      title: song.userId, // submissionUserIdを保持
-      artist: song.title, // 曲名を保持（表示用）
+    entryDraft: {
+      submissionUserId: song.userId, // submissionUserIdを保持
+      songTitle: song.title, // 曲名を保持（表示用）
       parts: selectedParts,
     }
   });
@@ -92,9 +91,9 @@ async function startEntryForSong(userId: string, replyToken: string, songIndex: 
 
 async function onSelectPart(userId: string, replyToken: string, text: string) {
   const user = await getUser(userId);
-  const submissionUserId = user.draft.title || "";
-  const songTitle = user.draft.artist || "";
-  const currentParts = user.draft.parts || [];
+  const submissionUserId = user.entryDraft?.submissionUserId || "";
+  const songTitle = user.entryDraft?.songTitle || "";
+  const currentParts = user.entryDraft?.parts || [];
 
   // get the song to know required parts
   const sessionId = await getActiveSessionId();
@@ -112,7 +111,7 @@ async function onSelectPart(userId: string, replyToken: string, text: string) {
       userId,
       parts: currentParts,
     });
-    await updateUserState(userId, { state: "IDLE", draft: {} });
+    await updateUserState(userId, { state: "IDLE", entryDraft: {} });
     return replyText(replyToken, `${songTitle} のエントリーを更新したよ！`);
   }
 
@@ -126,8 +125,8 @@ async function onSelectPart(userId: string, replyToken: string, text: string) {
     : [...currentParts, part];
 
   await updateUserState(userId, {
-    draft: {
-      ...user.draft,
+    entryDraft: {
+      ...user.entryDraft,
       parts: newParts,
     },
   });
@@ -143,7 +142,7 @@ async function replyPartsFlex(replyToken: string, title: string, selected: Instr
 async function resetState(userId: string, replyToken: string, message: string) {
   await updateUserState(userId, {
     state: "IDLE",
-    draft: {},
+    entryDraft: {},
   });
   return replyText(replyToken, message);
 }

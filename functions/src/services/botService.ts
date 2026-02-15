@@ -24,7 +24,8 @@ export async function handleEvent(ev: WebhookEvent) {
     const profile = await getProfile(userId);
     user = {
       state: "IDLE",
-      draft: {},
+      submissionDraft: {},
+      entryDraft: {},
       stateUpdatedAt: new Date(),
       displayName: profile.displayName,
       photoURL: profile.pictureUrl || "",

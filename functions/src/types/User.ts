@@ -4,7 +4,7 @@ import { InstrumentalPart } from "./InstrumentalPart";
 
 export type User = {
   state: UserState;
-  draft: {
+  submissionDraft?: {
     title?: string;
     artist?: string;
     audioUrl?: string;
@@ -17,7 +17,12 @@ export type User = {
     description?: string;
     parts?: InstrumentalPart[];
     myParts?: InstrumentalPart[];
-  }
+  };
+  entryDraft?: {
+    submissionUserId?: string;
+    songTitle?: string;
+    parts?: InstrumentalPart[];
+  };
   stateUpdatedAt: Date;
   displayName: string;
   photoURL: string;

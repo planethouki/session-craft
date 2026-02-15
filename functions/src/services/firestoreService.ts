@@ -24,19 +24,24 @@ export async function getUser(userId: string): Promise<User> {
 
   return {
     state,
-    draft: {
-      title: user.draft?.title,
-      artist: user.draft?.artist,
-      audioUrl: user.draft?.audioUrl,
-      scoreUrl: user.draft?.scoreUrl,
-      referenceUrl1: user.draft?.referenceUrl1,
-      referenceUrl2: user.draft?.referenceUrl2,
-      referenceUrl3: user.draft?.referenceUrl3,
-      referenceUrl4: user.draft?.referenceUrl4,
-      referenceUrl5: user.draft?.referenceUrl5,
-      description: user.draft?.description,
-      parts: user.draft?.parts,
-      myParts: user.draft?.myParts,
+    submissionDraft: {
+      title: user.submissionDraft?.title,
+      artist: user.submissionDraft?.artist,
+      audioUrl: user.submissionDraft?.audioUrl,
+      scoreUrl: user.submissionDraft?.scoreUrl,
+      referenceUrl1: user.submissionDraft?.referenceUrl1,
+      referenceUrl2: user.submissionDraft?.referenceUrl2,
+      referenceUrl3: user.submissionDraft?.referenceUrl3,
+      referenceUrl4: user.submissionDraft?.referenceUrl4,
+      referenceUrl5: user.submissionDraft?.referenceUrl5,
+      description: user.submissionDraft?.description,
+      parts: user.submissionDraft?.parts,
+      myParts: user.submissionDraft?.myParts,
+    },
+    entryDraft: {
+      submissionUserId: user.entryDraft?.submissionUserId,
+      songTitle: user.entryDraft?.songTitle,
+      parts: user.entryDraft?.parts,
     },
     stateUpdatedAt: user.stateUpdatedAt.toDate(),
     displayName: user.displayName || "",
@@ -52,20 +57,26 @@ export async function updateUserState(userId: string, data: Partial<User>): Prom
     stateUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
   };
   if (data.state) updateData.state = data.state;
-  if (data.draft) {
-    if (data.draft.title !== undefined) updateData["draft.title"] = data.draft.title;
-    if (data.draft.artist !== undefined) updateData["draft.artist"] = data.draft.artist;
-    if (data.draft.audioUrl !== undefined) updateData["draft.audioUrl"] = data.draft.audioUrl;
-    if (data.draft.scoreUrl !== undefined) updateData["draft.scoreUrl"] = data.draft.scoreUrl;
-    if (data.draft.referenceUrl1 !== undefined) updateData["draft.referenceUrl1"] = data.draft.referenceUrl1;
-    if (data.draft.referenceUrl2 !== undefined) updateData["draft.referenceUrl2"] = data.draft.referenceUrl2;
-    if (data.draft.referenceUrl3 !== undefined) updateData["draft.referenceUrl3"] = data.draft.referenceUrl3;
-    if (data.draft.referenceUrl4 !== undefined) updateData["draft.referenceUrl4"] = data.draft.referenceUrl4;
-    if (data.draft.referenceUrl5 !== undefined) updateData["draft.referenceUrl5"] = data.draft.referenceUrl5;
-    if (data.draft.description !== undefined) updateData["draft.description"] = data.draft.description;
-    if (data.draft.parts !== undefined) updateData["draft.parts"] = data.draft.parts;
-    if (data.draft.myParts !== undefined) updateData["draft.myParts"] = data.draft.myParts;
-    if (Object.keys(data.draft).length === 0) updateData.draft = {};
+  if (data.submissionDraft) {
+    if (data.submissionDraft.title !== undefined) updateData["submissionDraft.title"] = data.submissionDraft.title;
+    if (data.submissionDraft.artist !== undefined) updateData["submissionDraft.artist"] = data.submissionDraft.artist;
+    if (data.submissionDraft.audioUrl !== undefined) updateData["submissionDraft.audioUrl"] = data.submissionDraft.audioUrl;
+    if (data.submissionDraft.scoreUrl !== undefined) updateData["submissionDraft.scoreUrl"] = data.submissionDraft.scoreUrl;
+    if (data.submissionDraft.referenceUrl1 !== undefined) updateData["submissionDraft.referenceUrl1"] = data.submissionDraft.referenceUrl1;
+    if (data.submissionDraft.referenceUrl2 !== undefined) updateData["submissionDraft.referenceUrl2"] = data.submissionDraft.referenceUrl2;
+    if (data.submissionDraft.referenceUrl3 !== undefined) updateData["submissionDraft.referenceUrl3"] = data.submissionDraft.referenceUrl3;
+    if (data.submissionDraft.referenceUrl4 !== undefined) updateData["submissionDraft.referenceUrl4"] = data.submissionDraft.referenceUrl4;
+    if (data.submissionDraft.referenceUrl5 !== undefined) updateData["submissionDraft.referenceUrl5"] = data.submissionDraft.referenceUrl5;
+    if (data.submissionDraft.description !== undefined) updateData["submissionDraft.description"] = data.submissionDraft.description;
+    if (data.submissionDraft.parts !== undefined) updateData["submissionDraft.parts"] = data.submissionDraft.parts;
+    if (data.submissionDraft.myParts !== undefined) updateData["submissionDraft.myParts"] = data.submissionDraft.myParts;
+    if (Object.keys(data.submissionDraft).length === 0) updateData.submissionDraft = {};
+  }
+  if (data.entryDraft) {
+    if (data.entryDraft.submissionUserId !== undefined) updateData["entryDraft.submissionUserId"] = data.entryDraft.submissionUserId;
+    if (data.entryDraft.songTitle !== undefined) updateData["entryDraft.songTitle"] = data.entryDraft.songTitle;
+    if (data.entryDraft.parts !== undefined) updateData["entryDraft.parts"] = data.entryDraft.parts;
+    if (Object.keys(data.entryDraft).length === 0) updateData.entryDraft = {};
   }
 
   await db.doc(`users/${userId}`).update(updateData);

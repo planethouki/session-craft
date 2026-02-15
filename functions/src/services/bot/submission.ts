@@ -72,7 +72,7 @@ async function startSubmission(userId: string, replyToken: string) {
 
   await updateUserState(userId, {
     state: "ASK_TITLE",
-    draft: {},
+    submissionDraft: {},
   });
 
   return replyText(replyToken, "曲名は？");
@@ -81,7 +81,7 @@ async function startSubmission(userId: string, replyToken: string) {
 async function onTitle(userId: string, replyToken: string, title: string) {
   await updateUserState(userId, {
     state: "ASK_ARTIST",
-    draft: {
+    submissionDraft: {
       title,
     },
   });
@@ -91,7 +91,7 @@ async function onTitle(userId: string, replyToken: string, title: string) {
 async function onArtist(userId: string, replyToken: string, artist: string) {
   await updateUserState(userId, {
     state: "ASK_AUDIO_URL",
-    draft: {
+    submissionDraft: {
       artist,
     },
   });
@@ -102,7 +102,7 @@ async function onAudioUrl(userId: string, replyToken: string, text: string) {
   const audioUrl = (text === "なし") ? "" : text;
   await updateUserState(userId, {
     state: "ASK_SCORE_URL",
-    draft: { audioUrl },
+    submissionDraft: { audioUrl },
   });
   return replyText(replyToken, "コード譜のURLは？（なければ「なし」）");
 }
@@ -111,7 +111,7 @@ async function onScoreUrl(userId: string, replyToken: string, text: string) {
   const scoreUrl = (text === "なし") ? "" : text;
   await updateUserState(userId, {
     state: "ASK_REFERENCE_URL_1",
-    draft: { scoreUrl },
+    submissionDraft: { scoreUrl },
   });
   return replyText(replyToken, "参考動画①のURLは？（なければ「なし」）");
 }
@@ -120,7 +120,7 @@ async function onReferenceUrl1(userId: string, replyToken: string, text: string)
   if (text === "なし") {
     await updateUserState(userId, {
       state: "ASK_PARTS",
-      draft: {
+      submissionDraft: {
         referenceUrl1: "",
         referenceUrl2: "",
         referenceUrl3: "",
@@ -134,7 +134,7 @@ async function onReferenceUrl1(userId: string, replyToken: string, text: string)
 
   await updateUserState(userId, {
     state: "ASK_REFERENCE_URL_2",
-    draft: { referenceUrl1: text },
+    submissionDraft: { referenceUrl1: text },
   });
   return replyText(replyToken, "参考動画②のURLは？（なければ「なし」）");
 }
@@ -143,7 +143,7 @@ async function onReferenceUrl2(userId: string, replyToken: string, text: string)
   if (text === "なし") {
     await updateUserState(userId, {
       state: "ASK_PARTS",
-      draft: {
+      submissionDraft: {
         referenceUrl2: "",
         referenceUrl3: "",
         referenceUrl4: "",
@@ -156,7 +156,7 @@ async function onReferenceUrl2(userId: string, replyToken: string, text: string)
 
   await updateUserState(userId, {
     state: "ASK_REFERENCE_URL_3",
-    draft: { referenceUrl2: text },
+    submissionDraft: { referenceUrl2: text },
   });
   return replyText(replyToken, "参考動画③のURLは？（なければ「なし」）");
 }
@@ -165,7 +165,7 @@ async function onReferenceUrl3(userId: string, replyToken: string, text: string)
   if (text === "なし") {
     await updateUserState(userId, {
       state: "ASK_PARTS",
-      draft: {
+      submissionDraft: {
         referenceUrl3: "",
         referenceUrl4: "",
         referenceUrl5: "",
@@ -177,7 +177,7 @@ async function onReferenceUrl3(userId: string, replyToken: string, text: string)
 
   await updateUserState(userId, {
     state: "ASK_REFERENCE_URL_4",
-    draft: { referenceUrl3: text },
+    submissionDraft: { referenceUrl3: text },
   });
   return replyText(replyToken, "参考動画④のURLは？（なければ「なし」）");
 }
@@ -186,7 +186,7 @@ async function onReferenceUrl4(userId: string, replyToken: string, text: string)
   if (text === "なし") {
     await updateUserState(userId, {
       state: "ASK_PARTS",
-      draft: {
+      submissionDraft: {
         referenceUrl4: "",
         referenceUrl5: "",
         parts: [...DefaultInstrumentalParts],
@@ -197,7 +197,7 @@ async function onReferenceUrl4(userId: string, replyToken: string, text: string)
 
   await updateUserState(userId, {
     state: "ASK_REFERENCE_URL_5",
-    draft: { referenceUrl4: text },
+    submissionDraft: { referenceUrl4: text },
   });
   return replyText(replyToken, "参考動画⑤のURLは？（なければ「なし」）");
 }
@@ -206,7 +206,7 @@ async function onReferenceUrl5(userId: string, replyToken: string, text: string)
   const referenceUrl5 = (text === "なし") ? "" : text;
   await updateUserState(userId, {
     state: "ASK_PARTS",
-    draft: {
+    submissionDraft: {
       referenceUrl5,
       parts: [...DefaultInstrumentalParts],
     },
@@ -217,7 +217,7 @@ async function onReferenceUrl5(userId: string, replyToken: string, text: string)
 
 async function onParts(userId: string, replyToken: string, text: string) {
   const user = await getUser(userId);
-  const currentParts = user.draft.parts || [];
+  const currentParts = user.submissionDraft?.parts || [];
 
   if (text === "選択終了") {
     if (currentParts.length === 0) {
@@ -225,7 +225,7 @@ async function onParts(userId: string, replyToken: string, text: string) {
     }
     await updateUserState(userId, {
       state: "ASK_MY_PARTS",
-      draft: {
+      submissionDraft: {
         myParts: [],
       },
     });
@@ -242,7 +242,7 @@ async function onParts(userId: string, replyToken: string, text: string) {
     : [...currentParts, part];
 
   await updateUserState(userId, {
-    draft: {
+    submissionDraft: {
       parts: newParts,
     },
   });
@@ -252,8 +252,8 @@ async function onParts(userId: string, replyToken: string, text: string) {
 
 async function onMyParts(userId: string, replyToken: string, text: string) {
   const user = await getUser(userId);
-  const currentMyParts = user.draft.myParts || [];
-  const requiredParts = user.draft.parts || [];
+  const currentMyParts = user.submissionDraft?.myParts || [];
+  const requiredParts = user.submissionDraft?.parts || [];
 
   if (text === "選択終了") {
     if (currentMyParts.length === 0) {
@@ -268,7 +268,7 @@ async function onMyParts(userId: string, replyToken: string, text: string) {
 
   const part = text as InstrumentalPart;
   if (!InstrumentalParts.includes(part)) {
-    return replyPartsFlex(replyToken, "自分が担当する楽器を選んでね（複数可）", currentMyParts, requiredParts, "ボタンから選んでね。");
+    return replyPartsFlex(replyToken, "自分が担当する楽器を選んでね（複数可）", currentMyParts, requiredParts, "ボタンから選んでね. ");
   }
 
   const newMyParts = currentMyParts.includes(part)
@@ -276,7 +276,7 @@ async function onMyParts(userId: string, replyToken: string, text: string) {
     : [...currentMyParts, part];
 
   await updateUserState(userId, {
-    draft: {
+    submissionDraft: {
       myParts: newMyParts,
     },
   });
@@ -289,10 +289,11 @@ async function onDescription(userId: string, replyToken: string, text: string) {
 
   await updateUserState(userId, {
     state: "CONFIRM",
-    draft: { description },
+    submissionDraft: { description },
   });
 
-  const { draft } = await getUser(userId); // 最新のdraftを取得
+  const { submissionDraft: draft } = await getUser(userId); // 最新のdraftを取得
+  if (!draft) return replyText(replyToken, "エラーが発生しました。");
   const summary = [
     `曲名: ${draft.title}`,
     `アーティスト: ${draft.artist}`,
@@ -319,7 +320,7 @@ async function replyPartsFlex(replyToken: string, title: string, selected: Instr
 
 async function onConfirm(userId: string, replyToken: string, text: string) {
   if (text === "最初からやり直す") {
-    await updateUserState(userId, { state: "ASK_TITLE", draft: {} });
+    await updateUserState(userId, { state: "ASK_TITLE", submissionDraft: {} });
     return replyText(replyToken, "OK！最初からやり直そう。曲名は？");
   }
   if (text !== "提出する") {
@@ -329,7 +330,7 @@ async function onConfirm(userId: string, replyToken: string, text: string) {
   const user = await getUser(userId);
   if (!user) return replyText(replyToken, "エラーが発生しました。");
 
-  const { draft } = user;
+  const { submissionDraft: draft } = user;
   const title = draft?.title ?? "";
   const artist = draft?.artist ?? "";
   const audioUrl = draft?.audioUrl ?? "";
@@ -377,7 +378,7 @@ async function onConfirm(userId: string, replyToken: string, text: string) {
   }
 
   // stateリセット
-  await updateUserState(userId, { state: "IDLE", draft: {} });
+  await updateUserState(userId, { state: "IDLE", submissionDraft: {} });
 
   return replyText(replyToken, `登録したよ！\n${title} / ${artist}`);
 }
@@ -385,7 +386,7 @@ async function onConfirm(userId: string, replyToken: string, text: string) {
 async function resetState(userId: string, replyToken: string, message: string) {
   await updateUserState(userId, {
     state: "IDLE",
-    draft: {},
+    submissionDraft: {},
   });
   return replyText(replyToken, message);
 }
