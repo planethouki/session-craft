@@ -19,12 +19,22 @@ export async function handleEntry(userId: string, replyToken: string, text: stri
 
   const user = await getUser(userId);
 
+  if (user.state === "SELECT_ENTRY_SONG") {
+    const songNumberMatch = text.match(/^\d+$/);
+    if (songNumberMatch) {
+      const songIndex = parseInt(songNumberMatch[0]) - 1;
+      return startEntryForSong(userId, replyToken, songIndex);
+    }
+    return replySongList(replyToken, "曲の番号を教えてね。");
+  }
+
   if (user.state === "SELECT_ENTRY_PART") {
     return onSelectPart(userId, replyToken, text);
   }
 
   // IDLE状態など
   if (text === "エントリー" || text === "参加") {
+    await updateUserState(userId, { state: "SELECT_ENTRY_SONG" });
     return replySongList(replyToken);
   }
 
@@ -39,17 +49,10 @@ export async function handleEntry(userId: string, replyToken: string, text: stri
     return executeDeleteEntry(userId, replyToken, entryIndex);
   }
 
-  // 「1」「エントリー 1」などの曲選択
-  const songNumberMatch = text.match(/^(?:エントリー\s*)?(\d+)$/);
-  if (songNumberMatch) {
-    const songIndex = parseInt(songNumberMatch[1]) - 1;
-    return startEntryForSong(userId, replyToken, songIndex);
-  }
-
   return replyHelp(replyToken);
 }
 
-async function replySongList(replyToken: string) {
+async function replySongList(replyToken: string, beforeText?: string) {
   const sessionId = await getActiveSessionId();
   const subs = await getSubmissions(sessionId);
 
@@ -79,7 +82,7 @@ async function replySongList(replyToken: string) {
     list,
   ].join("\n");
 
-  return replyText(replyToken, message);
+  return replyText(replyToken, message, beforeText);
 }
 
 async function startEntryForSong(userId: string, replyToken: string, songIndex: number) {

@@ -38,8 +38,13 @@ class MessageService {
   }
 }
 
-function replyText(replyToken: string, text: string) {
-  return messageService.replyMessage(replyToken, [{ type: "text", text }]);
+function replyText(replyToken: string, text: string, beforeText?: string) {
+  const messages: messagingApi.Message[] = []
+  if (beforeText) {
+    messages.push({ type: "text", text: beforeText })
+  }
+  messages.push({ type: "text", text });
+  return messageService.replyMessage(replyToken, messages);
 }
 
 async function getProfile(userId: string) {
