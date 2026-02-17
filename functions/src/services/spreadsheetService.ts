@@ -164,6 +164,10 @@ export async function updateSpreadsheetEntries(sessionId: string, spreadsheetIds
     }
 
     const partColumns = InstrumentalParts.map(part => {
+      // submission.partsに入っていない楽器はハイフン
+      if (!sub.parts.includes(part as any)) {
+        return "-";
+      }
       const members = partEntries[part] || [];
       return members.join(", ");
     });
