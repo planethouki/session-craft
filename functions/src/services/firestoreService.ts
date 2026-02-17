@@ -300,3 +300,18 @@ export async function getEntriesByUser(sessionId: string, userId: string): Promi
     } as Entry;
   });
 }
+
+export async function getLastExecutionTime(key: string): Promise<Date | null> {
+  const db = admin.firestore();
+  const doc = await db.doc(`system/executionTimes`).get();
+  const data = doc.data();
+  if (!data || !data[key]) return null;
+  return data[key].toDate();
+}
+
+export async function updateLastExecutionTime(key: string): Promise<void> {
+  const db = admin.firestore();
+  await db.doc(`system/executionTimes`).set({
+    [key]: admin.firestore.FieldValue.serverTimestamp(),
+  }, { merge: true });
+}

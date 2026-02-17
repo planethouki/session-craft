@@ -9,7 +9,7 @@ import { WebhookRequestBody } from "@line/bot-sdk";
 
 import { handleEvent } from './services/botService'
 import { messageService } from "./services/messageService";
-import { getCurrentSession } from "./services/firestoreService";
+import { getCurrentSession, getLastExecutionTime, updateLastExecutionTime } from "./services/firestoreService";
 import { updateSpreadsheetSubmissions, updateSpreadsheetEntries } from "./services/spreadsheetService";
 
 setGlobalOptions({
@@ -48,6 +48,13 @@ export const lineWebhook = onRequest({
 export const onSubmissionWritten = onDocumentWritten("submissions/{submissionId}", async (event) => {
   logger.info("Submission written", { params: event.params });
 
+  const lastExecution = await getLastExecutionTime('onSubmissionWritten');
+  const now = new Date();
+  if (lastExecution && now.getTime() - lastExecution.getTime() < 60 * 1000) {
+    logger.info("Submission update skipped due to rate limit", { lastExecution });
+    return;
+  }
+
   const session = await getCurrentSession();
   if (!session) {
     logger.warn("Active session not found");
@@ -57,12 +64,20 @@ export const onSubmissionWritten = onDocumentWritten("submissions/{submissionId}
   const submissionIds = session.submissionSpreadsheetIds || [];
   if (submissionIds.length > 0) {
     await updateSpreadsheetSubmissions(session.sessionId, submissionIds);
+    await updateLastExecutionTime('onSubmissionWritten');
     logger.info("Spreadsheet submissions updated", { sessionId: session.sessionId });
   }
 });
 
 export const onEntryWritten = onDocumentWritten("entries/{entryId}", async (event) => {
   logger.info("Entry written", { params: event.params });
+
+  const lastExecution = await getLastExecutionTime('onEntryWritten');
+  const now = new Date();
+  if (lastExecution && now.getTime() - lastExecution.getTime() < 60 * 1000) {
+    logger.info("Entry update skipped due to rate limit", { lastExecution });
+    return;
+  }
 
   const session = await getCurrentSession();
   if (!session) {
@@ -73,6 +88,7 @@ export const onEntryWritten = onDocumentWritten("entries/{entryId}", async (even
   const entryIds = session.entrySpreadsheetIds || [];
   if (entryIds.length > 0) {
     await updateSpreadsheetEntries(session.sessionId, entryIds);
+    await updateLastExecutionTime('onEntryWritten');
     logger.info("Spreadsheet entries updated", { sessionId: session.sessionId });
   }
 });
