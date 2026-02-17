@@ -45,7 +45,11 @@ export const lineWebhook = onRequest({
   res.status(200).send('OK')
 })
 
-export const onSubmissionWritten = onDocumentWritten("submissions/{submissionId}", async (event) => {
+export const onSubmissionWritten = onDocumentWritten({
+  document: "submissions/{submissionId}",
+  memory: '512MiB',
+  maxInstances: 1,
+}, async (event) => {
   logger.info("Submission written", { params: event.params });
 
   const lastExecution = await getLastExecutionTime('onSubmissionWritten');
@@ -69,7 +73,11 @@ export const onSubmissionWritten = onDocumentWritten("submissions/{submissionId}
   }
 });
 
-export const onEntryWritten = onDocumentWritten("entries/{entryId}", async (event) => {
+export const onEntryWritten = onDocumentWritten({
+  document: "entries/{entryId}",
+  memory: '512MiB',
+  maxInstances: 1,
+}, async (event) => {
   logger.info("Entry written", { params: event.params });
 
   const lastExecution = await getLastExecutionTime('onEntryWritten');
