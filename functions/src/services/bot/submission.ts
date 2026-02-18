@@ -3,7 +3,6 @@ import {
   getActiveSessionId,
   updateUserState,
   getSubmission,
-  getSubmissions,
   createSubmission,
   deleteSubmission,
   createOrUpdateEntry,
@@ -13,6 +12,7 @@ import {
 import { replyText, replyFlexMessage } from "../messageService";
 import { InstrumentalParts, InstrumentalPart, DefaultInstrumentalParts } from "../../types/InstrumentalPart";
 import { createPartsFlexMessage, createConfirmFlexMessage } from "../../utils/flexButton";
+import { SUBMISSIONS_WEB_URL } from "../../index";
 
 export async function handleSubmission(userId: string, replyToken: string, text: string) {
 
@@ -387,7 +387,7 @@ async function replyHelp(replyToken: string) {
   const lines = [
     "「提出」と送ると課題曲を登録できるよ。",
     "「状況」で現在の提出を確認できるよ。",
-    "「一覧」でみんなの提出を確認できるよ。",
+    "「一覧」で曲の詳細を確認できるウェブサイトを案内するよ。",
     "「削除」で提出を消去できるよ。",
     "「キャンセル」で入力を中止できるよ。",
   ]
@@ -417,15 +417,18 @@ async function replyStatus(userId: string, replyToken: string) {
 }
 
 async function replyList(replyToken: string) {
-  const sessionId = await getActiveSessionId();
-  const subs = await getSubmissions(sessionId);
-
-  if (subs.length === 0) {
-    return replyText(replyToken, "まだ誰も提出していないよ。");
+  const url = SUBMISSIONS_WEB_URL.value();
+  if (!url) {
+    return replyText(replyToken, "ごめん、一覧のURLが設定されていないみたい。");
   }
 
-  const list = subs.map((s, i) => `${i + 1}. ${s.title} / ${s.artist}`).join("\n");
-  return replyText(replyToken, `現在の提出一覧：\n${list}`);
+  const message = [
+    "曲の詳細一覧は、以下のウェブサイトから確認してね！",
+    "",
+    url,
+  ].join("\n");
+
+  return replyText(replyToken, message);
 }
 
 async function deleteSubmissionCommand(userId: string, replyToken: string) {
