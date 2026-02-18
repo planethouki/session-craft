@@ -1,8 +1,6 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
-import { getCurrentSession, getSubmissions, getUser, getEntriesBySession } from "./services/firestoreService";
-import { InstrumentalParts } from "./types/InstrumentalPart";
-import { Entry } from "./types/Entry";
+import { getCurrentSession, getSubmissions, getUser } from "./services/firestoreService";
 
 export const getSubmissionsApi = onCall({
   secrets: [],
@@ -16,8 +14,9 @@ export const getSubmissionsApi = onCall({
     }
 
     const sessionId = session.sessionId;
+    const sessionTitle = session.title;
+    const sessionDescription = session.description;
     const submissions = await getSubmissions(sessionId);
-    const entriesBySession = await getEntriesBySession(sessionId);
 
     // ユーザー名のキャッシュ
     const userCache: { [key: string]: string } = {};
@@ -32,39 +31,22 @@ export const getSubmissionsApi = onCall({
       return userCache[userId];
     };
 
-    const data = await Promise.all(submissions.map(async (sub) => {
-      const songEntries = entriesBySession.filter((e: Entry) => e.submissionUserId === sub.userId && e.sessionId === sub.sessionId);
+    const data = await Promise.all(submissions.map(async (sub, index) => {
       const userName = await getCachedUserName(sub.userId);
-
-      // パートごとにエントリーしている人を集計
-      const partEntries: { [key: string]: string[] } = {};
-      for (const entry of songEntries) {
-        const entryUserName = await getCachedUserName(entry.userId);
-        for (const part of entry.parts) {
-          if (!partEntries[part]) partEntries[part] = [];
-          partEntries[part].push(entryUserName);
-        }
-      }
-
-      const partsStatus = InstrumentalParts.map(part => {
-        const isRequired = sub.parts.includes(part as any);
-        const members = partEntries[part] || [];
-        return {
-          part,
-          isRequired,
-          members,
-        };
-      });
 
       return {
         ...sub,
+        userId: undefined,
+        createdAt: sub.createdAt.toISOString(),
+        updatedAt: sub.updatedAt.toISOString(),
         userName,
-        partsStatus,
+        no: index + 1,
       };
     }));
 
     return {
-      sessionId,
+      sessionTitle,
+      sessionDescription,
       submissions: data,
     };
   } catch (error) {

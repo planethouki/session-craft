@@ -15,26 +15,28 @@ import { httpsCallable } from 'firebase/functions'
 import { functions } from '../firebase'
 
 // APIからのレスポンスの型定義
-type PartStatus = {
-  part: string
-  isRequired: boolean
-  members: string[]
-}
-
 type SubmissionResponse = {
   sessionId: string
   userId: string
   title: string
   artist: string
-  partsStatus: PartStatus[]
   userName: string
+  no: number
+  parts: string[]
+  myParts: string[]
   description?: string
   audioUrl?: string
   scoreUrl?: string
+  referenceUrl1?: string
+  referenceUrl2?: string
+  referenceUrl3?: string
+  referenceUrl4?: string
+  referenceUrl5?: string
 }
 
 type ApiResponse = {
-  sessionId: string
+  sessionTitle?: string
+  sessionDescription?: string
   submissions: SubmissionResponse[]
 }
 
@@ -67,9 +69,16 @@ export default function Submissions() {
 
   return (
     <Container sx={{ p: 2, pb: 8 }}>
-      <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', mb: 3 }}>
-        エントリー曲一覧
-      </Typography>
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold' }}>
+          {data?.sessionTitle || 'エントリー曲一覧'}
+        </Typography>
+        {data?.sessionDescription && (
+          <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap', color: 'text.secondary' }}>
+            {data.sessionDescription}
+          </Typography>
+        )}
+      </Box>
 
       {submissions.length === 0 ? (
         <Typography variant="body1" sx={{ textAlign: 'center', mt: 4, color: 'text.secondary' }}>
@@ -82,7 +91,7 @@ export default function Submissions() {
               <CardContent sx={{ p: 2 }}>
                 <Box sx={{ mb: 1.5 }}>
                   <Typography variant="h6" component="div" sx={{ fontWeight: 'bold', lineHeight: 1.2 }}>
-                    {sub.title}
+                    No.{sub.no} {sub.title}
                   </Typography>
                   <Typography variant="subtitle2" color="text.secondary">
                     {sub.artist}
@@ -93,49 +102,76 @@ export default function Submissions() {
                   <Typography variant="caption" display="block" color="text.secondary">
                     投稿者: {sub.userName}
                   </Typography>
+                </Box>
+
+                <Divider sx={{ mb: 1.5 }} />
+
+                <Box sx={{ mb: 1.5 }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 0.5 }}>
+                    パート
+                  </Typography>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                    {sub.parts?.map((part) => (
+                      <Chip key={part} label={part} size="small" variant="outlined" />
+                    ))}
+                  </Box>
+                </Box>
+
+                <Box sx={{ mb: 1.5 }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 0.5 }}>
+                    自分のパート
+                  </Typography>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                    {sub.myParts?.map((part) => (
+                      <Chip key={part} label={part} size="small" />
+                    ))}
+                  </Box>
+                </Box>
+
+                <Divider sx={{ mb: 1.5 }} />
+
+                <Stack spacing={1}>
+                  {sub.audioUrl && (
+                    <Typography variant="body2">
+                      <strong>音源URL:</strong> <a href={sub.audioUrl} target="_blank" rel="noopener noreferrer">{sub.audioUrl}</a>
+                    </Typography>
+                  )}
+                  {sub.scoreUrl && (
+                    <Typography variant="body2">
+                      <strong>コード譜URL:</strong> <a href={sub.scoreUrl} target="_blank" rel="noopener noreferrer">{sub.scoreUrl}</a>
+                    </Typography>
+                  )}
+                  {sub.referenceUrl1 && (
+                    <Typography variant="body2">
+                      <strong>参考URL1:</strong> <a href={sub.referenceUrl1} target="_blank" rel="noopener noreferrer">{sub.referenceUrl1}</a>
+                    </Typography>
+                  )}
+                  {sub.referenceUrl2 && (
+                    <Typography variant="body2">
+                      <strong>参考URL2:</strong> <a href={sub.referenceUrl2} target="_blank" rel="noopener noreferrer">{sub.referenceUrl2}</a>
+                    </Typography>
+                  )}
+                  {sub.referenceUrl3 && (
+                    <Typography variant="body2">
+                      <strong>参考URL3:</strong> <a href={sub.referenceUrl3} target="_blank" rel="noopener noreferrer">{sub.referenceUrl3}</a>
+                    </Typography>
+                  )}
+                  {sub.referenceUrl4 && (
+                    <Typography variant="body2">
+                      <strong>参考URL4:</strong> <a href={sub.referenceUrl4} target="_blank" rel="noopener noreferrer">{sub.referenceUrl4}</a>
+                    </Typography>
+                  )}
+                  {sub.referenceUrl5 && (
+                    <Typography variant="body2">
+                      <strong>参考URL5:</strong> <a href={sub.referenceUrl5} target="_blank" rel="noopener noreferrer">{sub.referenceUrl5}</a>
+                    </Typography>
+                  )}
                   {sub.description && (
                     <Typography variant="body2" sx={{ mt: 1, whiteSpace: 'pre-wrap', fontSize: '0.85rem' }}>
                       {sub.description}
                     </Typography>
                   )}
-                </Box>
-
-                <Divider sx={{ mb: 1.5 }} />
-
-                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 'bold' }}>
-                  パート状況
-                </Typography>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  {sub.partsStatus.map((ps) => {
-                    const isFilled = ps.members.length > 0
-                    const showPart = ps.isRequired || isFilled
-
-                    if (!showPart) return null
-
-                    return (
-                      <Box key={ps.part} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Chip
-                          label={ps.part}
-                          size="small"
-                          color={ps.isRequired ? (isFilled ? 'success' : 'warning') : 'default'}
-                          variant={isFilled ? 'filled' : 'outlined'}
-                          sx={{ minWidth: 50, fontWeight: 'bold' }}
-                        />
-                        <Box sx={{ flexGrow: 1 }}>
-                          {isFilled ? (
-                            <Typography variant="body2">
-                              {ps.members.join(', ')}
-                            </Typography>
-                          ) : (
-                            <Typography variant="body2" color="text.disabled" sx={{ fontStyle: 'italic' }}>
-                              募集中
-                            </Typography>
-                          )}
-                        </Box>
-                      </Box>
-                    )
-                  })}
-                </Box>
+                </Stack>
               </CardContent>
             </Card>
           ))}
