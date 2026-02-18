@@ -17,7 +17,7 @@ export async function handleEntry(userId: string, replyToken: string, text: stri
   // 共通コマンド
   if (text === "キャンセル") return resetState(userId, replyToken, "キャンセルしたよ。");
   if (text === "状況") return replyMyEntries(userId, replyToken);
-  if (text === "情報") return replyAllSubmissionsUrl(replyToken);
+  if (text === "一覧") return replyAllSubmissionsUrl(replyToken);
 
   const user = await getUser(userId);
 
@@ -171,7 +171,7 @@ async function replyHelp(replyToken: string) {
     "「エントリー」で曲一覧を表示するよ。",
     "曲の番号（例：1）を送ると詳細表示とパート選択ができるよ。",
     "「状況」で自分のエントリーを確認できるよ。",
-    "「情報」で曲の詳細を確認できるウェブサイトを案内するよ。",
+    "「一覧」で曲の詳細を確認できるウェブサイトを案内するよ。",
     "「削除」でエントリーを解除できるよ。",
     "「キャンセル」で中断できるよ。",
   ].join("\n");
@@ -239,11 +239,11 @@ async function replyMyEntries(userId: string, replyToken: string) {
 async function replyAllSubmissionsUrl(replyToken: string) {
   const url = SUBMISSIONS_WEB_URL.value();
   if (!url) {
-    return replyText(replyToken, "ごめん、情報のURLが設定されていないみたい。");
+    return replyText(replyToken, "ごめん、一覧のURLが設定されていないみたい。");
   }
 
   const message = [
-    "曲の詳細情報は、以下のウェブサイトから確認してね！",
+    "曲の詳細一覧は、以下のウェブサイトから確認してね！",
     "",
     url,
   ].join("\n");
