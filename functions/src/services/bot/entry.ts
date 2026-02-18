@@ -62,24 +62,9 @@ async function replySongList(replyToken: string, beforeText?: string) {
     return replyText(replyToken, "まだ曲が提出されていないよ。");
   }
 
-  // 曲を提出した人のニックネームを取得
-  const submitterIds = Array.from(new Set(subs.map(s => s.userId)));
-  const userMap = new Map<string, string>();
-  await Promise.all(submitterIds.map(async (id) => {
-    try {
-      const u = await getUser(id);
-      userMap.set(id, u.nickname || "不明");
-    } catch (e) {
-      userMap.set(id, "不明");
-    }
-  }));
-
   const list = subs.map((s, i) => {
-    const submitterNickname = userMap.get(s.userId) || "不明";
     const lines = []
     lines.push(`${i+1}. ${s.title} / ${s.artist}`);
-    lines.push(`Part [${s.parts.join("/")}]`);
-    lines.push(`By ${submitterNickname} [${s.myParts.join("/")}]`);
     return lines.join("\n");
   }).join("\n");
   const message = [
