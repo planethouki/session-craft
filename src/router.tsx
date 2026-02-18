@@ -1,5 +1,6 @@
 import { createBrowserRouter, RouterProvider } from 'react-router'
 import Home from './pages/Home'
+import Submissions from './pages/Submissions'
 import Layout from "./components/Layout";
 
 function AppRoutes() {
@@ -11,6 +12,10 @@ function AppRoutes() {
         {
           index: true,
           Component: Home,
+        },
+        {
+          path: 'submissions',
+          Component: Submissions,
         },
       ]
     },

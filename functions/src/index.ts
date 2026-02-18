@@ -136,3 +136,4 @@ export const updateSpreadsheet = onRequest(async (req, res) => {
 })
 
 export * from './services/botService'
+export * from './web'
