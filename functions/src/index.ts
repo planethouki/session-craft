@@ -1,6 +1,6 @@
 import { setGlobalOptions } from 'firebase-functions'
 import { onInit } from 'firebase-functions/v2/core'
-import { defineSecret } from "firebase-functions/params";
+import { defineSecret, defineString } from "firebase-functions/params";
 import { onRequest } from "firebase-functions/https";
 import { onDocumentWritten } from "firebase-functions/v2/firestore";
 import * as admin from 'firebase-admin'
@@ -23,6 +23,7 @@ onInit(() => {
 
 const GOOGLE_GENAI_API_KEY = defineSecret('GOOGLE_GENAI_API_KEY')
 const LINE_CHANNEL_ACCESS_TOKEN = defineSecret('LINE_CHANNEL_ACCESS_TOKEN')
+export const SUBMISSIONS_WEB_URL = defineString('SUBMISSIONS_WEB_URL')
 
 export const lineWebhook = onRequest({
   secrets: [GOOGLE_GENAI_API_KEY, LINE_CHANNEL_ACCESS_TOKEN],
