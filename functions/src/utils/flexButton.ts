@@ -43,6 +43,7 @@ export function createPartsFlexMessage(title: string, selected: InstrumentalPart
             text: title,
             weight: "bold",
             size: "md",
+            wrap: true,
           },
           {
             type: "box",
