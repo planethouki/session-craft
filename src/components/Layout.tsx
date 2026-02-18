@@ -8,7 +8,6 @@ export default function Layout() {
   return <>
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <div>Layout</div>
       <Outlet />
     </ThemeProvider>
   </>;

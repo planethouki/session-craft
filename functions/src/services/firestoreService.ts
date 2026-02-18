@@ -1,5 +1,6 @@
 import * as admin from 'firebase-admin'
 import { UserState, UserStates } from "../types/UserState";
+import { SessionState } from "../types/SessionState";
 import { User } from "../types/User";
 import { Submission } from "../types/Submission";
 import { Session } from "../types/Session";
@@ -107,6 +108,11 @@ export async function getCurrentSession(): Promise<Session | null> {
     ...data,
     sessionDate: data.sessionDate.toDate(),
   } as Session;
+}
+
+export async function updateSessionState(state: SessionState): Promise<void> {
+  const db = admin.firestore();
+  await db.doc('sessions/current').update({ state });
 }
 
 export async function getActiveSessionId(): Promise<string> {

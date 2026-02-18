@@ -1,7 +1,11 @@
-import { createBrowserRouter, RouterProvider } from 'react-router'
+import { createBrowserRouter, RouterProvider, Outlet } from 'react-router'
 import Home from './pages/Home'
 import Submissions from './pages/Submissions'
 import Layout from "./components/Layout";
+import Login from "./pages/Login";
+import AuthHome from "./pages/auth/Home";
+import SessionSettings from "./pages/auth/settings/Session";
+import { AuthProvider, AuthGuard } from "./components/AuthGuard";
 
 function AppRoutes() {
   const router = createBrowserRouter([
@@ -17,6 +21,28 @@ function AppRoutes() {
           path: 'submissions',
           Component: Submissions,
         },
+        {
+          path: 'login',
+          Component: Login,
+        },
+        {
+          path: 'auth',
+          element: (
+            <AuthGuard>
+              <Outlet />
+            </AuthGuard>
+          ),
+          children: [
+            {
+              path: 'home',
+              Component: AuthHome,
+            },
+            {
+              path: 'settings/session',
+              Component: SessionSettings,
+            },
+          ],
+        },
       ]
     },
   ])
@@ -26,6 +52,8 @@ function AppRoutes() {
 
 export default function App() {
   return (
-    <AppRoutes />
+    <AuthProvider>
+      <AppRoutes />
+    </AuthProvider>
   )
 }

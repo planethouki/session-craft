@@ -1,6 +1,30 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
-import { getCurrentSession, getSubmissions, getUser } from "./services/firestoreService";
+import { getCurrentSession, getSubmissions, getUser, updateSessionState } from "./services/firestoreService";
+import { SessionState, SessionStates } from "./types/SessionState";
+
+export const updateSessionStateApi = onCall({
+  secrets: [],
+}, async (request) => {
+  logger.info("updateSessionStateApi requested");
+
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "The function must be called while authenticated.");
+  }
+
+  const state = request.data.state as SessionState;
+  if (!SessionStates.includes(state)) {
+    throw new HttpsError("invalid-argument", "The function must be called with a valid state.");
+  }
+
+  try {
+    await updateSessionState(state);
+    return { success: true };
+  } catch (error) {
+    logger.error("Error in updateSessionStateApi", error);
+    throw new HttpsError("internal", "Internal Server Error");
+  }
+});
 
 export const getSubmissionsApi = onCall({
   secrets: [],
