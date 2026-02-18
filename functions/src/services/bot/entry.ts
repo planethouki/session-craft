@@ -98,7 +98,7 @@ async function startEntryForSong(userId: string, replyToken: string, songIndex: 
     }
   });
 
-  return replyPartsFlex(replyToken, `${song.title} にエントリー`, selectedParts, song.parts);
+  return replyPartsFlex(replyToken, `${song.title} / ${song.artist} にエントリー`, selectedParts, song.parts);
 }
 
 async function onSelectPart(userId: string, replyToken: string, text: string) {
@@ -131,7 +131,7 @@ async function onSelectPart(userId: string, replyToken: string, text: string) {
     });
     await updateUserState(userId, { state: "IDLE", entryDraft: {} });
 
-    return replyText(replyToken, `${songTitle} のエントリーを更新したよ！`);
+    return replyText(replyToken, `${songTitle} / ${song.artist} のエントリーを更新したよ！`);
   }
 
   const part = text as InstrumentalPart;
@@ -150,7 +150,7 @@ async function onSelectPart(userId: string, replyToken: string, text: string) {
     },
   });
 
-  return replyPartsFlex(replyToken, `${songTitle} にエントリー`, newParts, song.parts);
+  return replyPartsFlex(replyToken, `${songTitle} / ${song.artist} にエントリー`, newParts, song.parts);
 }
 
 async function replyPartsFlex(replyToken: string, title: string, selected: InstrumentalPart[], filter?: InstrumentalPart[], beforeText?: string) {
