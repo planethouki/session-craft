@@ -51,10 +51,12 @@ export default function SessionSettings() {
     'DRAFT': '下書き',
     'SUBMISSION': '選曲提出',
     'ENTRY': 'エントリー',
-    'SELECTING': '調整中'
+    'SELECTING': '調整中',
+    'ADJUSTING': '各班エントリー調整',
+    'PUBLISHED': 'タイムテーブル作成'
   }
 
-  const states = ['DRAFT', 'SUBMISSION', 'ENTRY', 'SELECTING']
+  const states = ['DRAFT', 'SUBMISSION', 'ENTRY', 'SELECTING', 'ADJUSTING', 'PUBLISHED']
 
   if (initialLoading) {
     return (
