@@ -1,6 +1,6 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
-import { getCurrentSession, getSubmissions, getUser, updateSessionState } from "./services/firestoreService";
+import { getCurrentSession, getSubmissions, getUser, isAdmin, updateSessionState } from "./services/firestoreService";
 import { SessionState, SessionStates } from "./types/SessionState";
 
 export const updateSessionStateApi = onCall({
@@ -10,6 +10,10 @@ export const updateSessionStateApi = onCall({
 
   if (!request.auth) {
     throw new HttpsError("unauthenticated", "The function must be called while authenticated.");
+  }
+
+  if (!(await isAdmin(request.auth.uid))) {
+    throw new HttpsError("permission-denied", "The function must be called by an admin.");
   }
 
   const state = request.data.state as SessionState;
@@ -25,6 +29,39 @@ export const updateSessionStateApi = onCall({
     throw new HttpsError("internal", "Internal Server Error");
   }
 });
+
+export const getCurrentSessionApi = onCall({
+  secrets: [],
+}, async (request) => {
+  logger.info("getCurrentSessionApi requested");
+
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "The function must be called while authenticated.");
+  }
+
+  if (!(await isAdmin(request.auth.uid))) {
+    throw new HttpsError("permission-denied", "The function must be called by an admin.");
+  }
+
+  try {
+    const session = await getCurrentSession();
+    if (!session) {
+      throw new HttpsError("not-found", "Active session not found");
+    }
+
+    return {
+      ...session,
+      sessionDate: session.sessionDate.toISOString(),
+    };
+  } catch (error) {
+    if (error instanceof HttpsError) {
+      throw error;
+    }
+    logger.error("Error in getCurrentSessionApi", error);
+    throw new HttpsError("internal", "Internal Server Error");
+  }
+});
+
 
 export const getSubmissionsApi = onCall({
   secrets: [],

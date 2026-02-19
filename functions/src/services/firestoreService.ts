@@ -52,6 +52,12 @@ export async function getUser(userId: string): Promise<User> {
   }
 }
 
+export async function isAdmin(userId: string): Promise<boolean> {
+  const db = admin.firestore();
+  const adminSnap = await db.doc(`admins/${userId}`).get();
+  return adminSnap.exists;
+}
+
 export async function updateUserState(userId: string, data: Partial<User>): Promise<void> {
   const db = admin.firestore();
   const updateData: any = {
