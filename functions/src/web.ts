@@ -1,6 +1,6 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
-import { getCurrentSession, getSubmissions, getUser, isAdmin, updateSessionState } from "./services/firestoreService";
+import { getCurrentSession, getSubmissions, getUser, getUsers, isAdmin, updateSessionState } from "./services/firestoreService";
 import { SessionState, SessionStates } from "./types/SessionState";
 
 export const updateSessionStateApi = onCall({
@@ -114,7 +114,32 @@ export const getSubmissionsApi = onCall({
     if (error instanceof HttpsError) {
       throw error;
     }
-    logger.error("Error in getSubmissionsApi", error);
+    throw new HttpsError("internal", "Internal Server Error");
+  }
+});
+
+export const getUsersApi = onCall({
+  secrets: [],
+}, async (request) => {
+  logger.info("getUsersApi requested");
+
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "The function must be called while authenticated.");
+  }
+
+  if (!(await isAdmin(request.auth.uid))) {
+    throw new HttpsError("permission-denied", "The function must be called by an admin.");
+  }
+
+  try {
+    const users = await getUsers();
+    return users.map(user => ({
+      ...user,
+      stateUpdatedAt: user.stateUpdatedAt.toISOString(),
+      profileUpdatedAt: user.profileUpdatedAt.toISOString(),
+    }));
+  } catch (error) {
+    logger.error("Error in getUsersApi", error);
     throw new HttpsError("internal", "Internal Server Error");
   }
 });

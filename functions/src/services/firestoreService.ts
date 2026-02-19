@@ -21,6 +21,10 @@ export async function getUser(userId: string): Promise<User> {
     throw new Error("User data is empty");
   }
 
+  return mapUser(user);
+}
+
+function mapUser(user: any): User {
   const state: UserState = UserStates.includes(user.state) ? user.state : "IDLE";
 
   return {
@@ -44,12 +48,22 @@ export async function getUser(userId: string): Promise<User> {
       songTitle: user.entryDraft?.songTitle,
       parts: user.entryDraft?.parts,
     },
-    stateUpdatedAt: user.stateUpdatedAt.toDate(),
+    stateUpdatedAt: user.stateUpdatedAt?.toDate() || new Date(0),
     displayName: user.displayName || "",
     photoURL: user.photoURL || "",
     profileUpdatedAt: user.profileUpdatedAt?.toDate() || new Date(0),
     nickname: user.nickname || "",
   }
+}
+
+export async function getUsers(): Promise<(User & { uid: string })[]> {
+  const db = admin.firestore();
+  const usersSnap = await db.collection("users").get();
+
+  return usersSnap.docs.map((doc) => ({
+    ...mapUser(doc.data()),
+    uid: doc.id,
+  }));
 }
 
 export async function isAdmin(userId: string): Promise<boolean> {

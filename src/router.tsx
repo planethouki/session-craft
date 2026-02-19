@@ -5,6 +5,7 @@ import Layout from "./components/Layout";
 import Login from "./pages/Login";
 import AuthHome from "./pages/auth/Home";
 import SessionSettings from "./pages/auth/settings/Session";
+import UserList from "./pages/auth/users/UserList";
 import { AuthProvider, AuthGuard } from "./components/AuthGuard";
 
 function AppRoutes() {
@@ -40,6 +41,10 @@ function AppRoutes() {
             {
               path: 'settings/session',
               Component: SessionSettings,
+            },
+            {
+              path: 'users',
+              Component: UserList,
             },
           ],
         },

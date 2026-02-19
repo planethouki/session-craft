@@ -7,9 +7,12 @@ export default function Home() {
       <Typography variant="h5" gutterBottom>
         管理画面 ホーム
       </Typography>
-      <Box sx={{ mt: 2 }}>
+      <Box sx={{ mt: 2, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
         <Button variant="contained" component={Link} to="/auth/settings/session">
           セッション設定へ
+        </Button>
+        <Button variant="contained" component={Link} to="/auth/users">
+          ユーザーリストへ
         </Button>
       </Box>
     </Container>
