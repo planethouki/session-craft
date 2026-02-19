@@ -35,6 +35,12 @@ export async function handleEvent(ev: WebhookEvent) {
     await setUser(userId, user);
   }
 
+  // 会員状態のチェック
+  if (user.memberState === "PENDING" || user.memberState === "BANNED") {
+    await replyText(replyToken, "エラーが発生しました。管理者に連絡してください。");
+    return;
+  }
+
   // プロフィールが3日以上更新されていない場合は更新
   const threeDaysAgo = new Date();
   threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
