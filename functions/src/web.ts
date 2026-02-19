@@ -1,7 +1,8 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
-import { getCurrentSession, getSubmissions, getUser, getUsers, isAdmin, updateSessionState } from "./services/firestoreService";
+import { getCurrentSession, getSubmissions, getUser, getUsers, isAdmin, updateSessionState, updateUserMemberState } from "./services/firestoreService";
 import { SessionState, SessionStates } from "./types/SessionState";
+import { MemberStates } from "./types/MemberState";
 
 export const updateSessionStateApi = onCall({
   secrets: [],
@@ -140,6 +141,37 @@ export const getUsersApi = onCall({
     }));
   } catch (error) {
     logger.error("Error in getUsersApi", error);
+    throw new HttpsError("internal", "Internal Server Error");
+  }
+});
+
+export const updateUserMemberStateApi = onCall({
+  secrets: [],
+}, async (request) => {
+  logger.info("updateUserMemberStateApi requested");
+
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "The function must be called while authenticated.");
+  }
+
+  if (!(await isAdmin(request.auth.uid))) {
+    throw new HttpsError("permission-denied", "The function must be called by an admin.");
+  }
+
+  const { uid, memberState } = request.data;
+  if (!uid) {
+    throw new HttpsError("invalid-argument", "The function must be called with a valid uid.");
+  }
+
+  if (memberState !== null && !MemberStates.includes(memberState)) {
+    throw new HttpsError("invalid-argument", "The function must be called with a valid memberState.");
+  }
+
+  try {
+    await updateUserMemberState(uid, memberState);
+    return { success: true };
+  } catch (error) {
+    logger.error("Error in updateUserMemberStateApi", error, { uid, memberState });
     throw new HttpsError("internal", "Internal Server Error");
   }
 });

@@ -1,9 +1,10 @@
 import { UserState } from "./UserState";
-
+import { MemberState } from "./MemberState";
 import { InstrumentalPart } from "./InstrumentalPart";
 
 export type User = {
   state: UserState;
+  memberState?: MemberState;
   submissionDraft?: {
     title?: string;
     artist?: string;

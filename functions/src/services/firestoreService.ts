@@ -1,5 +1,6 @@
 import * as admin from 'firebase-admin'
 import { UserState, UserStates } from "../types/UserState";
+import { MemberState, MemberStates } from "../types/MemberState";
 import { SessionState } from "../types/SessionState";
 import { User } from "../types/User";
 import { Submission } from "../types/Submission";
@@ -26,9 +27,11 @@ export async function getUser(userId: string): Promise<User> {
 
 function mapUser(user: any): User {
   const state: UserState = UserStates.includes(user.state) ? user.state : "IDLE";
+  const memberState: MemberState | undefined = MemberStates.includes(user.memberState) ? user.memberState : undefined;
 
   return {
     state,
+    memberState,
     submissionDraft: {
       title: user.submissionDraft?.title,
       artist: user.submissionDraft?.artist,
@@ -64,6 +67,13 @@ export async function getUsers(): Promise<(User & { uid: string })[]> {
     ...mapUser(doc.data()),
     uid: doc.id,
   }));
+}
+
+export async function updateUserMemberState(userId: string, memberState: MemberState | null): Promise<void> {
+  const db = admin.firestore();
+  await db.doc(`users/${userId}`).update({
+    memberState: memberState,
+  });
 }
 
 export async function isAdmin(userId: string): Promise<boolean> {
