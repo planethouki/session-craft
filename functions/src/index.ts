@@ -57,7 +57,7 @@ export const onSubmissionWritten = onDocumentWritten({
 
   const lastExecution = await getLastExecutionTime('onSubmissionWritten');
   const now = new Date();
-  if (lastExecution && now.getTime() - lastExecution.getTime() < 60 * 1000) {
+  if (lastExecution && now.getTime() - lastExecution.getTime() < 5 * 1000) {
     logger.info("Submission update skipped due to rate limit", { lastExecution });
     return;
   }
@@ -85,7 +85,7 @@ export const onEntryWritten = onDocumentWritten({
 
   const lastExecution = await getLastExecutionTime('onEntryWritten');
   const now = new Date();
-  if (lastExecution && now.getTime() - lastExecution.getTime() < 60 * 1000) {
+  if (lastExecution && now.getTime() - lastExecution.getTime() < 5 * 1000) {
     logger.info("Entry update skipped due to rate limit", { lastExecution });
     return;
   }
