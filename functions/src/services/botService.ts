@@ -4,6 +4,7 @@ import { getCurrentSession, getUser, setUser } from "./firestoreService";
 import { replyText, getProfile } from "./messageService";
 import { handleSubmission } from "./bot/submission";
 import { handleEntry } from "./bot/entry";
+import { handleChat } from "./bot/chat";
 import { User } from '../types/User';
 
 export async function handleEvent(ev: WebhookEvent) {
@@ -72,6 +73,7 @@ export async function handleEvent(ev: WebhookEvent) {
       await handleEntry(userId, replyToken, text);
       break;
     default:
-      return;
+      await handleChat(userId, replyToken, text);
+      break;
   }
 }

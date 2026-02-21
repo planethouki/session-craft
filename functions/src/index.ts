@@ -9,6 +9,7 @@ import { WebhookRequestBody } from "@line/bot-sdk";
 
 import { handleEvent } from './services/botService'
 import { messageService } from "./services/messageService";
+import { genkitService } from "./services/genkitService";
 import { getCurrentSession, getLastExecutionTime, updateLastExecutionTime } from "./services/firestoreService";
 import { updateSpreadsheetSubmissions, updateSpreadsheetEntries } from "./services/spreadsheetService";
 
@@ -38,6 +39,7 @@ export const lineWebhook = onRequest({
   }
 
   messageService.init(LINE_CHANNEL_ACCESS_TOKEN.value());
+  genkitService.init(GOOGLE_GENAI_API_KEY.value());
 
   await Promise.all(
     body.events.map((ev) => handleEvent(ev))
