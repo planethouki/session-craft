@@ -1,3 +1,4 @@
+import * as crypto from 'crypto';
 import { setGlobalOptions } from 'firebase-functions'
 import { onInit } from 'firebase-functions/v2/core'
 import { defineSecret, defineString } from "firebase-functions/params";
@@ -24,10 +25,11 @@ onInit(() => {
 
 const GOOGLE_GENAI_API_KEY = defineSecret('GOOGLE_GENAI_API_KEY')
 const LINE_CHANNEL_ACCESS_TOKEN = defineSecret('LINE_CHANNEL_ACCESS_TOKEN')
+const LINE_CHANNEL_SECRET = defineSecret('LINE_CHANNEL_SECRET')
 export const SUBMISSIONS_WEB_URL = defineString('SUBMISSIONS_WEB_URL')
 
 export const lineWebhook = onRequest({
-  secrets: [GOOGLE_GENAI_API_KEY, LINE_CHANNEL_ACCESS_TOKEN],
+  secrets: [GOOGLE_GENAI_API_KEY, LINE_CHANNEL_ACCESS_TOKEN, LINE_CHANNEL_SECRET],
 }, async (req, res) => {
   logger.info('LINE Webhook received', {body: req.body})
 
@@ -35,6 +37,19 @@ export const lineWebhook = onRequest({
 
   if (!body.events) {
     res.status(200).send('OK');
+    return;
+  }
+
+  const channelSecret = LINE_CHANNEL_SECRET.value();
+  const signature = crypto
+    .createHmac("SHA256", channelSecret)
+    .update(req.rawBody.toString())
+    .digest("base64");
+  const X_LINE_SIGNATURE = req.get("X-Line-Signature");
+
+  if (X_LINE_SIGNATURE !== signature) {
+    logger.error('Invalid signature', { signature, X_LINE_SIGNATURE });
+    res.status(400).send('NG');
     return;
   }
 
