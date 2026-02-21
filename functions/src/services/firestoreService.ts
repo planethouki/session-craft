@@ -7,13 +7,13 @@ import { Submission } from "../types/Submission";
 import { Session } from "../types/Session";
 import { Entry } from "../types/Entry";
 
-export async function getUser(userId: string): Promise<User | null> {
+export async function getUser(userId: string): Promise<User> {
   const db = admin.firestore();
   const userRef = db.doc(`users/${userId}`);
   const userSnap = await userRef.get();
 
   if (!userSnap.exists) {
-    return null;
+    throw new Error(`User ${userId} not found`);
   }
 
   const user = userSnap.data();

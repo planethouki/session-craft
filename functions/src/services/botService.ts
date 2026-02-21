@@ -11,14 +11,15 @@ export async function handleEvent(ev: WebhookEvent) {
     const userId = ev.source.userId;
     if (!userId) return;
     const profile = await getProfile(userId);
-    const user = await getUser(userId);
-    if (!user) {
-      await createUser(userId, profile.displayName, profile.pictureUrl);
-    } else {
+    try {
+      await getUser(userId);
       await updateUserProfile(userId, {
         displayName: profile.displayName,
         photoURL: profile.pictureUrl || "",
       });
+      return
+    } catch (e) {
+      await createUser(userId, profile.displayName, profile.pictureUrl);
     }
     return
   }
