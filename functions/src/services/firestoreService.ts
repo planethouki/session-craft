@@ -7,13 +7,13 @@ import { Submission } from "../types/Submission";
 import { Session } from "../types/Session";
 import { Entry } from "../types/Entry";
 
-export async function getUser(userId: string): Promise<User> {
+export async function getUser(userId: string): Promise<User | null> {
   const db = admin.firestore();
   const userRef = db.doc(`users/${userId}`);
   const userSnap = await userRef.get();
 
   if (!userSnap.exists) {
-    throw new Error(`User ${userId} not found`);
+    return null;
   }
 
   const user = userSnap.data();
@@ -113,19 +113,51 @@ export async function updateUserState(userId: string, data: Partial<User>): Prom
   await db.doc(`users/${userId}`).update(updateData);
 }
 
-// ユーザーの作成または完全な上書き（merge: true）が必要な場合用
-export async function setUser(userId: string, user: Partial<User>): Promise<void> {
+export async function createUser(userId: string, displayName: string, pictureUrl?: string): Promise<User> {
   const db = admin.firestore();
   const data: any = {
-    ...user,
+    state: "IDLE",
+    submissionDraft: {},
+    entryDraft: {},
+    stateUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    displayName: displayName,
+    photoURL: pictureUrl || "",
+    profileUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    nickname: displayName,
   };
-  if (user.state) {
-    data.stateUpdatedAt = admin.firestore.FieldValue.serverTimestamp();
+  await db.doc(`users/${userId}`).set(data);
+
+  delete data.stateUpdatedAt;
+  delete data.profileUpdatedAt;
+
+  return mapUser(data);
+}
+
+type UpdateUserProfileParams = {
+  displayName?: string;
+  photoURL?: string;
+  nickname?: string;
+}
+
+export async function updateUserProfile(userId: string, params: UpdateUserProfileParams): Promise<void> {
+  const db = admin.firestore();
+  const userDoc = await db.doc(`users/${userId}`).get();
+  if (!userDoc.exists) return;
+  const data: any = {}
+
+  if (params.displayName) {
+    data.displayName = params.displayName;
   }
-  if (user.displayName || user.photoURL) {
+  if (params.photoURL) {
+    data.photoURL = params.photoURL;
+  }
+  if (params.nickname) {
+    data.nickname = params.nickname;
+  }
+  if (params.displayName || params.photoURL || params.nickname) {
     data.profileUpdatedAt = admin.firestore.FieldValue.serverTimestamp();
   }
-  await db.doc(`users/${userId}`).set(data, { merge: true });
+  await userDoc.ref.set(data, { merge: true });
 }
 
 export async function getCurrentSession(): Promise<Session | null> {

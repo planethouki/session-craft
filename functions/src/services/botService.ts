@@ -1,11 +1,10 @@
 import { WebhookEvent } from '@line/bot-sdk';
 
-import { getCurrentSession, getUser, setUser } from "./firestoreService";
+import { getCurrentSession, getUser, updateUserProfile, createUser } from "./firestoreService";
 import { replyText, getProfile } from "./messageService";
 import { handleSubmission } from "./bot/submission";
 import { handleEntry } from "./bot/entry";
 import { handleChat } from "./bot/chat";
-import { User } from '../types/User';
 
 export async function handleEvent(ev: WebhookEvent) {
   if (ev.type !== "message" || ev.message.type !== "text") return;
@@ -16,25 +15,12 @@ export async function handleEvent(ev: WebhookEvent) {
   const text = (ev.message.text || "").trim();
   const replyToken = ev.replyToken;
 
-  // ユーザー情報の取得または作成
-  let user: User;
-  try {
-    user = await getUser(userId);
-  } catch (e) {
-    // ユーザーが存在しない場合は作成
+  const user = await (async () => {
+    const user = await getUser(userId);
+    if (user) return user;
     const profile = await getProfile(userId);
-    user = {
-      state: "IDLE",
-      submissionDraft: {},
-      entryDraft: {},
-      stateUpdatedAt: new Date(),
-      displayName: profile.displayName,
-      photoURL: profile.pictureUrl || "",
-      profileUpdatedAt: new Date(),
-      nickname: profile.displayName,
-    };
-    await setUser(userId, user);
-  }
+    return createUser(userId, profile.displayName, profile.pictureUrl);
+  })();
 
   // 会員状態のチェック
   if (user.memberState === "PENDING" || user.memberState === "BANNED") {
@@ -49,7 +35,7 @@ export async function handleEvent(ev: WebhookEvent) {
   if (user.profileUpdatedAt < threeDaysAgo) {
     try {
       const profile = await getProfile(userId);
-      await setUser(userId, {
+      await updateUserProfile(userId, {
         displayName: profile.displayName,
         photoURL: profile.pictureUrl || "",
       });
