@@ -1,5 +1,16 @@
 import { useState, useEffect } from 'react'
-import { Container, Typography, Button, Stack, Alert, Paper, Box, CircularProgress } from '@mui/material'
+import {
+  Container,
+  Typography,
+  Button,
+  Stack,
+  Alert,
+  Paper,
+  Box,
+  CircularProgress,
+  Breadcrumbs,
+  Link as MuiLink
+} from '@mui/material'
 import { httpsCallable } from 'firebase/functions'
 import { functions } from '../../../firebase'
 import { Link } from 'react-router'
@@ -68,6 +79,13 @@ export default function SessionSettings() {
 
   return (
     <Container maxWidth="md" sx={{ p: 2 }}>
+      <Breadcrumbs sx={{ mb: 2 }}>
+        <MuiLink component={Link} to="/auth/home" underline="hover" color="inherit">
+          ホーム
+        </MuiLink>
+        <Typography color="text.primary">セッション設定</Typography>
+      </Breadcrumbs>
+
       <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold' }}>
         セッション設定
       </Typography>
