@@ -7,6 +7,22 @@ import { handleEntry } from "./bot/entry";
 import { handleChat } from "./bot/chat";
 
 export async function handleEvent(ev: WebhookEvent) {
+  if (ev.type === "follow") {
+    const userId = ev.source.userId;
+    if (!userId) return;
+    const profile = await getProfile(userId);
+    const user = await getUser(userId);
+    if (!user) {
+      await createUser(userId, profile.displayName, profile.pictureUrl);
+    } else {
+      await updateUserProfile(userId, {
+        displayName: profile.displayName,
+        photoURL: profile.pictureUrl || "",
+      });
+    }
+    return
+  }
+
   if (ev.type !== "message" || ev.message.type !== "text") return;
 
   const userId = ev.source.userId;
