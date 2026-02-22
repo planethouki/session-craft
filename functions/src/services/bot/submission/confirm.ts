@@ -144,7 +144,7 @@ async function showConfirm(userId: string, replyToken: string) {
     `その他: ${draft.description || "なし"}`,
   ].join("\n");
 
-  const message = createConfirmFlexMessage("これで登録する？", summary);
+  const message = createConfirmFlexMessage("これで提出する？", summary);
   return replyFlexMessage(replyToken, message);
 }
 
