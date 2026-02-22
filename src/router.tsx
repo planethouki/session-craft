@@ -6,6 +6,7 @@ import Login from "./pages/Login";
 import AdminHome from "./pages/admin/Home";
 import SessionSettings from "./pages/admin/settings/Session";
 import UserList from "./pages/admin/users/UserList";
+import AccessDenied from "./pages/AccessDenied.tsx";
 import { AuthProvider, AuthGuard } from "./components/AuthGuard";
 
 function AppRoutes() {
@@ -25,6 +26,10 @@ function AppRoutes() {
         {
           path: 'login',
           Component: Login,
+        },
+        {
+          path: 'access-denied',
+          Component: AccessDenied,
         },
         {
           path: 'admin',

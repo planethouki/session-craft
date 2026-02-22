@@ -202,3 +202,21 @@ export const updateUserNicknameApi = onCall({
     throw new HttpsError("internal", "Internal Server Error");
   }
 });
+
+export const checkIsAdminApi = onCall({
+  secrets: [],
+}, async (request) => {
+  logger.info("checkIsAdminApi requested");
+
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "The function must be called while authenticated.");
+  }
+
+  try {
+    const admin = await isAdmin(request.auth.uid);
+    return { isAdmin: admin };
+  } catch (error) {
+    logger.error("Error in checkIsAdminApi", error);
+    throw new HttpsError("internal", "Internal Server Error");
+  }
+});
