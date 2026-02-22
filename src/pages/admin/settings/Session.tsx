@@ -59,12 +59,12 @@ export default function SessionSettings() {
   }
 
   const STATE_LABELS = {
-    'DRAFT': '下書き',
+    'DRAFT': '下書き（未実装）',
     'SUBMISSION': '選曲提出',
     'ENTRY': 'エントリー',
-    'SELECTING': '調整中',
-    'ADJUSTING': '各班エントリー調整',
-    'PUBLISHED': 'タイムテーブル作成'
+    'SELECTING': '調整中（未実装）',
+    'ADJUSTING': '各班エントリー調整（未実装）',
+    'PUBLISHED': 'タイムテーブル作成（未実装）'
   }
 
   const states = ['DRAFT', 'SUBMISSION', 'ENTRY', 'SELECTING', 'ADJUSTING', 'PUBLISHED']
