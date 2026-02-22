@@ -80,7 +80,7 @@ export default function SessionSettings() {
   return (
     <Container maxWidth="md" sx={{ p: 2 }}>
       <Breadcrumbs sx={{ mb: 2 }}>
-        <MuiLink component={Link} to="/auth/home" underline="hover" color="inherit">
+        <MuiLink component={Link} to="/admin/home" underline="hover" color="inherit">
           ホーム
         </MuiLink>
         <Typography color="text.primary">セッション設定</Typography>
@@ -123,7 +123,7 @@ export default function SessionSettings() {
       </Paper>
 
       <Box sx={{ mt: 3 }}>
-        <Button variant="outlined" component={Link} to="/auth/home">
+        <Button variant="outlined" component={Link} to="/admin/home">
           ホームに戻る
         </Button>
       </Box>

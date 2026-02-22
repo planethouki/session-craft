@@ -14,7 +14,7 @@ export default function Login() {
   const { user } = useAuth()
 
   if (user) {
-    return <Navigate to="/auth/home" replace />
+    return <Navigate to="/admin/home" replace />
   }
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -23,7 +23,7 @@ export default function Login() {
     setError('')
     try {
       await signInWithEmailAndPassword(auth, email, password)
-      navigate('/auth/home')
+      navigate('/admin/home')
     } catch (err: any) {
       console.error(err)
       setError('ログインに失敗しました。メールアドレスとパスワードを確認してください。')

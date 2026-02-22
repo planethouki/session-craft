@@ -8,10 +8,10 @@ export default function Home() {
         管理画面 ホーム
       </Typography>
       <Box sx={{ mt: 2, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-        <Button variant="contained" component={Link} to="/auth/settings/session">
+        <Button variant="contained" component={Link} to="/admin/settings/session">
           セッション設定へ
         </Button>
-        <Button variant="contained" component={Link} to="/auth/users">
+        <Button variant="contained" component={Link} to="/admin/users">
           ユーザーリストへ
         </Button>
       </Box>

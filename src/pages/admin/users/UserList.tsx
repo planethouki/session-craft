@@ -120,7 +120,7 @@ export default function UserList() {
   return (
     <Container maxWidth="lg" sx={{ p: 2 }}>
       <Breadcrumbs sx={{ mb: 2 }}>
-        <MuiLink component={Link} to="/auth/home" underline="hover" color="inherit">
+        <MuiLink component={Link} to="/admin/home" underline="hover" color="inherit">
           ホーム
         </MuiLink>
         <Typography color="text.primary">ユーザーリスト</Typography>
@@ -205,7 +205,7 @@ export default function UserList() {
       </Menu>
 
       <Box sx={{ mt: 3 }}>
-        <Button variant="outlined" component={Link} to="/auth/home">
+        <Button variant="outlined" component={Link} to="/admin/home">
           ホームに戻る
         </Button>
       </Box>

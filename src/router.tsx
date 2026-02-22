@@ -3,9 +3,9 @@ import Home from './pages/Home'
 import Submissions from './pages/Submissions'
 import Layout from "./components/Layout";
 import Login from "./pages/Login";
-import AuthHome from "./pages/auth/Home";
-import SessionSettings from "./pages/auth/settings/Session";
-import UserList from "./pages/auth/users/UserList";
+import AdminHome from "./pages/admin/Home";
+import SessionSettings from "./pages/admin/settings/Session";
+import UserList from "./pages/admin/users/UserList";
 import { AuthProvider, AuthGuard } from "./components/AuthGuard";
 
 function AppRoutes() {
@@ -27,7 +27,7 @@ function AppRoutes() {
           Component: Login,
         },
         {
-          path: 'auth',
+          path: 'admin',
           element: (
             <AuthGuard>
               <Outlet />
@@ -36,7 +36,7 @@ function AppRoutes() {
           children: [
             {
               path: 'home',
-              Component: AuthHome,
+              Component: AdminHome,
             },
             {
               path: 'settings/session',
