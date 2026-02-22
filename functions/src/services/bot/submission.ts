@@ -109,7 +109,7 @@ async function startSubmission(userId: string, replyToken: string) {
   const sub = await getSubmission(sessionId, userId);
 
   if (sub) {
-    return replyText(replyToken, `今月はすでに提出済みだよ：\n${sub.title} / ${sub.artist}`);
+    return replyText(replyToken, `すでに提出済みだよ：\n${sub.title} / ${sub.artist}`);
   }
 
   await updateUserState(userId, {
