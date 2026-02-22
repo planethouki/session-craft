@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Apple favicon">
+  <!-- Background (optional). Keep it transparent for favicon; uncomment to use a rounded square.
+  <rect x="16" y="16" width="224" height="224" rx="56" fill="#ffffff"/>
+  -->
+
+  <!-- Apple body -->
+  <path
+    d="M128 76
+       C104 52, 64 62, 56 104
+       C46 156, 84 212, 128 212
+       C172 212, 210 156, 200 104
+       C192 62, 152 52, 128 76
+       Z"
+    fill="#E53935"
+  />
+
+  <!-- Apple highlight -->
+  <path
+    d="M92 118
+       C82 140, 90 172, 110 188
+       C86 170, 78 142, 92 118
+       Z"
+    fill="#FFCDD2"
+    opacity="0.65"
+  />
+
+  <!-- Leaf -->
+  <path
+    d="M154 52
+       C176 40, 202 44, 212 66
+       C188 76, 166 74, 154 52
+       Z"
+    fill="#43A047"
+  />
+
+  <!-- Stem -->
+  <path
+    d="M132 44
+       C132 34, 140 24, 154 20
+       C148 34, 142 44, 132 44
+       Z"
+    fill="#6D4C41"
+  />
+
+  <!-- Subtle bottom shading -->
+  <path
+    d="M64 140
+       C78 190, 110 214, 128 214
+       C146 214, 178 190, 192 140
+       C182 178, 156 204, 128 204
+       C100 204, 74 178, 64 140
+       Z"
+    fill="#B71C1C"
+    opacity="0.25"
+  />
+</svg>
