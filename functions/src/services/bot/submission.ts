@@ -3,8 +3,6 @@ import {
   getActiveSessionId,
   updateUserState,
   getSubmission,
-  createSubmission,
-  createOrUpdateEntry,
 } from "../firestoreService";
 
 import { replyText, replyFlexMessage } from "../messageService";
@@ -17,6 +15,22 @@ import {
   replyList,
   deleteSubmissionCommand
 } from "./submission/others";
+import {
+  onConfirm,
+  onEditChoice,
+  onEditTitle,
+  onEditArtist,
+  onEditAudioUrl,
+  onEditScoreUrl,
+  onEditReferenceUrl1,
+  onEditReferenceUrl2,
+  onEditReferenceUrl3,
+  onEditReferenceUrl4,
+  onEditReferenceUrl5,
+  onEditParts,
+  onEditMyParts,
+  onEditDescription,
+} from "./submission/confirm";
 
 export async function handleSubmission(userId: string, replyToken: string, text: string) {
 
@@ -59,6 +73,32 @@ export async function handleSubmission(userId: string, replyToken: string, text:
       return onDescription(userId, replyToken, text);
     case "CONFIRM":
       return onConfirm(userId, replyToken, text);
+    case "EDIT_CHOICE":
+      return onEditChoice(userId, replyToken, text);
+    case "EDIT_TITLE":
+      return onEditTitle(userId, replyToken, text);
+    case "EDIT_ARTIST":
+      return onEditArtist(userId, replyToken, text);
+    case "EDIT_AUDIO_URL":
+      return onEditAudioUrl(userId, replyToken, text);
+    case "EDIT_SCORE_URL":
+      return onEditScoreUrl(userId, replyToken, text);
+    case "EDIT_REFERENCE_URL_1":
+      return onEditReferenceUrl1(userId, replyToken, text);
+    case "EDIT_REFERENCE_URL_2":
+      return onEditReferenceUrl2(userId, replyToken, text);
+    case "EDIT_REFERENCE_URL_3":
+      return onEditReferenceUrl3(userId, replyToken, text);
+    case "EDIT_REFERENCE_URL_4":
+      return onEditReferenceUrl4(userId, replyToken, text);
+    case "EDIT_REFERENCE_URL_5":
+      return onEditReferenceUrl5(userId, replyToken, text);
+    case "EDIT_PARTS":
+      return onEditParts(userId, replyToken, text);
+    case "EDIT_MY_PARTS":
+      return onEditMyParts(userId, replyToken, text);
+    case "EDIT_DESCRIPTION":
+      return onEditDescription(userId, replyToken, text);
     default:
       return resetState(userId, replyToken, "状態が不明だったので最初からやり直そう。『提出』と送ってね。");
   }
@@ -320,61 +360,3 @@ async function replyPartsFlex(replyToken: string, title: string, selected: Instr
   return replyFlexMessage(replyToken, message, beforeText);
 }
 
-async function onConfirm(userId: string, replyToken: string, text: string) {
-  if (text === "最初からやり直す") {
-    await updateUserState(userId, { state: "ASK_TITLE", submissionDraft: {} });
-    return replyText(replyToken, "OK！最初からやり直そう。曲名は？");
-  }
-  if (text !== "提出する") {
-    return replyText(replyToken, "「提出する」か「最初からやり直す」を選んでね。");
-  }
-
-  const user = await getUser(userId);
-  if (!user) return replyText(replyToken, "エラーが発生しました。");
-
-  const { submissionDraft: draft } = user;
-  const title = draft?.title ?? "";
-  const artist = draft?.artist ?? "";
-  const audioUrl = draft?.audioUrl ?? "";
-  const scoreUrl = draft?.scoreUrl ?? "";
-  const referenceUrl1 = draft?.referenceUrl1 ?? "";
-  const referenceUrl2 = draft?.referenceUrl2 ?? "";
-  const referenceUrl3 = draft?.referenceUrl3 ?? "";
-  const referenceUrl4 = draft?.referenceUrl4 ?? "";
-  const referenceUrl5 = draft?.referenceUrl5 ?? "";
-  const description = draft?.description ?? "";
-  const parts = draft?.parts ?? [];
-  const myParts = draft?.myParts ?? [];
-
-  const sessionId = await getActiveSessionId();
-
-  await createSubmission({
-    sessionId,
-    userId,
-    title,
-    artist,
-    audioUrl,
-    scoreUrl,
-    referenceUrl1,
-    referenceUrl2,
-    referenceUrl3,
-    referenceUrl4,
-    referenceUrl5,
-    description,
-    parts,
-    myParts,
-  });
-
-  // 提出者本人分のEntryドキュメントを自動作成
-  await createOrUpdateEntry({
-    sessionId,
-    submissionUserId: userId,
-    userId: userId,
-    parts: myParts,
-  });
-
-  // stateリセット
-  await updateUserState(userId, { state: "IDLE", submissionDraft: {} });
-
-  return replyText(replyToken, `登録したよ！\n${title} / ${artist}`);
-}

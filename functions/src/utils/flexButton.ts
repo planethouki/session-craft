@@ -109,8 +109,8 @@ export function createConfirmFlexMessage(title: string, summary: string): FlexMe
                 type: "button",
                 action: {
                   type: "message",
-                  label: "やり直す",
-                  text: "最初からやり直す",
+                  label: "修正する",
+                  text: "修正する",
                 },
                 style: "secondary",
               },
