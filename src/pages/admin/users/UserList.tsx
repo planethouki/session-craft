@@ -20,14 +20,20 @@ import {
   MenuItem,
   ListItemIcon,
   ListItemText,
-  Chip
+  Chip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField
 } from '@mui/material'
 import {
   MoreVert as MoreVertIcon,
   CheckCircle as CheckCircleIcon,
   Block as BlockIcon,
   HourglassEmpty as HourglassEmptyIcon,
-  RemoveCircleOutline as RemoveCircleOutlineIcon
+  RemoveCircleOutline as RemoveCircleOutlineIcon,
+  Edit as EditIcon
 } from '@mui/icons-material'
 import { httpsCallable } from 'firebase/functions'
 import { functions } from '../../../firebase'
@@ -49,6 +55,9 @@ export default function UserList() {
   const [error, setError] = useState<string | null>(null)
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null)
+  const [nicknameDialogOpen, setNicknameDialogOpen] = useState(false)
+  const [editingNickname, setEditingNickname] = useState('')
+  const [updatingNickname, setUpdatingNickname] = useState(false)
 
   useEffect(() => {
     fetchUsers()
@@ -93,6 +102,40 @@ export default function UserList() {
       alert('ステータスの更新に失敗しました。')
     } finally {
       handleMenuClose()
+    }
+  }
+
+  const handleNicknameEditOpen = () => {
+    if (selectedUser) {
+      setEditingNickname(selectedUser.nickname || '')
+      setNicknameDialogOpen(true)
+    }
+    setAnchorEl(null)
+  }
+
+  const handleNicknameDialogClose = () => {
+    setNicknameDialogOpen(false)
+    setSelectedUser(null)
+    setEditingNickname('')
+  }
+
+  const handleUpdateNickname = async () => {
+    if (!selectedUser) return
+
+    try {
+      setUpdatingNickname(true)
+      const updateUserNicknameApi = httpsCallable(functions, 'updateUserNicknameApi')
+      await updateUserNicknameApi({
+        uid: selectedUser.uid,
+        nickname: editingNickname
+      })
+      await fetchUsers()
+      handleNicknameDialogClose()
+    } catch (err) {
+      console.error('Error updating nickname:', err)
+      alert('ニックネームの更新に失敗しました。')
+    } finally {
+      setUpdatingNickname(false)
     }
   }
 
@@ -178,6 +221,12 @@ export default function UserList() {
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
       >
+        <MenuItem onClick={handleNicknameEditOpen}>
+          <ListItemIcon>
+            <EditIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>ニックネーム編集</ListItemText>
+        </MenuItem>
         <MenuItem onClick={() => handleUpdateMemberState('MEMBER')}>
           <ListItemIcon>
             <CheckCircleIcon fontSize="small" color="success" />
@@ -209,6 +258,36 @@ export default function UserList() {
           ホームに戻る
         </Button>
       </Box>
+
+      <Dialog open={nicknameDialogOpen} onClose={handleNicknameDialogClose}>
+        <DialogTitle>ニックネーム編集</DialogTitle>
+        <DialogContent sx={{ minWidth: 300, pt: 1 }}>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="ニックネーム"
+            type="text"
+            fullWidth
+            variant="outlined"
+            value={editingNickname}
+            onChange={(e) => setEditingNickname(e.target.value)}
+            disabled={updatingNickname}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleNicknameDialogClose} disabled={updatingNickname}>
+            キャンセル
+          </Button>
+          <Button
+            onClick={handleUpdateNickname}
+            variant="contained"
+            disabled={updatingNickname}
+            startIcon={updatingNickname ? <CircularProgress size={20} /> : null}
+          >
+            保存
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   )
 }

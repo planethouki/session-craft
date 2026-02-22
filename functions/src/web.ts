@@ -1,6 +1,6 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
-import { getCurrentSession, getSubmissions, getUser, getUsers, isAdmin, updateSessionState, updateUserMemberState } from "./services/firestoreService";
+import { getCurrentSession, getSubmissions, getUser, getUsers, isAdmin, updateSessionState, updateUserMemberState, updateUserProfile } from "./services/firestoreService";
 import { SessionState, SessionStates } from "./types/SessionState";
 import { MemberStates } from "./types/MemberState";
 
@@ -172,6 +172,33 @@ export const updateUserMemberStateApi = onCall({
     return { success: true };
   } catch (error) {
     logger.error("Error in updateUserMemberStateApi", error, { uid, memberState });
+    throw new HttpsError("internal", "Internal Server Error");
+  }
+});
+
+export const updateUserNicknameApi = onCall({
+  secrets: [],
+}, async (request) => {
+  logger.info("updateUserNicknameApi requested");
+
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "The function must be called while authenticated.");
+  }
+
+  if (!(await isAdmin(request.auth.uid))) {
+    throw new HttpsError("permission-denied", "The function must be called by an admin.");
+  }
+
+  const { uid, nickname } = request.data;
+  if (!uid) {
+    throw new HttpsError("invalid-argument", "The function must be called with a valid uid.");
+  }
+
+  try {
+    await updateUserProfile(uid, { nickname });
+    return { success: true };
+  } catch (error) {
+    logger.error("Error in updateUserNicknameApi", error, { uid, nickname });
     throw new HttpsError("internal", "Internal Server Error");
   }
 });
