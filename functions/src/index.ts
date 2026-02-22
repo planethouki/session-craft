@@ -154,3 +154,4 @@ export const updateSpreadsheet = onRequest(async (req, res) => {
 })
 
 export * from './web'
+export * from './liffAuth'

@@ -1,9 +1,11 @@
-import React, { useState } from 'react'
-import { Container, Typography, TextField, Button, Box, Alert, Paper } from '@mui/material'
-import { signInWithEmailAndPassword } from 'firebase/auth'
-import { auth } from '../firebase'
+import React, { useState, useEffect } from 'react'
+import { Container, Typography, TextField, Button, Box, Alert, Paper, Divider } from '@mui/material'
+import { signInWithEmailAndPassword, signInWithCustomToken } from 'firebase/auth'
+import { auth, functions } from '../firebase'
 import { useNavigate, Navigate } from 'react-router'
 import { useAuth } from '../components/AuthGuard'
+import liff from '@line/liff'
+import { httpsCallable } from 'firebase/functions'
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -13,8 +15,46 @@ export default function Login() {
   const navigate = useNavigate()
   const { user } = useAuth()
 
+  useEffect(() => {
+    const initLiff = async () => {
+      try {
+        await liff.init({ liffId: import.meta.env.VITE_LIFF_ID })
+      } catch (err) {
+        console.error('LIFF initialization failed', err)
+      }
+    }
+    initLiff()
+  }, [])
+
   if (user) {
     return <Navigate to="/admin/home" replace />
+  }
+
+  const handleLiffLogin = async (idToken: string) => {
+    setLoading(true)
+    setError('')
+    try {
+      const liffAuth = httpsCallable<{ idToken: string }, { customToken: string }>(functions, 'liffAuth')
+      const result = await liffAuth({ idToken })
+      await signInWithCustomToken(auth, result.data.customToken)
+      navigate('/admin/home')
+    } catch (err: any) {
+      console.error(err)
+      setError('LINEログインに失敗しました。')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleLineLoginClick = () => {
+    if (!liff.isLoggedIn()) {
+      liff.login()
+    } else {
+      const idToken = liff.getIDToken()
+      if (idToken) {
+        handleLiffLogin(idToken)
+      }
+    }
   }
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -72,6 +112,25 @@ export default function Login() {
             disabled={loading}
           >
             {loading ? 'ログイン中...' : 'ログイン'}
+          </Button>
+
+          <Divider sx={{ my: 2 }}>または</Divider>
+
+          <Button
+            fullWidth
+            variant="contained"
+            onClick={handleLineLoginClick}
+            disabled={loading}
+            sx={{
+              py: 1.5,
+              fontWeight: 'bold',
+              backgroundColor: '#06C755',
+              '&:hover': {
+                backgroundColor: '#05b34c',
+              },
+            }}
+          >
+            LINEでログイン
           </Button>
         </Box>
       </Paper>
