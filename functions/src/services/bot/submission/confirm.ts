@@ -10,10 +10,6 @@ import { InstrumentalParts, InstrumentalPart } from "../../../types/Instrumental
 import { createConfirmFlexMessage, createSelectionFlexMessage, createPartsFlexMessage } from "../../../utils/flexButton";
 
 export async function onConfirm(userId: string, replyToken: string, text: string) {
-  if (text === "最初からやり直す") {
-    await updateUserState(userId, { state: "ASK_TITLE", submissionDraft: {} });
-    return replyText(replyToken, "OK！最初からやり直そう。曲名は？");
-  }
 
   if (text === "修正する") {
     await updateUserState(userId, { state: "EDIT_CHOICE" });
@@ -32,7 +28,7 @@ export async function onConfirm(userId: string, replyToken: string, text: string
   }
 
   if (text !== "提出する") {
-    return replyText(replyToken, "「提出する」「修正する」「最初からやり直す」のいずれかを選んでね。");
+    return replyText(replyToken, "「提出する」「修正する」のいずれかを選んでね。");
   }
 
   const user = await getUser(userId);
