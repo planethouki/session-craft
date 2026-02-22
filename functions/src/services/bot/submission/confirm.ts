@@ -76,7 +76,7 @@ export async function onConfirm(userId: string, replyToken: string, text: string
 
   await updateUserState(userId, { state: "IDLE", submissionDraft: {} });
 
-  return replyText(replyToken, `登録したよ！\n${title} / ${artist}`);
+  return replyText(replyToken, `提出したよ！\n${title} / ${artist}`);
 }
 
 export async function onEditChoice(userId: string, replyToken: string, text: string) {

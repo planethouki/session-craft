@@ -18,7 +18,7 @@ export async function resetState(userId: string, replyToken: string, message: st
 
 export async function replyHelp(replyToken: string) {
   const lines = [
-    "「提出」と送ると課題曲を登録できるよ。",
+    "「提出」と送ると課題曲を提出できるよ。",
     "「状況」で現在の提出を確認できるよ。",
     "「一覧」で曲の詳細を確認できるウェブサイトを案内するよ。",
     "「削除」で提出を消去できるよ。",
