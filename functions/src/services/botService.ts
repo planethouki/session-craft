@@ -82,7 +82,8 @@ export async function handleEvent(ev: WebhookEvent) {
         break;
     }
   } catch (e) {
-    logger.error("Failed to handle event", {error: e});
+    // @ts-ignore
+    logger.error("Failed to handle event", {error: e, message: e.message, stack: e.stack});
     // @ts-ignore
     await replyText(replyToken, `エラーが発生しました。管理者に連絡してね。 ${e.message}`);
     return
