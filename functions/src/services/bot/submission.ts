@@ -15,6 +15,7 @@ import {
   replyList,
   deleteSubmissionCommand
 } from "./submission/others";
+import { handleAiSubmission } from "./submission/ai";
 import {
   onConfirm,
   onEditChoice,
@@ -46,7 +47,10 @@ export async function handleSubmission(userId: string, replyToken: string, text:
   switch (user.state) {
     case "IDLE":
       if (text === "提出") return startSubmission(userId, replyToken);
+      if (text === "AI") return startAiSubmission(userId, replyToken);
       return replyHelp(replyToken);
+    case "AI_SUBMISSION":
+      return handleAiSubmission(userId, replyToken, text);
     case "ASK_TITLE":
       return onTitle(userId, replyToken, text);
     case "ASK_ARTIST":
@@ -118,6 +122,14 @@ async function startSubmission(userId: string, replyToken: string) {
   });
 
   return replyText(replyToken, "曲名は？");
+}
+
+async function startAiSubmission(userId: string, replyToken: string) {
+  await updateUserState(userId, {
+    state: "AI_SUBMISSION",
+  });
+
+  return handleAiSubmission(userId, replyToken, "こんにちは。");
 }
 
 async function onTitle(userId: string, replyToken: string, title: string) {

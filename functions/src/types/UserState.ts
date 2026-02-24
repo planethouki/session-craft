@@ -28,6 +28,7 @@ export const UserStates = [
   "EDIT_DESCRIPTION",
   "SELECT_ENTRY_SONG",
   "SELECT_ENTRY_PART",
+  "AI_SUBMISSION",
 ] as const;
 
 export type UserState = (typeof UserStates)[number];
