@@ -1,4 +1,5 @@
 import { WebhookEvent } from '@line/bot-sdk';
+import * as logger from "firebase-functions/logger";
 
 import { getCurrentSession, getUser, updateUserProfile, createUser } from "./firestoreService";
 import { replyText, getProfile } from "./messageService";
@@ -81,6 +82,7 @@ export async function handleEvent(ev: WebhookEvent) {
         break;
     }
   } catch (e) {
+    logger.error("Failed to handle event", {error: e});
     // @ts-ignore
     await replyText(replyToken, `エラーが発生しました。管理者に連絡してね。 ${e.message}`);
     return
