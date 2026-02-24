@@ -82,7 +82,7 @@ export async function handleEvent(ev: WebhookEvent) {
     }
   } catch (e) {
     // @ts-ignore
-    await replyText(replyToken, `エラーが発生しました。管理者に連絡してね。 ${e.message}}`);
+    await replyText(replyToken, `エラーが発生しました。管理者に連絡してね。 ${e.message}`);
     return
   }
 }
