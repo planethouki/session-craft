@@ -68,15 +68,21 @@ export async function handleEvent(ev: WebhookEvent) {
     return
   }
 
-  switch (session.state) {
-    case "SUBMISSION":
-      await handleSubmission(userId, replyToken, text);
-      break;
-    case "ENTRY":
-      await handleEntry(userId, replyToken, text);
-      break;
-    default:
-      await handleChat(userId, replyToken, text);
-      break;
+  try {
+    switch (session.state) {
+      case "SUBMISSION":
+        await handleSubmission(userId, replyToken, text);
+        break;
+      case "ENTRY":
+        await handleEntry(userId, replyToken, text);
+        break;
+      default:
+        await handleChat(userId, replyToken, text);
+        break;
+    }
+  } catch (e) {
+    // @ts-ignore
+    await replyText(replyToken, `エラーが発生しました。管理者に連絡してね。 ${e.message}}`);
+    return
   }
 }
