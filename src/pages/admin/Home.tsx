@@ -10,7 +10,7 @@ export default function Home() {
     if (!window.confirm('ログアウトしますか？')) return
     try {
       await signOut(auth)
-      navigate('/login')
+      navigate('/admin/login')
     } catch (error) {
       console.error('Logout failed:', error)
     }

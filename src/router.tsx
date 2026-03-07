@@ -1,4 +1,4 @@
-import { createBrowserRouter, RouterProvider } from 'react-router'
+import { createBrowserRouter, RouterProvider, Outlet } from 'react-router'
 import Home from './pages/Home'
 import Submissions from './pages/Submissions'
 import Layout from "./components/Layout";
@@ -32,16 +32,29 @@ function AppRoutes() {
       ),
       children: [
         {
-          path: 'home',
-          Component: AdminHome,
+          path: 'login',
+          Component: Login,
         },
         {
-          path: 'settings/session',
-          Component: SessionSettings,
-        },
-        {
-          path: 'users',
-          Component: UserList,
+          element: (
+            <AuthGuard>
+              <Outlet />
+            </AuthGuard>
+          ),
+          children: [
+            {
+              path: 'home',
+              Component: AdminHome,
+            },
+            {
+              path: 'settings/session',
+              Component: SessionSettings,
+            },
+            {
+              path: 'users',
+              Component: UserList,
+            },
+          ]
         },
       ],
     },
@@ -52,10 +65,6 @@ function AppRoutes() {
         {
           index: true,
           Component: Home,
-        },
-        {
-          path: 'login',
-          Component: Login,
         },
         {
           path: 'access-denied',
