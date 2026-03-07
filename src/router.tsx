@@ -1,7 +1,9 @@
-import { createBrowserRouter, RouterProvider, Outlet } from 'react-router'
+import { createBrowserRouter, RouterProvider } from 'react-router'
 import Home from './pages/Home'
 import Submissions from './pages/Submissions'
 import Layout from "./components/Layout";
+import LayoutForSubmissions from "./components/LayoutForSubmissions";
+import LayoutForAdmin from "./components/LayoutForAdmin";
 import Login from "./pages/Login";
 import AdminHome from "./pages/admin/Home";
 import SessionSettings from "./pages/admin/settings/Session";
@@ -12,6 +14,38 @@ import { AuthProvider, AuthGuard } from "./components/AuthGuard";
 function AppRoutes() {
   const router = createBrowserRouter([
     {
+      path: '/submissions',
+      Component: LayoutForSubmissions,
+      children: [
+        {
+          index: true,
+          Component: Submissions,
+        }
+      ]
+    },
+    {
+      path: '/admin',
+      element: (
+        <AuthGuard>
+          <LayoutForAdmin />
+        </AuthGuard>
+      ),
+      children: [
+        {
+          path: 'home',
+          Component: AdminHome,
+        },
+        {
+          path: 'settings/session',
+          Component: SessionSettings,
+        },
+        {
+          path: 'users',
+          Component: UserList,
+        },
+      ],
+    },
+    {
       path: '/',
       Component: Layout,
       children: [
@@ -20,38 +54,12 @@ function AppRoutes() {
           Component: Home,
         },
         {
-          path: 'submissions',
-          Component: Submissions,
-        },
-        {
           path: 'login',
           Component: Login,
         },
         {
           path: 'access-denied',
           Component: AccessDenied,
-        },
-        {
-          path: 'admin',
-          element: (
-            <AuthGuard>
-              <Outlet />
-            </AuthGuard>
-          ),
-          children: [
-            {
-              path: 'home',
-              Component: AdminHome,
-            },
-            {
-              path: 'settings/session',
-              Component: SessionSettings,
-            },
-            {
-              path: 'users',
-              Component: UserList,
-            },
-          ],
         },
       ]
     },
