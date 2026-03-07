@@ -4,7 +4,7 @@ import Submissions from './pages/Submissions'
 import Layout from "./components/Layout";
 import LayoutForSubmissions from "./components/LayoutForSubmissions";
 import LayoutForAdmin from "./components/LayoutForAdmin";
-import Login from "./pages/Login";
+import Login from "./pages/admin/Login.tsx";
 import AdminHome from "./pages/admin/Home";
 import SessionSettings from "./pages/admin/settings/Session";
 import UserList from "./pages/admin/users/UserList";

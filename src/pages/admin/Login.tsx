@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { Container, Typography, TextField, Button, Box, Alert, Paper, Divider } from '@mui/material'
 import { signInWithEmailAndPassword, signInWithCustomToken } from 'firebase/auth'
-import { auth, functions } from '../firebase'
+import { auth, functions } from '../../firebase.ts'
 import { useNavigate, Navigate } from 'react-router'
-import { useAuth } from '../components/AuthGuard'
+import { useAuth } from '../../components/AuthGuard.tsx'
 import liff from '@line/liff'
 import { httpsCallable } from 'firebase/functions'
 
